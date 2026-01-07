@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LegioSoft.Imaging.Core</RootNamespace>
+    <AssemblyName>LegioSoft.Imaging.Core</AssemblyName>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>© Legiosoft</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <Authors>Legiosoft team</Authors>
+    <Company>Legiosoft</Company>
+    <RepositoryUrl>https://github.com/legiosoft/legiosoft-imaging</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/legiosoft/legiosoft-imaging</PackageProjectUrl>
+    <Description>Core interfaces and enums for image processing. Shared between LegioSoft.Imaging.Skia and LegioSoft.Imaging.WebP packages.</Description>
+    <PackageTags>image, processing, core, shared</PackageTags>
+    <PackageReleaseNotes>Beta1 release with core interfaces</PackageReleaseNotes>
+    <Version>1.0.0-beta1</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+
+
+</Project>

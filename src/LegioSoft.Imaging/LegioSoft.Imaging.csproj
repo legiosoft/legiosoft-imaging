@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LegioSoft.Imaging</RootNamespace>
+    <AssemblyName>LegioSoft.Imaging</AssemblyName>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>© Legiosoft</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <Authors>Legiosoft team</Authors>
+    <Company>Legiosoft</Company>
+    <RepositoryUrl>https://github.com/legiosoft/legiosoft-imaging</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/legiosoft/legiosoft-imaging</PackageProjectUrl>
+    <Description>Meta package providing unified API for image processing. Install LegioSoft.Imaging.Skia for SkiaSharp-based operations and LegioSoft.Imaging.WebP for lightweight WebP support, or use both for full functionality.</Description>
+    <PackageTags>image, processing, meta, unified, WebP, SkiaSharp</PackageTags>
+    <PackageReleaseNotes>Beta1 release with modular package structure: LegioSoft.Imaging.Skia and LegioSoft.Imaging.WebP</PackageReleaseNotes>
+    <Version>1.0.0-beta1</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+
+
+</Project>

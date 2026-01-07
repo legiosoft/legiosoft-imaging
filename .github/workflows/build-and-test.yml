@@ -1,0 +1,29 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '6.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore LegioSoft.sln
+    
+    - name: Build
+      run: dotnet build LegioSoft.sln --configuration Release --no-restore
+    
+    - name: Test
+      run: dotnet test LegioSoft.sln --configuration Release --no-build --verbosity normal

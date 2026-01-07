@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LegioSoft.Imaging.Skia</RootNamespace>
+    <AssemblyName>LegioSoft.Imaging.Skia</AssemblyName>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>© Legiosoft</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <Authors>Legiosoft team</Authors>
+    <Company>Legiosoft</Company>
+    <RepositoryUrl>https://github.com/legiosoft/legiosoft-imaging</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/legiosoft/legiosoft-imaging</PackageProjectUrl>
+    <Description>SkiaSharp-based image processing operations. Supports format conversion, resizing, cropping, transformations, and filters without WebP dependency.</Description>
+    <PackageTags>image, processing, SkiaSharp, crop, scale, resize, convert, transform, rotate, flip, grayscale, sepia, blur, sharpen</PackageTags>
+    <PackageReleaseNotes>Beta1 release with SkiaSharp-based image operations</PackageReleaseNotes>
+    <Version>1.0.0-beta1</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LegioSoft.Imaging.Core\LegioSoft.Imaging.Core.csproj" />
+  </ItemGroup>
+
+</Project>

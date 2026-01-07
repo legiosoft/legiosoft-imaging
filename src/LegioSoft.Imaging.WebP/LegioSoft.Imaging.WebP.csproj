@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LegioSoft.Imaging.WebP</RootNamespace>
+    <AssemblyName>LegioSoft.Imaging.WebP</AssemblyName>
+    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>© Legiosoft</Copyright>
+    <RepositoryType>git</RepositoryType>
+    <Authors>Legiosoft team</Authors>
+    <Company>Legiosoft</Company>
+    <RepositoryUrl>https://github.com/legiosoft/legiosoft-imaging</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/legiosoft/legiosoft-imaging</PackageProjectUrl>
+    <Description>Lightweight WebP codec wrapper using native libwebp. Provides efficient WebP encoding and decoding without SkiaSharp dependency.</Description>
+    <PackageTags>image, WebP, encode, decode, codec, lossless, lightweight, cross-platform</PackageTags>
+    <PackageReleaseNotes>Beta1 release with cross-platform WebP support</PackageReleaseNotes>
+    <Version>1.0.0-beta1</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LegioSoft.Imaging.Core\LegioSoft.Imaging.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="runtimes\win-x64\libwebp.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>runtimes\win-x64\</PackagePath>
+    </None>
+    <None Include="runtimes\linux-x64\libwebp.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-x64\</PackagePath>
+    </None>
+    <None Include="runtimes\linux-arm64\libwebp.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>runtimes\linux-arm64\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
