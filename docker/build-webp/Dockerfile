@@ -45,12 +45,11 @@ COPY --from=source /source .
 RUN mkdir build && cd build && \
     cmake .. -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release && \
     make -j$(nproc) && \
-    make install
+    ls -la *.so*
 
 # Copy output to artifacts directory
 RUN mkdir -p /output/linux-x64 && \
-    (cp build/libwebp.so* /output/linux-x64/ 2>/dev/null || \
-     find build -name "libwebp.so*" -exec cp {} /output/linux-x64/ \;) && \
+    find build -name "libwebp.so*" -exec cp {} /output/linux-x64/ \; && \
     ls -lh /output/linux-x64/
 
 # Stage 4: Build for ARM64 (aarch64) using cross-compilation
@@ -81,6 +80,7 @@ RUN mkdir -p /output/linux-arm64 && mkdir build && cd build && \
       -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
       -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ && \
     make -j$(nproc) && \
+    ls -la *.so* && \
     cp libwebp.so* /output/linux-arm64/ && \
     ls -lh /output/linux-arm64/
 
@@ -101,6 +101,10 @@ WORKDIR /build
 # Copy source from source stage
 COPY --from=source /source .
 
+# Empty AVX2 source files and add dummy init functions
+RUN printf '%s\n' 'void VP8LDspInitAVX2(void) {}' > src/dsp/lossless_avx2.c && \
+    printf '%s\n' 'void VP8LEncDspInitAVX2(void) {}' > src/dsp/lossless_enc_avx2.c
+
 # Build shared library using MinGW-w64 with SIMD enabled
 RUN mkdir -p /output/win-x64 && mkdir build && cd build && \
     CC=x86_64-w64-mingw32-gcc \
@@ -113,6 +117,7 @@ RUN mkdir -p /output/win-x64 && mkdir build && cd build && \
       -DWEBP_DISABLE_WIC=ON \
       -DCMAKE_SHARED_LINKER_FLAGS="-static-libgcc -static-libstdc++" && \
     make -j$(nproc) && \
+    ls -la *.dll && \
     cp libwebp*.dll /output/win-x64/ 2>/dev/null || \
     find . -name "*.dll" -exec cp {} /output/win-x64/ \; && \
     ls -lh /output/win-x64/
