@@ -1,0 +1,28 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+    <Version>1.0.0-beta1</Version>
+    <Authors>LEGIOSOFT SOLUTIONS S.L.</Authors>
+    <Company>LEGIOSOFT SOLUTIONS S.L.</Company>
+    <Product>LegioSoft.Imaging</Product>
+    <Copyright>Copyright (c) LEGIOSOFT SOLUTIONS S.L. 2026</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/legiosoft/legiosoft-imaging</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/legiosoft/legiosoft-imaging</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <DebugType>portable</DebugType>
+    <NoWarn>$(NoWarn);NU1603;NU5128;CS1591</NoWarn>
+    <Deterministic>true</Deterministic>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+</Project>

@@ -3,23 +3,34 @@
   <PropertyGroup>
     <RootNamespace>LegioSoft.Imaging.Core</RootNamespace>
     <AssemblyName>LegioSoft.Imaging.Core</AssemblyName>
-    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Copyright>© Legiosoft</Copyright>
-    <RepositoryType>git</RepositoryType>
-    <Authors>Legiosoft team</Authors>
-    <Company>Legiosoft</Company>
-    <RepositoryUrl>https://github.com/legiosoft/legiosoft-imaging</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/legiosoft/legiosoft-imaging</PackageProjectUrl>
-    <Description>Core interfaces and enums for image processing. Shared between LegioSoft.Imaging.Skia and LegioSoft.Imaging.WebP packages.</Description>
-    <PackageTags>image, processing, core, shared</PackageTags>
-    <PackageReleaseNotes>Beta1 release with core interfaces</PackageReleaseNotes>
-    <Version>1.0.0-beta1</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <LangVersion>latest</LangVersion>
+    <PackageId>LegioSoft.Imaging.Core</PackageId>
+    <Description>
+      Core interfaces, enums, and base types for LegioSoft.Imaging. Extremely lightweight library containing only shared types (ILegioImageEncoder, ILegioImageDecoder, ILegioImageResizer, ILegioImageCropper, ILegioImageTransformer, ILegioImageFilter) and enums (LegioImageFormat, LegioScaleMode, LegioResizeQuality, LegioEncodingQuality, LegioTransformType, LegioFilterType, LegioImageInfo). Use this package to reference core types without bringing in image processing dependencies. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
+    </Description>
+    <PackageTags>image;processing;core;interfaces;enums;base-types;shared-types;contracts</PackageTags>
+    <PackageReleaseNotes>
+      1.0.0-beta1 - Initial beta release of LegioSoft.Imaging.Core.
+
+      Features:
+      - ILegioImageEncoder and ILegioImageDecoder interfaces for encoding/decoding
+      - ILegioImageResizer for resize operations
+      - ILegioImageCropper for crop operations
+      - ILegioImageTransformer for rotate/flip operations
+      - ILegioImageFilter for filter operations (grayscale, sepia, blur, sharpen)
+      - LegioImageFormat enum (PNG, JPEG, WebP, BMP, GIF)
+      - LegioScaleMode enum (Fit, Fill, Stretch)
+      - LegioResizeQuality enum (Low, Medium, High, Maximum)
+      - LegioEncodingQuality enum (0-100 quality levels)
+      - LegioImageInfo class for image metadata
+      - Support for .NET 6.0, 7.0, 8.0, 9.0, and 10.0
+    </PackageReleaseNotes>
   </PropertyGroup>
 
-
+  <ItemGroup>
+    <None Include="..\..\icon.png" Pack="true" PackagePath="/" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
 </Project>

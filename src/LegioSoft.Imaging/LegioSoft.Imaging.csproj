@@ -3,23 +3,40 @@
   <PropertyGroup>
     <RootNamespace>LegioSoft.Imaging</RootNamespace>
     <AssemblyName>LegioSoft.Imaging</AssemblyName>
-    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Copyright>© Legiosoft</Copyright>
-    <RepositoryType>git</RepositoryType>
-    <Authors>Legiosoft team</Authors>
-    <Company>Legiosoft</Company>
-    <RepositoryUrl>https://github.com/legiosoft/legiosoft-imaging</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/legiosoft/legiosoft-imaging</PackageProjectUrl>
-    <Description>Meta package providing unified API for image processing. Install LegioSoft.Imaging.Skia for SkiaSharp-based operations and LegioSoft.Imaging.WebP for lightweight WebP support, or use both for full functionality.</Description>
-    <PackageTags>image, processing, meta, unified, WebP, SkiaSharp</PackageTags>
-    <PackageReleaseNotes>Beta1 release with modular package structure: LegioSoft.Imaging.Skia and LegioSoft.Imaging.WebP</PackageReleaseNotes>
-    <Version>1.0.0-beta1</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <LangVersion>latest</LangVersion>
+    <PackageId>LegioSoft.Imaging</PackageId>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeContentInPack>false</IncludeContentInPack>
+    <Description>
+      Meta package that aggregates all LegioSoft.Imaging libraries. Install this package to get full image processing capabilities including LegioSoft.Imaging.Core (interfaces and types), LegioSoft.Imaging.WebP (lightweight WebP codec), and LegioSoft.Imaging.Skia (full-featured image processing with SkiaSharp). Provides everything you need for image manipulation in a single package. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
+    </Description>
+    <PackageTags>image;processing;meta;unified;WebP;SkiaSharp;all-in-one;complete;full-stack</PackageTags>
+    <PackageReleaseNotes>
+      1.0.0-beta1 - Initial beta release of LegioSoft.Imaging meta package.
+
+      Features:
+      - Includes all LegioSoft.Imaging packages in one installation
+      - LegioSoft.Imaging.Core - interfaces, enums, and base types
+      - LegioSoft.Imaging.WebP - lightweight WebP codec with native libraries
+      - LegioSoft.Imaging.Skia - full-featured image processing with SkiaSharp
+      - Fluent builder API for easy image manipulation
+      - Support for resize, crop, rotate, flip, and filters
+      - Format conversion for PNG, JPEG, WebP, BMP, and GIF
+      - Cross-platform support (Windows, macOS, Linux)
+      - Support for .NET 6.0, 7.0, 8.0, 9.0, and 10.0
+    </PackageReleaseNotes>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LegioSoft.Imaging.Core\LegioSoft.Imaging.Core.csproj" />
+    <ProjectReference Include="..\LegioSoft.Imaging.WebP\LegioSoft.Imaging.WebP.csproj" />
+    <ProjectReference Include="..\LegioSoft.Imaging.Skia\LegioSoft.Imaging.Skia.csproj" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <None Include="$(SolutionDir)icon.png" Pack="true" PackagePath="/" />
+    <None Include="$(SolutionDir)README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
 </Project>

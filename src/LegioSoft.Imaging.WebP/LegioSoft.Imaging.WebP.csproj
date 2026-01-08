@@ -3,21 +3,25 @@
   <PropertyGroup>
     <RootNamespace>LegioSoft.Imaging.WebP</RootNamespace>
     <AssemblyName>LegioSoft.Imaging.WebP</AssemblyName>
-    <TargetFrameworks>netstandard2.1;net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Copyright>© Legiosoft</Copyright>
-    <RepositoryType>git</RepositoryType>
-    <Authors>Legiosoft team</Authors>
-    <Company>Legiosoft</Company>
-    <RepositoryUrl>https://github.com/legiosoft/legiosoft-imaging</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/legiosoft/legiosoft-imaging</PackageProjectUrl>
-    <Description>Lightweight WebP codec wrapper using native libwebp. Provides efficient WebP encoding and decoding without SkiaSharp dependency.</Description>
-    <PackageTags>image, WebP, encode, decode, codec, lossless, lightweight, cross-platform</PackageTags>
-    <PackageReleaseNotes>Beta1 release with cross-platform WebP support</PackageReleaseNotes>
-    <Version>1.0.0-beta1</Version>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <LangVersion>latest</LangVersion>
+    <PackageId>LegioSoft.Imaging.WebP</PackageId>
+    <Description>
+      Lightweight WebP codec implementation using native libwebp. Provides efficient WebP encoding and decoding without SkiaSharp dependency. Implements ILegioImageEncoder and ILegioImageDecoder interfaces from LegioSoft.Imaging.Core. Includes native libraries for Windows (x64), Linux (x64 and ARM64). Perfect for scenarios requiring only WebP support without the overhead of full image processing library. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
+    </Description>
+    <PackageTags>image;WebP;encode;decode;codec;lossless;lightweight;cross-platform;libwebp</PackageTags>
+    <PackageReleaseNotes>
+      1.0.0-beta1 - Initial beta release of LegioSoft.Imaging.WebP.
+
+      Features:
+      - WebP encoding and decoding via native libwebp
+      - Implements ILegioImageEncoder and ILegioImageDecoder interfaces
+      - Native libraries for Windows x64, Linux x64, and Linux ARM64
+      - Lightweight (~500KB package size)
+      - No SkiaSharp dependency
+      - Cross-platform support
+      - Support for .NET 6.0, 7.0, 8.0, 9.0, and 10.0
+    </PackageReleaseNotes>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -41,6 +45,11 @@
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-arm64\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\icon.png" Pack="true" PackagePath="/" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
 </Project>

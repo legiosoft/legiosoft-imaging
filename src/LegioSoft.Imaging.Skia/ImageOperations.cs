@@ -5,26 +5,26 @@ using SkiaSharp;
 
 namespace LegioSoft.Imaging.Skia;
 
-public class ImageOperations
+public static class ImageOperations
 {
-    public static byte[] Resize(byte[] imageData, int width, int height, ScaleMode mode = ScaleMode.Fit, ResizeQuality quality = ResizeQuality.High)
+    public static byte[] Resize(byte[] imageData, int width, int height, LegioScaleMode mode = LegioScaleMode.Fit, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         var bitmap = LoadBitmap(imageData);
         var resized = ResizeBitmap(bitmap, width, height, quality);
         return SaveBitmap(resized, DetectFormat(imageData), 75);
     }
 
-    public static SKBitmap ResizeBitmap(SKBitmap bitmap, int width, int height, ResizeQuality quality = ResizeQuality.High)
+    public static SKBitmap ResizeBitmap(SKBitmap bitmap, int width, int height, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (width <= 0 || height <= 0)
             throw new ArgumentException("Width and height must be positive", nameof(width));
 
         var filterQuality = quality switch
         {
-            ResizeQuality.Low => SKFilterQuality.Low,
-            ResizeQuality.Medium => SKFilterQuality.Medium,
-            ResizeQuality.High => SKFilterQuality.High,
-            ResizeQuality.Maximum => SKFilterQuality.High,
+            LegioResizeQuality.Low => SKFilterQuality.Low,
+            LegioResizeQuality.Medium => SKFilterQuality.Medium,
+            LegioResizeQuality.High => SKFilterQuality.High,
+            LegioResizeQuality.Maximum => SKFilterQuality.High,
             _ => SKFilterQuality.High
         };
 
@@ -60,7 +60,7 @@ public class ImageOperations
         return croppedBitmap;
     }
 
-    public static byte[] Convert(byte[] imageData, ImageFormat targetFormat, int quality = 75)
+    public static byte[] Convert(byte[] imageData, LegioImageFormat targetFormat, int quality = 75)
     {
         var bitmap = LoadBitmap(imageData);
         return SaveBitmap(bitmap, targetFormat, quality);
@@ -72,11 +72,24 @@ public class ImageOperations
             throw new ArgumentException("Rotation must be 90, 180, or 270 degrees", nameof(degrees));
 
         var radians = degrees * Math.PI / 180;
-        var rotatedInfo = new SKImageInfo(
-            bitmap.Height, 
-            bitmap.Width, 
-            bitmap.ColorType, 
-            bitmap.AlphaType);
+        SKImageInfo rotatedInfo;
+        
+        if (degrees == 90 || degrees == 270)
+        {
+            rotatedInfo = new SKImageInfo(
+                bitmap.Height, 
+                bitmap.Width, 
+                bitmap.ColorType, 
+                bitmap.AlphaType);
+        }
+        else
+        {
+            rotatedInfo = new SKImageInfo(
+                bitmap.Width, 
+                bitmap.Height, 
+                bitmap.ColorType, 
+                bitmap.AlphaType);
+        }
 
         var rotatedBitmap = new SKBitmap(rotatedInfo);
 
@@ -95,20 +108,26 @@ public class ImageOperations
 
     public static SKBitmap Flip(SKBitmap bitmap, bool horizontal, bool vertical)
     {
-        var flippedInfo = bitmap.Info;
-        var flippedBitmap = new SKBitmap(flippedInfo);
-
+        var flippedBitmap = new SKBitmap(bitmap.Info);
+        
         using (var canvas = new SKCanvas(flippedBitmap))
         {
-            var scaleX = horizontal ? -1f : 1f;
-            var scaleY = vertical ? -1f : 1f;
-            
-            canvas.Scale(scaleX, scaleY);
-            canvas.Translate(
-                horizontal ? -bitmap.Width : 0, 
-                vertical ? -bitmap.Height : 0);
-            
-            canvas.DrawBitmap(bitmap, 0, 0);
+            if (horizontal && vertical)
+            {
+                canvas.DrawBitmap(bitmap, -bitmap.Width, -bitmap.Height);
+            }
+            else if (horizontal)
+            {
+                canvas.DrawBitmap(bitmap, -bitmap.Width, 0);
+            }
+            else if (vertical)
+            {
+                canvas.DrawBitmap(bitmap, 0, -bitmap.Height);
+            }
+            else
+            {
+                canvas.DrawBitmap(bitmap, 0, 0);
+            }
         }
 
         return flippedBitmap;
@@ -153,13 +172,13 @@ public class ImageOperations
         return sepiaBitmap;
     }
 
-    public static SKBitmap ApplyBlur(SKBitmap bitmap)
+    public static SKBitmap ApplyBlur(SKBitmap bitmap, int radius = 5)
     {
         var blurInfo = bitmap.Info;
         var blurBitmap = new SKBitmap(blurInfo);
         
         using (var paint = new SKPaint())
-        using (var filter = SKImageFilter.CreateBlur(5, 5))
+        using (var filter = SKImageFilter.CreateBlur(radius, radius))
         {
             paint.ImageFilter = filter;
             
@@ -170,6 +189,100 @@ public class ImageOperations
         }
 
         return blurBitmap;
+    }
+
+    public static SKBitmap ApplySharpen(SKBitmap bitmap, int amount = 50)
+    {
+        var sharpenedInfo = bitmap.Info;
+        var sharpenedBitmap = new SKBitmap(sharpenedInfo);
+        var factor = amount / 100f;
+        
+        using (var paint = new SKPaint())
+        using (var filter = SKImageFilter.CreateDilate(1, 1))
+        using (var canvas = new SKCanvas(sharpenedBitmap))
+        {
+            paint.ImageFilter = filter;
+            canvas.DrawBitmap(bitmap, 0, 0, paint);
+        }
+
+        for (var y = 0; y < bitmap.Height; y++)
+        {
+            for (var x = 0; x < bitmap.Width; x++)
+            {
+                var originalPixel = bitmap.GetPixel(x, y);
+                var sharpenedPixel = sharpenedBitmap.GetPixel(x, y);
+                
+                var newR = (byte)Math.Min(255, Math.Max(0, originalPixel.Red + (sharpenedPixel.Red - originalPixel.Red) * factor));
+                var newG = (byte)Math.Min(255, Math.Max(0, originalPixel.Green + (sharpenedPixel.Green - originalPixel.Green) * factor));
+                var newB = (byte)Math.Min(255, Math.Max(0, originalPixel.Blue + (sharpenedPixel.Blue - originalPixel.Blue) * factor));
+                
+                sharpenedBitmap.SetPixel(x, y, new SKColor(newR, newG, newB, originalPixel.Alpha));
+            }
+        }
+
+        return sharpenedBitmap;
+    }
+
+    public static SKBitmap ApplyBrightness(SKBitmap bitmap, int amount)
+    {
+        var brightnessInfo = bitmap.Info;
+        var brightnessBitmap = new SKBitmap(brightnessInfo);
+
+        for (var y = 0; y < bitmap.Height; y++)
+        {
+            for (var x = 0; x < bitmap.Width; x++)
+            {
+                var pixel = bitmap.GetPixel(x, y);
+                var newR = (byte)Math.Min(255, Math.Max(0, pixel.Red + amount));
+                var newG = (byte)Math.Min(255, Math.Max(0, pixel.Green + amount));
+                var newB = (byte)Math.Min(255, Math.Max(0, pixel.Blue + amount));
+                brightnessBitmap.SetPixel(x, y, new SKColor(newR, newG, newB, pixel.Alpha));
+            }
+        }
+
+        return brightnessBitmap;
+    }
+
+    public static SKBitmap ApplyContrast(SKBitmap bitmap, int amount)
+    {
+        var contrastInfo = bitmap.Info;
+        var contrastBitmap = new SKBitmap(contrastInfo);
+        var factor = (259 * (amount + 255)) / (255 * (259 - amount));
+
+        for (var y = 0; y < bitmap.Height; y++)
+        {
+            for (var x = 0; x < bitmap.Width; x++)
+            {
+                var pixel = bitmap.GetPixel(x, y);
+                var newR = (byte)Math.Min(255, Math.Max(0, factor * (pixel.Red - 128) + 128));
+                var newG = (byte)Math.Min(255, Math.Max(0, factor * (pixel.Green - 128) + 128));
+                var newB = (byte)Math.Min(255, Math.Max(0, factor * (pixel.Blue - 128) + 128));
+                contrastBitmap.SetPixel(x, y, new SKColor(newR, newG, newB, pixel.Alpha));
+            }
+        }
+
+        return contrastBitmap;
+    }
+
+    public static SKBitmap ApplyInvert(SKBitmap bitmap)
+    {
+        var invertInfo = bitmap.Info;
+        var invertBitmap = new SKBitmap(invertInfo);
+
+        for (var y = 0; y < bitmap.Height; y++)
+        {
+            for (var x = 0; x < bitmap.Width; x++)
+            {
+                var pixel = bitmap.GetPixel(x, y);
+                invertBitmap.SetPixel(x, y, new SKColor(
+                    (byte)(255 - pixel.Red),
+                    (byte)(255 - pixel.Green),
+                    (byte)(255 - pixel.Blue),
+                    pixel.Alpha));
+            }
+        }
+
+        return invertBitmap;
     }
 
     public static SKBitmap LoadBitmap(byte[] imageData)
@@ -187,42 +300,42 @@ public class ImageOperations
         return bitmap;
     }
 
-    public static byte[] SaveBitmap(SKBitmap bitmap, ImageFormat format, int quality = 75)
+    public static byte[] SaveBitmap(SKBitmap bitmap, LegioImageFormat format, int quality = 75)
     {
         using var ms = new MemoryStream();
         var skiaFormat = format switch
         {
-            ImageFormat.Jpeg => SKEncodedImageFormat.Jpeg,
-            ImageFormat.WebP => SKEncodedImageFormat.Webp,
-            ImageFormat.Png => SKEncodedImageFormat.Png,
-            ImageFormat.Bmp => SKEncodedImageFormat.Bmp,
-            ImageFormat.Gif => SKEncodedImageFormat.Gif,
+            LegioImageFormat.Jpeg => SKEncodedImageFormat.Jpeg,
+            LegioImageFormat.WebP => SKEncodedImageFormat.Webp,
+            LegioImageFormat.Png => SKEncodedImageFormat.Png,
+            LegioImageFormat.Bmp => SKEncodedImageFormat.Bmp,
+            LegioImageFormat.Gif => SKEncodedImageFormat.Gif,
             _ => SKEncodedImageFormat.Png
         };
         bitmap.Encode(ms, skiaFormat, quality);
         return ms.ToArray();
     }
 
-    public static ImageFormat DetectFormat(byte[] imageData)
+    public static LegioImageFormat DetectFormat(byte[] imageData)
     {
-        if (imageData.Length < 8) return ImageFormat.Png;
+        if (imageData.Length < 8) return LegioImageFormat.Png;
 
         if (imageData[0] == 0x52 && imageData[1] == 0x49 && imageData[2] == 0x46 && imageData[3] == 0x46 &&
             imageData[8] == 0x57 && imageData[9] == 0x45 && imageData[10] == 0x66 && imageData[11] == 0x50)
-            return ImageFormat.WebP;
+            return LegioImageFormat.WebP;
 
         if (imageData[0] == 0xFF && imageData[1] == 0xD8 && imageData[2] == 0xFF)
-            return ImageFormat.Jpeg;
+            return LegioImageFormat.Jpeg;
 
         if (imageData[0] == 0x42 && imageData[1] == 0x4D)
-            return ImageFormat.Bmp;
+            return LegioImageFormat.Bmp;
 
         if (imageData[0] == 0x47 && imageData[1] == 0x49 && imageData[2] == 0x46 && imageData[3] == 0x38)
-            return ImageFormat.Gif;
+            return LegioImageFormat.Gif;
 
         if (imageData[0] == 0x89 && imageData[1] == 0x50 && imageData[2] == 0x4E && imageData[3] == 0x47)
-            return ImageFormat.Png;
+            return LegioImageFormat.Png;
 
-        return ImageFormat.Png;
+        return LegioImageFormat.Png;
     }
 }

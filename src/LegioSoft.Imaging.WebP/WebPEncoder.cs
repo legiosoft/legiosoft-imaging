@@ -193,7 +193,7 @@ public class WebPEncoder
         }
     }
 
-    public static byte[] EncodeAdvanced(byte[] imageData, int width, int height, WebPEncodeOptions options = null)
+    public static byte[] EncodeAdvanced(byte[] imageData, int width, int height, WebPEncodeOptions? options = null)
     {
         if (imageData == null || imageData.Length == 0)
             throw new ArgumentException("Image data cannot be null or empty", nameof(imageData));
