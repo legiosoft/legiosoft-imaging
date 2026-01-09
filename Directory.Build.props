@@ -24,5 +24,7 @@
     <Deterministic>true</Deterministic>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 </Project>
