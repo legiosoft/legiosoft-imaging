@@ -418,3 +418,5 @@ FodyWeavers.xsd
 *.msp
 
 /docker/build-webp/output
+/examples/SkiaExample/.idea
+/.idea

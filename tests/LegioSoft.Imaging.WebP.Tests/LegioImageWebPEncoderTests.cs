@@ -28,7 +28,7 @@ public class LegioImageWebPEncoderTests
         var encoder = new LegioImageWebPEncoder();
         var testPngData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
         
-        Assert.Throws<NotSupportedException>(() => encoder.Encode(testPngData, LegioImageFormat.WebP, LegioEncodingQuality.High));
+        Assert.Throws<NotImplementedException>(() => encoder.Encode(testPngData, LegioImageFormat.WebP, LegioEncodingQuality.High));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class LegioImageWebPEncoderTests
         var testPngData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
         using var stream = new System.IO.MemoryStream(testPngData);
         
-        Assert.Throws<NotSupportedException>(() => encoder.Encode(stream, LegioImageFormat.WebP, LegioEncodingQuality.High));
+        Assert.Throws<NotImplementedException>(() => encoder.Encode(stream, LegioImageFormat.WebP, LegioEncodingQuality.High));
     }
 
     [Fact]

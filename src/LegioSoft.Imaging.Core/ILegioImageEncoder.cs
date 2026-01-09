@@ -1,16 +1,26 @@
-using System.IO;
-
 namespace LegioSoft.Imaging.Core;
 
+/// <summary>
+/// Interface for encoding images to different formats.
+/// </summary>
 public interface ILegioImageEncoder
 {
+    /// <summary>
+    /// Encodes image data to the specified format.
+    /// </summary>
+    /// <param name="imageData">The image data to encode.</param>
+    /// <param name="format">The target format.</param>
+    /// <param name="quality">The encoding quality (default: High).</param>
+    /// <returns>Encoded image data.</returns>
     byte[] Encode(byte[] imageData, LegioImageFormat format, LegioEncodingQuality quality = LegioEncodingQuality.High);
-    Stream Encode(Stream inputStream, LegioImageFormat format, LegioEncodingQuality quality = LegioEncodingQuality.High, Stream? outputStream = null);
-}
 
-public interface ILegioImageDecoder
-{
-    byte[] Decode(byte[] imageData, out LegioImageFormat format);
-    LegioImageInfo GetImageInfo(byte[] imageData);
-    LegioImageInfo GetImageInfo(Stream inputStream);
+    /// <summary>
+    /// Encodes an image stream to the specified format.
+    /// </summary>
+    /// <param name="inputStream">The input stream containing image data.</param>
+    /// <param name="format">The target format.</param>
+    /// <param name="quality">The encoding quality (default: High).</param>
+    /// <param name="outputStream">Optional output stream. If null, a new stream is created.</param>
+    /// <returns>Stream containing the encoded image.</returns>
+    Stream Encode(Stream inputStream, LegioImageFormat format, LegioEncodingQuality quality = LegioEncodingQuality.High, Stream? outputStream = null);
 }

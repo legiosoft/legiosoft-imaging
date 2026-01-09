@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using LegioSoft.Imaging.WebP.Enums;
+using LegioSoft.Imaging.WebP.Models;
+using LegioSoft.Imaging.WebP.Native;
 
-namespace LegioSoft.Imaging.WebP;
+namespace LegioSoft.Imaging.WebP.Decoder;
 
 public class WebPDecoder
 {
@@ -13,9 +15,9 @@ public class WebPDecoder
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
 
-        var status = NativeMethods.WebPGetFeatures(webpData, (UIntPtr)webpData.Length, out var features);
+        var status = Native.NativeMethods.WebPGetFeatures(webpData, (UIntPtr)webpData.Length, out var features);
         
-        if (status != VP8StatusCode.OK)
+        if (status != Enums.VP8StatusCode.OK)
             throw new InvalidOperationException($"Failed to get WebP info: {status}");
 
         return new WebPInfo
@@ -56,22 +58,22 @@ public class WebPDecoder
 
     public static byte[] Decode(byte[] webpData, out int width, out int height)
     {
-        return Decode(webpData, out width, out height, WEBP_CSP_MODE.MODE_RGBA);
+        return Decode(webpData, out width, out height, Enums.WEBP_CSP_MODE.MODE_RGBA);
     }
 
-    public static byte[] Decode(byte[] webpData, out int width, out int height, WEBP_CSP_MODE colorspace)
+    public static byte[] Decode(byte[] webpData, out int width, out int height, Enums.WEBP_CSP_MODE colorspace)
     {
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
 
         IntPtr result = colorspace switch
         {
-            WEBP_CSP_MODE.MODE_RGBA => NativeMethods.WebPDecodeRGBA(webpData, (UIntPtr)webpData.Length, out width, out height),
-            WEBP_CSP_MODE.MODE_ARGB => NativeMethods.WebPDecodeARGB(webpData, (UIntPtr)webpData.Length, out width, out height),
-            WEBP_CSP_MODE.MODE_BGRA => NativeMethods.WebPDecodeBGRA(webpData, (UIntPtr)webpData.Length, out width, out height),
-            WEBP_CSP_MODE.MODE_RGB => NativeMethods.WebPDecodeRGB(webpData, (UIntPtr)webpData.Length, out width, out height),
-            WEBP_CSP_MODE.MODE_BGR => NativeMethods.WebPDecodeBGR(webpData, (UIntPtr)webpData.Length, out width, out height),
-            _ => NativeMethods.WebPDecodeRGBA(webpData, (UIntPtr)webpData.Length, out width, out height)
+            Enums.WEBP_CSP_MODE.MODE_RGBA => Native.NativeMethods.WebPDecodeRGBA(webpData, (UIntPtr)webpData.Length, out width, out height),
+            Enums.WEBP_CSP_MODE.MODE_ARGB => Native.NativeMethods.WebPDecodeARGB(webpData, (UIntPtr)webpData.Length, out width, out height),
+            Enums.WEBP_CSP_MODE.MODE_BGRA => Native.NativeMethods.WebPDecodeBGRA(webpData, (UIntPtr)webpData.Length, out width, out height),
+            Enums.WEBP_CSP_MODE.MODE_RGB => Native.NativeMethods.WebPDecodeRGB(webpData, (UIntPtr)webpData.Length, out width, out height),
+            Enums.WEBP_CSP_MODE.MODE_BGR => Native.NativeMethods.WebPDecodeBGR(webpData, (UIntPtr)webpData.Length, out width, out height),
+            _ => Native.NativeMethods.WebPDecodeRGBA(webpData, (UIntPtr)webpData.Length, out width, out height)
         };
 
         if (result == IntPtr.Zero)
@@ -79,24 +81,33 @@ public class WebPDecoder
 
         try
         {
-            int bytesPerPixel = (colorspace == WEBP_CSP_MODE.MODE_RGB || colorspace == WEBP_CSP_MODE.MODE_BGR) ? 3 : 4;
-            int size = width * height * bytesPerPixel;
-            byte[] decodedData = new byte[size];
+            int bytesPerPixel;
+            if (colorspace == Enums.WEBP_CSP_MODE.MODE_RGB || colorspace == Enums.WEBP_CSP_MODE.MODE_BGR)
+            {
+                bytesPerPixel = 3;
+            }
+            else
+            {
+                bytesPerPixel = 4;
+            }
+
+            var size = width * height * bytesPerPixel;
+            var decodedData = new byte[size];
             System.Runtime.InteropServices.Marshal.Copy(result, decodedData, 0, size);
             return decodedData;
         }
         finally
         {
-            NativeMethods.WebPFree(result);
+            Native.NativeMethods.WebPFree(result);
         }
     }
 
     public static byte[] Decode(Stream stream, out int width, out int height)
     {
-        return Decode(stream, out width, out height, WEBP_CSP_MODE.MODE_RGBA);
+        return Decode(stream, out width, out height, Enums.WEBP_CSP_MODE.MODE_RGBA);
     }
 
-    public static byte[] Decode(Stream stream, out int width, out int height, WEBP_CSP_MODE colorspace)
+    public static byte[] Decode(Stream stream, out int width, out int height, Enums.WEBP_CSP_MODE colorspace)
     {
         if (stream == null)
             throw new ArgumentNullException(nameof(stream));
@@ -107,10 +118,10 @@ public class WebPDecoder
 
     public static byte[] Decode(string filePath, out int width, out int height)
     {
-        return Decode(filePath, out width, out height, WEBP_CSP_MODE.MODE_RGBA);
+        return Decode(filePath, out width, out height, Enums.WEBP_CSP_MODE.MODE_RGBA);
     }
 
-    public static byte[] Decode(string filePath, out int width, out int height, WEBP_CSP_MODE colorspace)
+    public static byte[] Decode(string filePath, out int width, out int height, Enums.WEBP_CSP_MODE colorspace)
     {
         if (string.IsNullOrEmpty(filePath))
             throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
@@ -122,7 +133,7 @@ public class WebPDecoder
         return Decode(data, out width, out height, colorspace);
     }
 
-    public static byte[] DecodeWithScaling(byte[] webpData, int scaledWidth, int scaledHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
+    public static byte[] DecodeWithScaling(byte[] webpData, int scaledWidth, int scaledHeight, Enums.WEBP_CSP_MODE colorspace = Enums.WEBP_CSP_MODE.MODE_RGBA)
     {
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
@@ -130,9 +141,9 @@ public class WebPDecoder
         if (scaledWidth <= 0 || scaledHeight <= 0)
             throw new ArgumentException("Scaled dimensions must be positive", nameof(scaledWidth));
 
-        var config = new NativeMethods.WebPDecoderConfig();
+        var config = new Native.NativeMethods.WebPDecoderConfig();
         
-        if (NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP decoder config (version mismatch)");
 
         config.output.colorspace = colorspace;
@@ -144,25 +155,34 @@ public class WebPDecoder
 
         try
         {
-            VP8StatusCode status = NativeMethods.WebPDecode(webpData, (UIntPtr)webpData.Length, ref config);
+            var status = Native.NativeMethods.WebPDecode(webpData, (UIntPtr)webpData.Length, ref config);
             
-            if (status != VP8StatusCode.OK)
+            if (status != Enums.VP8StatusCode.OK)
                 throw new InvalidOperationException($"Failed to decode WebP with scaling: {status}");
 
-            int bytesPerPixel = (colorspace == WEBP_CSP_MODE.MODE_RGB || colorspace == WEBP_CSP_MODE.MODE_BGR) ? 3 : 4;
-            int size = scaledWidth * scaledHeight * bytesPerPixel;
-            byte[] decodedData = new byte[size];
+            int bytesPerPixel;
+            if (colorspace == Enums.WEBP_CSP_MODE.MODE_RGB || colorspace == Enums.WEBP_CSP_MODE.MODE_BGR)
+            {
+                bytesPerPixel = 3;
+            }
+            else
+            {
+                bytesPerPixel = 4;
+            }
+
+            var size = scaledWidth * scaledHeight * bytesPerPixel;
+            var decodedData = new byte[size];
             System.Runtime.InteropServices.Marshal.Copy(config.output.rgba.rgba, decodedData, 0, size);
             
             return decodedData;
         }
         finally
         {
-            NativeMethods.WebPFreeDecBuffer(ref config.output);
+            Native.NativeMethods.WebPFreeDecBuffer(ref config.output);
         }
     }
 
-    public static byte[] DecodeWithCropping(byte[] webpData, int cropLeft, int cropTop, int cropWidth, int cropHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
+    public static byte[] DecodeWithCropping(byte[] webpData, int cropLeft, int cropTop, int cropWidth, int cropHeight, Enums.WEBP_CSP_MODE colorspace = Enums.WEBP_CSP_MODE.MODE_RGBA)
     {
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
@@ -170,9 +190,9 @@ public class WebPDecoder
         if (cropWidth <= 0 || cropHeight <= 0 || cropLeft < 0 || cropTop < 0)
             throw new ArgumentException("Invalid crop parameters");
 
-        var config = new NativeMethods.WebPDecoderConfig();
+        var config = new Native.NativeMethods.WebPDecoderConfig();
         
-        if (NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP decoder config (version mismatch)");
 
         config.output.colorspace = colorspace;
@@ -184,34 +204,43 @@ public class WebPDecoder
 
         try
         {
-            VP8StatusCode status = NativeMethods.WebPDecode(webpData, (UIntPtr)webpData.Length, ref config);
+            var status = Native.NativeMethods.WebPDecode(webpData, (UIntPtr)webpData.Length, ref config);
             
-            if (status != VP8StatusCode.OK)
+            if (status != Enums.VP8StatusCode.OK)
                 throw new InvalidOperationException($"Failed to decode WebP with cropping: {status}");
 
-            int bytesPerPixel = (colorspace == WEBP_CSP_MODE.MODE_RGB || colorspace == WEBP_CSP_MODE.MODE_BGR) ? 3 : 4;
-            int size = cropWidth * cropHeight * bytesPerPixel;
-            byte[] decodedData = new byte[size];
+            int bytesPerPixel;
+            if (colorspace == Enums.WEBP_CSP_MODE.MODE_RGB || colorspace == Enums.WEBP_CSP_MODE.MODE_BGR)
+            {
+                bytesPerPixel = 3;
+            }
+            else
+            {
+                bytesPerPixel = 4;
+            }
+
+            var size = cropWidth * cropHeight * bytesPerPixel;
+            var decodedData = new byte[size];
             System.Runtime.InteropServices.Marshal.Copy(config.output.rgba.rgba, decodedData, 0, size);
             
             return decodedData;
         }
         finally
         {
-            NativeMethods.WebPFreeDecBuffer(ref config.output);
+            Native.NativeMethods.WebPFreeDecBuffer(ref config.output);
         }
     }
 
-    public static byte[] DecodeWithFlip(byte[] webpData, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
+    public static byte[] DecodeWithFlip(byte[] webpData, Enums.WEBP_CSP_MODE colorspace = Enums.WEBP_CSP_MODE.MODE_RGBA)
     {
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
 
         var info = GetInfo(webpData);
 
-        var config = new NativeMethods.WebPDecoderConfig();
+        var config = new Native.NativeMethods.WebPDecoderConfig();
         
-        if (NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP decoder config (version mismatch)");
 
         config.output.colorspace = colorspace;
@@ -219,21 +248,30 @@ public class WebPDecoder
 
         try
         {
-            VP8StatusCode status = NativeMethods.WebPDecode(webpData, (UIntPtr)webpData.Length, ref config);
+            var status = Native.NativeMethods.WebPDecode(webpData, (UIntPtr)webpData.Length, ref config);
             
-            if (status != VP8StatusCode.OK)
+            if (status != Enums.VP8StatusCode.OK)
                 throw new InvalidOperationException($"Failed to decode WebP with flip: {status}");
 
-            int bytesPerPixel = (colorspace == WEBP_CSP_MODE.MODE_RGB || colorspace == WEBP_CSP_MODE.MODE_BGR) ? 3 : 4;
-            int size = info.Width * info.Height * bytesPerPixel;
-            byte[] decodedData = new byte[size];
+            int bytesPerPixel;
+            if (colorspace == Enums.WEBP_CSP_MODE.MODE_RGB || colorspace == Enums.WEBP_CSP_MODE.MODE_BGR)
+            {
+                bytesPerPixel = 3;
+            }
+            else
+            {
+                bytesPerPixel = 4;
+            }
+
+            var size = info.Width * info.Height * bytesPerPixel;
+            var decodedData = new byte[size];
             System.Runtime.InteropServices.Marshal.Copy(config.output.rgba.rgba, decodedData, 0, size);
             
             return decodedData;
         }
         finally
         {
-            NativeMethods.WebPFreeDecBuffer(ref config.output);
+            Native.NativeMethods.WebPFreeDecBuffer(ref config.output);
         }
     }
 
@@ -250,20 +288,4 @@ public class WebPDecoder
             return memoryStream.ToArray();
         }
     }
-}
-
-public class WebPInfo
-{
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public bool HasAlpha { get; set; }
-    public bool HasAnimation { get; set; }
-    public WebPFormat Format { get; set; }
-}
-
-public enum WebPFormat
-{
-    Mixed,
-    Lossy,
-    Lossless
 }

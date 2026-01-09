@@ -81,11 +81,11 @@ public class MetaPackageTests
     }
 
     [Theory]
-    [InlineData(0, "Low")]
-    [InlineData(50, "Medium")]
-    [InlineData(75, "High")]
-    [InlineData(100, "Maximum")]
-    public void LegioEncodingQuality_ShouldHaveCorrectValues(int expectedValue, string description)
+    [InlineData(0)]
+    [InlineData(50)]
+    [InlineData(75)]
+    [InlineData(100)]
+    public void LegioEncodingQuality_ShouldHaveCorrectValues(int expectedValue)
     {
         var quality = (LegioEncodingQuality)expectedValue;
         Assert.Equal(expectedValue, (int)quality);

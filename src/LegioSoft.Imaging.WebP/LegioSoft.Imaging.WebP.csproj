@@ -1,28 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <RootNamespace>LegioSoft.Imaging.WebP</RootNamespace>
     <AssemblyName>LegioSoft.Imaging.WebP</AssemblyName>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
-    <OutputType>Library</OutputType>
-    <PackageId>LegioSoft.Imaging.WebP</PackageId>
-    <Description>
-      Lightweight WebP codec implementation using native libwebp. Provides efficient WebP encoding and decoding without SkiaSharp dependency. Implements ILegioImageEncoder and ILegioImageDecoder interfaces from LegioSoft.Imaging.Core. Includes native libraries for Windows (x64), Linux (x64 and ARM64). Perfect for scenarios requiring only WebP support without the overhead of full image processing library. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
-    </Description>
-    <PackageTags>image;WebP;encode;decode;codec;lossless;lightweight;cross-platform;libwebp</PackageTags>
-    <PackageReleaseNotes>
-      1.0.0-beta1 - Initial beta release of LegioSoft.Imaging.WebP.
-
-      Features:
-      - WebP encoding and decoding via native libwebp
-      - Implements ILegioImageEncoder and ILegioImageDecoder interfaces
-      - Native libraries for Windows x64, Linux x64, and Linux ARM64
-      - Lightweight (~500KB package size)
-      - No SkiaSharp dependency
-      - Cross-platform support
-      - Support for .NET 6.0, 7.0, 8.0, 9.0, and 10.0
-    </PackageReleaseNotes>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <DllImportLoadContextAttribute>true</DllImportLoadContextAttribute>
+    <NativeLibrary>libwebp.dll</NativeLibrary>
   </PropertyGroup>
 
   <ItemGroup>

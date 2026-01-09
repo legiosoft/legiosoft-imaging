@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using LegioSoft.Imaging.WebP.Enums;
+using LegioSoft.Imaging.WebP.Models;
+using LegioSoft.Imaging.WebP.Native;
 
-namespace LegioSoft.Imaging.WebP;
+namespace LegioSoft.Imaging.WebP.Encoder;
 
 public class WebPEncoder
 {
@@ -25,8 +27,8 @@ public class WebPEncoder
         if (quality < 0 || quality > 100)
             throw new ArgumentException("Quality must be between 0 and 100", nameof(quality));
 
-        int stride = width * 4;
-        IntPtr outputPtr = IntPtr.Zero;
+        var stride = width * 4;
+        var outputPtr = IntPtr.Zero;
 
         try
         {
@@ -34,24 +36,24 @@ public class WebPEncoder
             
             if (lossless)
             {
-                size = NativeMethods.WebPEncodeLosslessRGBA(rgbaData, width, height, stride, out outputPtr);
+                size = Native.NativeMethods.WebPEncodeLosslessRGBA(rgbaData, width, height, stride, out outputPtr);
             }
             else
             {
-                size = NativeMethods.WebPEncodeRGBA(rgbaData, width, height, stride, quality, out outputPtr);
+                size = Native.NativeMethods.WebPEncodeRGBA(rgbaData, width, height, stride, quality, out outputPtr);
             }
 
             if (size == UIntPtr.Zero || outputPtr == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to encode image to WebP");
 
-            byte[] result = new byte[(int)size];
+            var result = new byte[(int)size];
             Marshal.Copy(outputPtr, result, 0, (int)size);
             return result;
         }
         finally
         {
             if (outputPtr != IntPtr.Zero)
-                NativeMethods.WebPFree(outputPtr);
+                Native.NativeMethods.WebPFree(outputPtr);
         }
     }
 
@@ -71,8 +73,8 @@ public class WebPEncoder
         if (quality < 0 || quality > 100)
             throw new ArgumentException("Quality must be between 0 and 100", nameof(quality));
 
-        int stride = width * 3;
-        IntPtr outputPtr = IntPtr.Zero;
+        var stride = width * 3;
+        var outputPtr = IntPtr.Zero;
 
         try
         {
@@ -80,24 +82,24 @@ public class WebPEncoder
             
             if (lossless)
             {
-                size = NativeMethods.WebPEncodeLosslessRGB(rgbData, width, height, stride, out outputPtr);
+                size = Native.NativeMethods.WebPEncodeLosslessRGB(rgbData, width, height, stride, out outputPtr);
             }
             else
             {
-                size = NativeMethods.WebPEncodeRGB(rgbData, width, height, stride, quality, out outputPtr);
+                size = Native.NativeMethods.WebPEncodeRGB(rgbData, width, height, stride, quality, out outputPtr);
             }
 
             if (size == UIntPtr.Zero || outputPtr == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to encode RGB image to WebP");
 
-            byte[] result = new byte[(int)size];
+            var result = new byte[(int)size];
             Marshal.Copy(outputPtr, result, 0, (int)size);
             return result;
         }
         finally
         {
             if (outputPtr != IntPtr.Zero)
-                NativeMethods.WebPFree(outputPtr);
+                Native.NativeMethods.WebPFree(outputPtr);
         }
     }
 
@@ -117,8 +119,8 @@ public class WebPEncoder
         if (quality < 0 || quality > 100)
             throw new ArgumentException("Quality must be between 0 and 100", nameof(quality));
 
-        int stride = width * 3;
-        IntPtr outputPtr = IntPtr.Zero;
+        var stride = width * 3;
+        var outputPtr = IntPtr.Zero;
 
         try
         {
@@ -126,24 +128,24 @@ public class WebPEncoder
             
             if (lossless)
             {
-                size = NativeMethods.WebPEncodeLosslessBGR(bgrData, width, height, stride, out outputPtr);
+                size = Native.NativeMethods.WebPEncodeLosslessBGR(bgrData, width, height, stride, out outputPtr);
             }
             else
             {
-                size = NativeMethods.WebPEncodeBGR(bgrData, width, height, stride, quality, out outputPtr);
+                size = Native.NativeMethods.WebPEncodeBGR(bgrData, width, height, stride, quality, out outputPtr);
             }
 
             if (size == UIntPtr.Zero || outputPtr == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to encode BGR image to WebP");
 
-            byte[] result = new byte[(int)size];
+            var result = new byte[(int)size];
             Marshal.Copy(outputPtr, result, 0, (int)size);
             return result;
         }
         finally
         {
             if (outputPtr != IntPtr.Zero)
-                NativeMethods.WebPFree(outputPtr);
+                Native.NativeMethods.WebPFree(outputPtr);
         }
     }
 
@@ -163,8 +165,8 @@ public class WebPEncoder
         if (quality < 0 || quality > 100)
             throw new ArgumentException("Quality must be between 0 and 100", nameof(quality));
 
-        int stride = width * 4;
-        IntPtr outputPtr = IntPtr.Zero;
+        var stride = width * 4;
+        var outputPtr = IntPtr.Zero;
 
         try
         {
@@ -172,24 +174,24 @@ public class WebPEncoder
             
             if (lossless)
             {
-                size = NativeMethods.WebPEncodeLosslessBGRA(bgraData, width, height, stride, out outputPtr);
+                size = Native.NativeMethods.WebPEncodeLosslessBGRA(bgraData, width, height, stride, out outputPtr);
             }
             else
             {
-                size = NativeMethods.WebPEncodeBGRA(bgraData, width, height, stride, quality, out outputPtr);
+                size = Native.NativeMethods.WebPEncodeBGRA(bgraData, width, height, stride, quality, out outputPtr);
             }
 
             if (size == UIntPtr.Zero || outputPtr == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to encode BGRA image to WebP");
 
-            byte[] result = new byte[(int)size];
+            var result = new byte[(int)size];
             Marshal.Copy(outputPtr, result, 0, (int)size);
             return result;
         }
         finally
         {
             if (outputPtr != IntPtr.Zero)
-                NativeMethods.WebPFree(outputPtr);
+                Native.NativeMethods.WebPFree(outputPtr);
         }
     }
 
@@ -204,19 +206,19 @@ public class WebPEncoder
         if (options == null)
             options = new WebPEncodeOptions();
 
-        var config = new NativeMethods.WebPConfig();
+        var config = new Native.NativeMethods.WebPConfig();
         
-        if (NativeMethods.WebPConfigInitInternal(ref config, options.Preset, options.Quality, WEBP_ENCODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPConfigInitInternal(ref config, options.Preset, options.Quality, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP encoder config (version mismatch)");
 
         ApplyEncodeOptions(ref config, options);
 
-        if (NativeMethods.WebPValidateConfig(ref config) == 0)
+        if (Native.NativeMethods.WebPValidateConfig(ref config) == 0)
             throw new InvalidOperationException("Invalid WebP encoder configuration");
 
-        var pic = new NativeMethods.WebPPicture();
+        var pic = new Native.NativeMethods.WebPPicture();
         
-        if (NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP picture (version mismatch)");
 
         pic.use_argb = 1;
@@ -225,35 +227,35 @@ public class WebPEncoder
 
         try
         {
-            if (NativeMethods.WebPPictureAlloc(ref pic) == 0)
+            if (Native.NativeMethods.WebPPictureAlloc(ref pic) == 0)
                 throw new InvalidOperationException("Failed to allocate WebP picture");
 
-            int stride = width * 4;
-            int importResult = options.InputFormat switch
+            var stride = width * 4;
+            var importResult = options.InputFormat switch
             {
-                WebPInputFormat.RGBA => NativeMethods.WebPPictureImportRGBA(ref pic, imageData, stride),
-                WebPInputFormat.BGRA => NativeMethods.WebPPictureImportBGRA(ref pic, imageData, stride),
-                WebPInputFormat.RGB => NativeMethods.WebPPictureImportRGB(ref pic, imageData, stride),
-                WebPInputFormat.BGR => NativeMethods.WebPPictureImportBGR(ref pic, imageData, stride),
-                _ => NativeMethods.WebPPictureImportRGBA(ref pic, imageData, stride)
+                WebPInputFormat.RGBA => Native.NativeMethods.WebPPictureImportRGBA(ref pic, imageData, stride),
+                WebPInputFormat.BGRA => Native.NativeMethods.WebPPictureImportBGRA(ref pic, imageData, stride),
+                WebPInputFormat.RGB => Native.NativeMethods.WebPPictureImportRGB(ref pic, imageData, stride),
+                WebPInputFormat.BGR => Native.NativeMethods.WebPPictureImportBGR(ref pic, imageData, stride),
+                _ => Native.NativeMethods.WebPPictureImportRGBA(ref pic, imageData, stride)
             };
 
             if (importResult == 0)
                 throw new InvalidOperationException("Failed to import image data into WebP picture");
 
-            var writer = new NativeMethods.WebPMemoryWriter();
-            NativeMethods.WebPMemoryWriterInit(ref writer);
+            var writer = new Native.NativeMethods.WebPMemoryWriter();
+            Native.NativeMethods.WebPMemoryWriterInit(ref writer);
             
             pic.writer = writer.mem;
             pic.custom_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(writer));
             Marshal.StructureToPtr(writer, pic.custom_ptr, false);
 
-            int encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
+            var encodeResult = Native.NativeMethods.WebPEncode(ref config, ref pic);
             
             if (encodeResult == 0)
                 throw new InvalidOperationException($"Failed to encode image to WebP: {pic.error_code}");
 
-            byte[] result = new byte[(int)writer.size];
+            var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             
             return result;
@@ -263,7 +265,7 @@ public class WebPEncoder
             if (pic.custom_ptr != IntPtr.Zero)
                 Marshal.FreeHGlobal(pic.custom_ptr);
             
-            NativeMethods.WebPPictureFree(ref pic);
+            Native.NativeMethods.WebPPictureFree(ref pic);
         }
     }
 
@@ -275,45 +277,45 @@ public class WebPEncoder
         if (width <= 0 || height <= 0 || targetWidth <= 0 || targetHeight <= 0)
             throw new ArgumentException("Width and height must be positive", nameof(width));
 
-        var pic = new NativeMethods.WebPPicture();
+        var pic = new Native.NativeMethods.WebPPicture();
         
-        if (NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP picture (version mismatch)");
 
         pic.use_argb = 1;
         pic.width = width;
         pic.height = height;
 
-        var config = new NativeMethods.WebPConfig();
+        var config = new Native.NativeMethods.WebPConfig();
         
-        if (NativeMethods.WebPConfigInitInternal(ref config, WebPPreset.DEFAULT, quality, WEBP_ENCODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPConfigInitInternal(ref config, WebPPreset.DEFAULT, quality, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP encoder config (version mismatch)");
 
         try
         {
-            if (NativeMethods.WebPPictureAlloc(ref pic) == 0)
+            if (Native.NativeMethods.WebPPictureAlloc(ref pic) == 0)
                 throw new InvalidOperationException("Failed to allocate WebP picture");
 
-            int stride = width * 4;
-            if (NativeMethods.WebPPictureImportRGBA(ref pic, rgbaData, stride) == 0)
+            var stride = width * 4;
+            if (Native.NativeMethods.WebPPictureImportRGBA(ref pic, rgbaData, stride) == 0)
                 throw new InvalidOperationException("Failed to import image data into WebP picture");
 
-            if (NativeMethods.WebPPictureRescale(ref pic, targetWidth, targetHeight) == 0)
+            if (Native.NativeMethods.WebPPictureRescale(ref pic, targetWidth, targetHeight) == 0)
                 throw new InvalidOperationException("Failed to scale WebP picture");
 
-            var writer = new NativeMethods.WebPMemoryWriter();
-            NativeMethods.WebPMemoryWriterInit(ref writer);
+            var writer = new Native.NativeMethods.WebPMemoryWriter();
+            Native.NativeMethods.WebPMemoryWriterInit(ref writer);
             
             pic.writer = writer.mem;
             pic.custom_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(writer));
             Marshal.StructureToPtr(writer, pic.custom_ptr, false);
 
-            int encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
+            var encodeResult = Native.NativeMethods.WebPEncode(ref config, ref pic);
             
             if (encodeResult == 0)
                 throw new InvalidOperationException($"Failed to encode image to WebP: {pic.error_code}");
 
-            byte[] result = new byte[(int)writer.size];
+            var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             
             return result;
@@ -323,7 +325,7 @@ public class WebPEncoder
             if (pic.custom_ptr != IntPtr.Zero)
                 Marshal.FreeHGlobal(pic.custom_ptr);
             
-            NativeMethods.WebPPictureFree(ref pic);
+            Native.NativeMethods.WebPPictureFree(ref pic);
         }
     }
 
@@ -335,45 +337,45 @@ public class WebPEncoder
         if (cropWidth <= 0 || cropHeight <= 0 || cropX < 0 || cropY < 0)
             throw new ArgumentException("Invalid crop parameters", nameof(cropWidth));
 
-        var pic = new NativeMethods.WebPPicture();
+        var pic = new Native.NativeMethods.WebPPicture();
         
-        if (NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP picture (version mismatch)");
 
         pic.use_argb = 1;
         pic.width = width;
         pic.height = height;
 
-        var config = new NativeMethods.WebPConfig();
+        var config = new Native.NativeMethods.WebPConfig();
         
-        if (NativeMethods.WebPConfigInitInternal(ref config, WebPPreset.DEFAULT, quality, WEBP_ENCODER_ABI_VERSION) == 0)
+        if (Native.NativeMethods.WebPConfigInitInternal(ref config, WebPPreset.DEFAULT, quality, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP encoder config (version mismatch)");
 
         try
         {
-            if (NativeMethods.WebPPictureAlloc(ref pic) == 0)
+            if (Native.NativeMethods.WebPPictureAlloc(ref pic) == 0)
                 throw new InvalidOperationException("Failed to allocate WebP picture");
 
-            int stride = width * 4;
-            if (NativeMethods.WebPPictureImportRGBA(ref pic, rgbaData, stride) == 0)
+            var stride = width * 4;
+            if (Native.NativeMethods.WebPPictureImportRGBA(ref pic, rgbaData, stride) == 0)
                 throw new InvalidOperationException("Failed to import image data into WebP picture");
 
-            if (NativeMethods.WebPPictureCrop(ref pic, cropX, cropY, cropWidth, cropHeight) == 0)
+            if (Native.NativeMethods.WebPPictureCrop(ref pic, cropX, cropY, cropWidth, cropHeight) == 0)
                 throw new InvalidOperationException("Failed to crop WebP picture");
 
-            var writer = new NativeMethods.WebPMemoryWriter();
-            NativeMethods.WebPMemoryWriterInit(ref writer);
+            var writer = new Native.NativeMethods.WebPMemoryWriter();
+            Native.NativeMethods.WebPMemoryWriterInit(ref writer);
             
             pic.writer = writer.mem;
             pic.custom_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(writer));
             Marshal.StructureToPtr(writer, pic.custom_ptr, false);
 
-            int encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
+            var encodeResult = Native.NativeMethods.WebPEncode(ref config, ref pic);
             
             if (encodeResult == 0)
                 throw new InvalidOperationException($"Failed to encode image to WebP: {pic.error_code}");
 
-            byte[] result = new byte[(int)writer.size];
+            var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             
             return result;
@@ -383,13 +385,21 @@ public class WebPEncoder
             if (pic.custom_ptr != IntPtr.Zero)
                 Marshal.FreeHGlobal(pic.custom_ptr);
             
-            NativeMethods.WebPPictureFree(ref pic);
+            Native.NativeMethods.WebPPictureFree(ref pic);
         }
     }
 
-    private static void ApplyEncodeOptions(ref NativeMethods.WebPConfig config, WebPEncodeOptions options)
+    private static void ApplyEncodeOptions(ref Native.NativeMethods.WebPConfig config, WebPEncodeOptions options)
     {
-        config.lossless = options.Lossless ? 1 : 0;
+        if (options.Lossless)
+        {
+            config.lossless = 1;
+        }
+        else
+        {
+            config.lossless = 0;
+        }
+
         config.quality = options.Quality;
         config.method = options.Method;
         config.image_hint = options.ImageHint;
@@ -400,7 +410,16 @@ public class WebPEncoder
         config.filter_strength = options.FilterStrength;
         config.filter_sharpness = options.FilterSharpness;
         config.filter_type = options.FilterType;
-        config.autofilter = options.Autofilter ? 1 : 0;
+
+        if (options.Autofilter)
+        {
+            config.autofilter = 1;
+        }
+        else
+        {
+            config.autofilter = 0;
+        }
+
         config.alpha_compression = options.AlphaCompression;
         config.alpha_filtering = options.AlphaFiltering;
         config.alpha_quality = options.AlphaQuality;
@@ -408,66 +427,14 @@ public class WebPEncoder
         config.preprocessing = options.Preprocessing;
         config.partitions = options.Partitions;
         config.partition_limit = options.PartitionLimit;
-        config.use_sharp_yuv = options.UseSharpYUV ? 1 : 0;
+
+        if (options.UseSharpYUV)
+        {
+            config.use_sharp_yuv = 1;
+        }
+        else
+        {
+            config.use_sharp_yuv = 0;
+        }
     }
-}
-
-public class WebPEncodeOptions
-{
-    public WebPEncodeOptions()
-    {
-        Preset = WebPPreset.DEFAULT;
-        Quality = 75.0f;
-        Lossless = false;
-        InputFormat = WebPInputFormat.RGBA;
-        Method = 4;
-        ImageHint = WebPImageHint.DEFAULT;
-        TargetSize = 0;
-        TargetPSNR = 0.0f;
-        Segments = 4;
-        SnsStrength = 50;
-        FilterStrength = 60;
-        FilterSharpness = 0;
-        FilterType = 0;
-        Autofilter = true;
-        AlphaCompression = 1;
-        AlphaFiltering = 1;
-        AlphaQuality = 100;
-        Pass = 1;
-        Preprocessing = 0;
-        Partitions = 3;
-        PartitionLimit = 0;
-        UseSharpYUV = false;
-    }
-
-    public WebPPreset Preset { get; set; }
-    public float Quality { get; set; }
-    public bool Lossless { get; set; }
-    public WebPInputFormat InputFormat { get; set; }
-    public int Method { get; set; }
-    public WebPImageHint ImageHint { get; set; }
-    public int TargetSize { get; set; }
-    public float TargetPSNR { get; set; }
-    public int Segments { get; set; }
-    public int SnsStrength { get; set; }
-    public int FilterStrength { get; set; }
-    public int FilterSharpness { get; set; }
-    public int FilterType { get; set; }
-    public bool Autofilter { get; set; }
-    public int AlphaCompression { get; set; }
-    public int AlphaFiltering { get; set; }
-    public int AlphaQuality { get; set; }
-    public int Pass { get; set; }
-    public int Preprocessing { get; set; }
-    public int Partitions { get; set; }
-    public int PartitionLimit { get; set; }
-    public bool UseSharpYUV { get; set; }
-}
-
-public enum WebPInputFormat
-{
-    RGBA,
-    BGRA,
-    RGB,
-    BGR
 }

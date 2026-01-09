@@ -9,7 +9,9 @@ public class LegioImageWebPEncoder : ILegioImageEncoder, ILegioImageDecoder
     public byte[] Encode(byte[] imageData, LegioImageFormat format, LegioEncodingQuality quality = LegioEncodingQuality.High)
     {
         if (format != LegioImageFormat.WebP)
+        {
             throw new NotSupportedException("WebP encoder only supports WebP format");
+        }
         
         throw new NotImplementedException("WebP encoding implementation will be added in WebPDecoder.cs and WebPEncoder.cs");
     }

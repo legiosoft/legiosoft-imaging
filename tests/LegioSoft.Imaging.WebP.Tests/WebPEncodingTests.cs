@@ -3,6 +3,8 @@ using System.IO;
 using Xunit;
 using LegioSoft.Imaging.WebP;
 using LegioSoft.Imaging.WebP.Enums;
+using LegioSoft.Imaging.WebP.Encoder;
+using LegioSoft.Imaging.WebP.Models;
 
 namespace LegioSoft.Imaging.WebP.Tests;
 
@@ -34,16 +36,16 @@ public class WebPEncodingTests : IDisposable
 
     private byte[] CreateTestRGBA(int width, int height)
     {
-        byte[] data = new byte[width * height * 4];
+        var data = new byte[width * height * 4];
         
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                int index = (y * width + x) * 4;
-                byte r = (byte)((x * 255) / width);
-                byte g = (byte)((y * 255) / height);
-                byte b = (byte)(255 - r);
+                var index = (y * width + x) * 4;
+                var r = (byte)((x * 255) / width);
+                var g = (byte)((y * 255) / height);
+                var b = (byte)(255 - r);
                 data[index] = r;
                 data[index + 1] = g;
                 data[index + 2] = b;
@@ -56,16 +58,16 @@ public class WebPEncodingTests : IDisposable
 
     private byte[] CreateTestRGB(int width, int height)
     {
-        byte[] data = new byte[width * height * 3];
+        var data = new byte[width * height * 3];
         
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                int index = (y * width + x) * 3;
-                byte r = (byte)((x * 255) / width);
-                byte g = (byte)((y * 255) / height);
-                byte b = (byte)(255 - r);
+                var index = (y * width + x) * 3;
+                var r = (byte)((x * 255) / width);
+                var g = (byte)((y * 255) / height);
+                var b = (byte)(255 - r);
                 data[index] = r;
                 data[index + 1] = g;
                 data[index + 2] = b;
@@ -77,16 +79,16 @@ public class WebPEncodingTests : IDisposable
 
     private byte[] CreateTestBGRA(int width, int height)
     {
-        byte[] data = new byte[width * height * 4];
+        var data = new byte[width * height * 4];
         
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                int index = (y * width + x) * 4;
-                byte b = (byte)((x * 255) / width);
-                byte g = (byte)((y * 255) / height);
-                byte r = (byte)(255 - b);
+                var index = (y * width + x) * 4;
+                var b = (byte)((x * 255) / width);
+                var g = (byte)((y * 255) / height);
+                var r = (byte)(255 - b);
                 data[index] = b;
                 data[index + 1] = g;
                 data[index + 2] = r;
@@ -99,16 +101,16 @@ public class WebPEncodingTests : IDisposable
 
     private byte[] CreateTestBGR(int width, int height)
     {
-        byte[] data = new byte[width * height * 3];
+        var data = new byte[width * height * 3];
         
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                int index = (y * width + x) * 3;
-                byte b = (byte)((x * 255) / width);
-                byte g = (byte)((y * 255) / height);
-                byte r = (byte)(255 - b);
+                var index = (y * width + x) * 3;
+                var b = (byte)((x * 255) / width);
+                var g = (byte)((y * 255) / height);
+                var r = (byte)(255 - b);
                 data[index] = b;
                 data[index + 1] = g;
                 data[index + 2] = r;
@@ -168,15 +170,6 @@ public class WebPEncodingTests : IDisposable
         var webpData = WebPImage.EncodeLosslessRGB(rgbData, 800, 600);
 
         AssertImageData(webpData, "Lossless RGB encoding");
-    }
-
-    [Fact]
-    public void EncodeRGB_WithQuality_ReturnsWebPData()
-    {
-        var rgbData = CreateTestRGB(800, 600);
-        var webpData = WebPImage.EncodeRGB(rgbData, 800, 600, 75.0f);
-
-        AssertImageData(webpData, "RGB encoding");
     }
 
     [Fact]

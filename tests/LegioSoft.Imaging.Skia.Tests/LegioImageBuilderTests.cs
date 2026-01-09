@@ -446,11 +446,14 @@ public class LegioImageBuilderTests
         var imageData = CreateTestPng(100, 100);
         var builder = LegioImageBuilder.Load(imageData);
         
-        var result = builder.SaveAs(format, 80);
-        
-        Assert.NotNull(result);
-        if (format != LegioImageFormat.Bmp)
+        if (format == LegioImageFormat.Bmp)
         {
+            Assert.Throws<NotSupportedException>(() => builder.SaveAs(format, 80));
+        }
+        else
+        {
+            var result = builder.SaveAs(format, 80);
+            Assert.NotNull(result);
             Assert.True(result.Length > 0);
         }
     }

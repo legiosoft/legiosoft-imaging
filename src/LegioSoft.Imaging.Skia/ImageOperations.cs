@@ -302,6 +302,9 @@ public static class ImageOperations
 
     public static byte[] SaveBitmap(SKBitmap bitmap, LegioImageFormat format, int quality = 75)
     {
+        if (format == LegioImageFormat.Bmp || format == LegioImageFormat.Gif)
+            throw new NotSupportedException($"{format} encoding is not supported in this implementation");
+        
         using var ms = new MemoryStream();
         var skiaFormat = format switch
         {

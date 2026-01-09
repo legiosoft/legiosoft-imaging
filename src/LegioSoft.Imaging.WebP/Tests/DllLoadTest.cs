@@ -1,5 +1,7 @@
 using System;
 using LegioSoft.Imaging.WebP;
+using LegioSoft.Imaging.WebP.Helpers;
+using LegioSoft.Imaging.WebP.Native;
 
 namespace LegioSoft.Imaging.WebP.Tests;
 
@@ -15,13 +17,13 @@ public class DllLoadTest
         Console.WriteLine("Test 1: WebP Detection");
         try
         {
-            byte[] validWebP = new byte[] {
+            var validWebP = new byte[] {
                 0x52, 0x49, 0x46, 0x46, // "RIFF"
                 0x00, 0x00, 0x00, 0x00, // size (placeholder)
                 0x57, 0x45, 0x42, 0x50  // "WEBP"
             };
 
-            bool isWebP = WebPHelper.IsWebP(validWebP);
+            var isWebP = WebPHelper.IsWebP(validWebP);
             Console.WriteLine($"✅ IsWebP() works: {isWebP}");
         }
         catch (Exception ex)
@@ -36,7 +38,7 @@ public class DllLoadTest
         try
         {
             // Valid WebP header (12 bytes minimum)
-            byte[] webpHeader = new byte[] {
+            var webpHeader = new byte[] {
                 0x52, 0x49, 0x46, 0x46, // RIFF
                 0x1C, 0x00, 0x00, 0x00, // Chunk size: 28 bytes
                 0x57, 0x45, 0x42, 0x50, // WEBP
@@ -45,7 +47,7 @@ public class DllLoadTest
                 0x00, 0x00, 0x00, 0x00  // VP8 data
             };
 
-            int result = NativeMethods.WebPGetInfo(webpHeader, (UIntPtr)webpHeader.Length, out int width, out int height);
+            var result = NativeMethods.WebPGetInfo(webpHeader, (UIntPtr)webpHeader.Length, out var width, out var height);
 
             if (result != 0)
             {

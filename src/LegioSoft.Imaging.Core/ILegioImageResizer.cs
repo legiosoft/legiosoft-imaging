@@ -1,39 +1,30 @@
-using System.IO;
-
 namespace LegioSoft.Imaging.Core;
 
+/// <summary>
+/// Interface for resizing images.
+/// </summary>
 public interface ILegioImageResizer
 {
+    /// <summary>
+    /// Resizes an image to the specified dimensions.
+    /// </summary>
+    /// <param name="imageData">The image data to resize.</param>
+    /// <param name="width">Target width in pixels.</param>
+    /// <param name="height">Target height in pixels.</param>
+    /// <param name="mode">Scale mode (Fit, Fill, or Stretch).</param>
+    /// <param name="quality">Resize quality (default: High).</param>
+    /// <returns>Resized image data.</returns>
     byte[] Resize(byte[] imageData, int width, int height, LegioScaleMode mode, LegioResizeQuality quality = LegioResizeQuality.High);
+
+    /// <summary>
+    /// Resizes an image stream to the specified dimensions.
+    /// </summary>
+    /// <param name="inputStream">The input stream containing image data.</param>
+    /// <param name="width">Target width in pixels.</param>
+    /// <param name="height">Target height in pixels.</param>
+    /// <param name="mode">Scale mode (Fit, Fill, or Stretch).</param>
+    /// <param name="quality">Resize quality (default: High).</param>
+    /// <param name="outputStream">Optional output stream. If null, a new stream is created.</param>
+    /// <returns>Stream containing the resized image.</returns>
     Stream Resize(Stream inputStream, int width, int height, LegioScaleMode mode, LegioResizeQuality quality = LegioResizeQuality.High, Stream? outputStream = null);
-}
-
-public interface ILegioImageCropper
-{
-    byte[] Crop(byte[] imageData, int x, int y, int width, int height);
-    Stream Crop(Stream inputStream, int x, int y, int width, int height, Stream? outputStream = null);
-}
-
-public interface ILegioImageTransformer
-{
-    byte[] Rotate(byte[] imageData, int degrees);
-    Stream Rotate(Stream inputStream, int degrees, Stream? outputStream = null);
-    
-    byte[] Flip(byte[] imageData, bool horizontal, bool vertical);
-    Stream Flip(Stream inputStream, bool horizontal, bool vertical, Stream? outputStream = null);
-}
-
-public interface ILegioImageFilter
-{
-    byte[] ApplyGrayscale(byte[] imageData);
-    Stream ApplyGrayscale(Stream inputStream, Stream? outputStream = null);
-    
-    byte[] ApplySepia(byte[] imageData);
-    Stream ApplySepia(Stream inputStream, Stream? outputStream = null);
-    
-    byte[] ApplyBlur(byte[] imageData, int radius = 3);
-    Stream ApplyBlur(Stream inputStream, int radius = 3, Stream? outputStream = null);
-    
-    byte[] ApplySharpen(byte[] imageData, int amount = 50);
-    Stream ApplySharpen(Stream inputStream, int amount = 50, Stream? outputStream = null);
 }

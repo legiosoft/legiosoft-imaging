@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using LegioSoft.Imaging.WebP;
 using LegioSoft.Imaging.WebP.Enums;
+using LegioSoft.Imaging.WebP.Helpers;
+using LegioSoft.Imaging.WebP.Models;
 
 namespace LegioSoft.Imaging.WebP.Tests;
 
@@ -48,8 +50,8 @@ public class WebPTests
             return;
         }
 
-        int passedTests = 0;
-        int failedTests = 0;
+        var passedTests = 0;
+        var failedTests = 0;
         
         try
         {
@@ -94,9 +96,9 @@ public class WebPTests
 
     private static int TestFormatDetection()
     {
-        int passed = 0;
+        var passed = 0;
         
-        byte[] validWebP = new byte[] {
+        var validWebP = new byte[] {
             0x52, 0x49, 0x46, 0x46, 
             0x00, 0x00, 0x00, 0x00, 
             0x57, 0x45, 0x42, 0x50
@@ -112,7 +114,7 @@ public class WebPTests
             PrintError("Failed to detect valid WebP header");
         }
         
-        byte[] invalidData = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
+        var invalidData = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
         
         if (!WebPImage.IsValidWebP(invalidData))
         {
@@ -135,7 +137,7 @@ public class WebPTests
             PrintError($"Format detection failed for WebP data: {format}");
         }
         
-        byte[] jpegData = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
+        var jpegData = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
         format = WebPImage.DetectFormat(jpegData);
         if (format == ImageFormat.Jpeg)
         {
@@ -152,9 +154,9 @@ public class WebPTests
 
     private static int TestInfoExtraction()
     {
-        int passed = 0;
+        var passed = 0;
         
-        byte[] webpData = CreateTestWebP();
+        var webpData = CreateTestWebP();
         
         try
         {
@@ -189,13 +191,13 @@ public class WebPTests
 
     private static int TestEncoding()
     {
-        int passed = 0;
+        var passed = 0;
         
         try
         {
-            int width = 800;
-            int height = 600;
-            byte[] rgbaData = CreateTestRGBA(width, height);
+            var width = 800;
+            var height = 600;
+            var rgbaData = CreateTestRGBA(width, height);
             
             PrintSection("Basic RGBA Encoding");
             
@@ -220,7 +222,7 @@ public class WebPTests
                 PrintSuccess($"Lossless encoding successful ({losslessData.Length} bytes)");
                 passed++;
                 
-                if (losslessData.Length > webpData.Length)
+                if (webpData != null && losslessData.Length > webpData.Length)
                 {
                     Console.WriteLine($"  Note: Lossless is {losslessData.Length - webpData.Length} bytes larger than lossy");
                 }
@@ -232,7 +234,7 @@ public class WebPTests
             
             PrintSection("RGB Encoding");
             
-            byte[] rgbData = CreateTestRGB(width, height);
+            var rgbData = CreateTestRGB(width, height);
             var rgbWebP = WebPImage.EncodeRGB(rgbData, width, height, 75.0f);
             
             if (rgbWebP != null && rgbWebP.Length > 0)
@@ -274,13 +276,13 @@ public class WebPTests
 
     private static int TestDecoding()
     {
-        int passed = 0;
+        var passed = 0;
         
         try
         {
-            int width = 800;
-            int height = 600;
-            byte[] rgbaData = CreateTestRGBA(width, height);
+            var width = 800;
+            var height = 600;
+            var rgbaData = CreateTestRGBA(width, height);
             var webpData = WebPImage.EncodeLossless(rgbaData, width, height);
             
             PrintSection("RGBA Decoding");
@@ -368,13 +370,13 @@ public class WebPTests
 
     private static int TestScaling()
     {
-        int passed = 0;
+        var passed = 0;
         
         try
         {
-            int width = 800;
-            int height = 600;
-            byte[] rgbaData = CreateTestRGBA(width, height);
+            var width = 800;
+            var height = 600;
+            var rgbaData = CreateTestRGBA(width, height);
             var webpData = WebPImage.EncodeLossless(rgbaData, width, height);
             
             PrintSection("Scale Down (400x300)");
@@ -415,13 +417,13 @@ public class WebPTests
 
     private static int TestCropping()
     {
-        int passed = 0;
+        var passed = 0;
         
         try
         {
-            int width = 800;
-            int height = 600;
-            byte[] rgbaData = CreateTestRGBA(width, height);
+            var width = 800;
+            var height = 600;
+            var rgbaData = CreateTestRGBA(width, height);
             var webpData = WebPImage.EncodeLossless(rgbaData, width, height);
             
             PrintSection("Crop to Center (400x300)");
@@ -462,13 +464,13 @@ public class WebPTests
 
     private static int TestFlipping()
     {
-        int passed = 0;
+        var passed = 0;
         
         try
         {
-            int width = 800;
-            int height = 600;
-            byte[] rgbaData = CreateTestRGBA(width, height);
+            var width = 800;
+            var height = 600;
+            var rgbaData = CreateTestRGBA(width, height);
             var webpData = WebPImage.EncodeLossless(rgbaData, width, height);
             
             PrintSection("Vertical Flip");
@@ -495,13 +497,13 @@ public class WebPTests
 
     private static int TestAdvancedEncoding()
     {
-        int passed = 0;
+        var passed = 0;
         
         try
         {
-            int width = 800;
-            int height = 600;
-            byte[] rgbaData = CreateTestRGBA(width, height);
+            var width = 800;
+            var height = 600;
+            var rgbaData = CreateTestRGBA(width, height);
             
             PrintSection("Advanced Encoding - Photo Preset");
             
@@ -584,16 +586,16 @@ public class WebPTests
 
     private static int TestFileAndStreamOperations()
     {
-        int passed = 0;
+        var passed = 0;
         
         try
         {
-            int width = 800;
-            int height = 600;
-            byte[] rgbaData = CreateTestRGBA(width, height);
+            var width = 800;
+            var height = 600;
+            var rgbaData = CreateTestRGBA(width, height);
             var webpData = WebPImage.EncodeLossless(rgbaData, width, height);
             
-            string testFile = Path.Combine(GetBaseDirectory(), "test-temp.webp");
+            var testFile = Path.Combine(GetBaseDirectory(), "test-temp.webp");
             File.WriteAllBytes(testFile, webpData);
             
             PrintSection("File Path Operations");
@@ -689,25 +691,25 @@ public class WebPTests
 
     private static byte[] CreateTestWebP()
     {
-        int width = 800;
-        int height = 600;
-        byte[] rgba = CreateTestRGBA(width, height);
+        var width = 800;
+        var height = 600;
+        var rgba = CreateTestRGBA(width, height);
         return WebPImage.EncodeLossless(rgba, width, height);
     }
 
     private static byte[] CreateTestRGBA(int width, int height)
     {
-        byte[] data = new byte[width * height * 4];
+        var data = new byte[width * height * 4];
         
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                int index = (y * width + x) * 4;
+                var index = (y * width + x) * 4;
                 
-                byte r = (byte)((x * 255) / width);
-                byte g = (byte)((y * 255) / height);
-                byte b = (byte)(255 - r);
+                var r = (byte)((x * 255) / width);
+                var g = (byte)((y * 255) / height);
+                var b = (byte)(255 - r);
                 
                 data[index] = r;
                 data[index + 1] = g;
@@ -721,17 +723,17 @@ public class WebPTests
 
     private static byte[] CreateTestRGB(int width, int height)
     {
-        byte[] data = new byte[width * height * 3];
+        var data = new byte[width * height * 3];
         
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                int index = (y * width + x) * 3;
+                var index = (y * width + x) * 3;
                 
-                byte r = (byte)((x * 255) / width);
-                byte g = (byte)((y * 255) / height);
-                byte b = (byte)(255 - r);
+                var r = (byte)((x * 255) / width);
+                var g = (byte)((y * 255) / height);
+                var b = (byte)(255 - r);
                 
                 data[index] = r;
                 data[index + 1] = g;

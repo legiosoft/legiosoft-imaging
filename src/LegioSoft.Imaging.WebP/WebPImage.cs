@@ -1,6 +1,11 @@
 using System;
 using System.IO;
 using LegioSoft.Imaging.WebP.Enums;
+using LegioSoft.Imaging.WebP.Models;
+using LegioSoft.Imaging.WebP.Decoder;
+using LegioSoft.Imaging.WebP.Encoder;
+using LegioSoft.Imaging.WebP.Helpers;
+using LegioSoft.Imaging.WebP.Native;
 
 namespace LegioSoft.Imaging.WebP;
 
@@ -8,45 +13,54 @@ public static class WebPImage
 {
     public static byte[] Encode(byte[] rgbaData, int width, int height, float quality = 75.0f)
     {
-        return WebPEncoder.Encode(rgbaData, width, height, quality, false);
+        return Encoder.WebPEncoder.Encode(rgbaData, width, height, quality, false);
     }
 
     public static byte[] Encode(byte[] rgbaData, int width, int height, bool lossless)
     {
-        return WebPEncoder.Encode(rgbaData, width, height, lossless ? 100.0f : 75.0f, lossless);
+        float quality;
+        if (lossless)
+        {
+                quality = 100.0f;
+        }
+        else
+        {
+                quality = 75.0f;
+        }
+        return Encoder.WebPEncoder.Encode(rgbaData, width, height, quality, lossless);
     }
 
     public static byte[] EncodeRGB(byte[] rgbData, int width, int height, float quality = 75.0f)
     {
-        return WebPEncoder.EncodeRGB(rgbData, width, height, quality, false);
+        return Encoder.WebPEncoder.EncodeRGB(rgbData, width, height, quality, false);
     }
 
     public static byte[] EncodeLossless(byte[] rgbaData, int width, int height)
     {
-        return WebPEncoder.Encode(rgbaData, width, height, 100.0f, true);
+        return Encoder.WebPEncoder.Encode(rgbaData, width, height, 100.0f, true);
     }
 
     public static byte[] EncodeLosslessRGB(byte[] rgbData, int width, int height)
     {
-        return WebPEncoder.EncodeRGB(rgbData, width, height, 100.0f, true);
+        return Encoder.WebPEncoder.EncodeRGB(rgbData, width, height, 100.0f, true);
     }
 
     public static byte[] EncodeAdvanced(byte[] imageData, int width, int height, WebPEncodeOptions options)
     {
-        return WebPEncoder.EncodeAdvanced(imageData, width, height, options);
+        return Encoder.WebPEncoder.EncodeAdvanced(imageData, width, height, options);
     }
 
     public static void EncodeToFile(string inputPath, string outputPath, float quality = 75.0f)
     {
-        byte[] rgbaData = File.ReadAllBytes(inputPath);
-        WebPInfo info = GetImageDimensions(rgbaData);
-        byte[] webpData = Encode(rgbaData, info.Width, info.Height, quality);
+        var rgbaData = File.ReadAllBytes(inputPath);
+        var info = GetImageDimensions(rgbaData);
+        var webpData = Encode(rgbaData, info.Width, info.Height, quality);
         File.WriteAllBytes(outputPath, webpData);
     }
 
     public static void EncodeToFileRGBA(byte[] rgbaData, int width, int height, string outputPath, float quality = 75.0f)
     {
-        byte[] webpData = Encode(rgbaData, width, height, quality);
+        var webpData = Encode(rgbaData, width, height, quality);
         File.WriteAllBytes(outputPath, webpData);
     }
 
@@ -63,8 +77,8 @@ public static class WebPImage
         if (!File.Exists(filePath))
             throw new FileNotFoundException("WebP file not found", filePath);
 
-        byte[] data = File.ReadAllBytes(filePath);
-        return WebPDecoder.Decode(data, out _, out _, colorspace);
+        var data = File.ReadAllBytes(filePath);
+        return Decoder.WebPDecoder.Decode(data, out _, out _, colorspace);
     }
 
     public static byte[] Decode(Stream stream)
@@ -77,8 +91,8 @@ public static class WebPImage
         if (stream == null)
             throw new ArgumentNullException(nameof(stream));
 
-        byte[] data = ReadStream(stream);
-        return WebPDecoder.Decode(data, out _, out _, colorspace);
+        var data = ReadStream(stream);
+        return Decoder.WebPDecoder.Decode(data, out _, out _, colorspace);
     }
 
     public static byte[] Decode(byte[] webpData)
@@ -91,18 +105,18 @@ public static class WebPImage
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
 
-        return WebPDecoder.Decode(webpData, out _, out _, colorspace);
+        return Decoder.WebPDecoder.Decode(webpData, out _, out _, colorspace);
     }
 
     public static void DecodeToFile(string inputPath, string outputPath)
     {
-        byte[] decodedData = Decode(inputPath);
+        var decodedData = Decode(inputPath);
         File.WriteAllBytes(outputPath, decodedData);
     }
 
     public static void DecodeToFile(byte[] webpData, string outputPath, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
-        byte[] decodedData = Decode(webpData, colorspace);
+        var decodedData = Decode(webpData, colorspace);
         File.WriteAllBytes(outputPath, decodedData);
     }
 
@@ -114,8 +128,8 @@ public static class WebPImage
         if (!File.Exists(filePath))
             throw new FileNotFoundException("WebP file not found", filePath);
 
-        byte[] data = File.ReadAllBytes(filePath);
-        return WebPDecoder.GetInfo(data);
+        var data = File.ReadAllBytes(filePath);
+        return Decoder.WebPDecoder.GetInfo(data);
     }
 
     public static WebPInfo GetInfo(Stream stream)
@@ -123,8 +137,8 @@ public static class WebPImage
         if (stream == null)
             throw new ArgumentNullException(nameof(stream));
 
-        byte[] data = ReadStream(stream);
-        return WebPDecoder.GetInfo(data);
+        var data = ReadStream(stream);
+        return Decoder.WebPDecoder.GetInfo(data);
     }
 
     public static WebPInfo GetInfo(byte[] webpData)
@@ -132,7 +146,7 @@ public static class WebPImage
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
 
-        return WebPDecoder.GetInfo(webpData);
+        return Decoder.WebPDecoder.GetInfo(webpData);
     }
 
     public static byte[] Scale(byte[] webpData, int targetWidth, int targetHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
@@ -140,18 +154,18 @@ public static class WebPImage
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
 
-        return WebPDecoder.DecodeWithScaling(webpData, targetWidth, targetHeight, colorspace);
+        return Decoder.WebPDecoder.DecodeWithScaling(webpData, targetWidth, targetHeight, colorspace);
     }
 
     public static byte[] Scale(string filePath, int targetWidth, int targetHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
-        byte[] data = File.ReadAllBytes(filePath);
+        var data = File.ReadAllBytes(filePath);
         return Scale(data, targetWidth, targetHeight, colorspace);
     }
 
     public static byte[] Scale(Stream stream, int targetWidth, int targetHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
-        byte[] data = ReadStream(stream);
+        var data = ReadStream(stream);
         return Scale(data, targetWidth, targetHeight, colorspace);
     }
 
@@ -160,18 +174,18 @@ public static class WebPImage
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
 
-        return WebPDecoder.DecodeWithCropping(webpData, cropX, cropY, cropWidth, cropHeight, colorspace);
+        return Decoder.WebPDecoder.DecodeWithCropping(webpData, cropX, cropY, cropWidth, cropHeight, colorspace);
     }
 
     public static byte[] Crop(string filePath, int cropX, int cropY, int cropWidth, int cropHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
-        byte[] data = File.ReadAllBytes(filePath);
+        var data = File.ReadAllBytes(filePath);
         return Crop(data, cropX, cropY, cropWidth, cropHeight, colorspace);
     }
 
     public static byte[] Crop(Stream stream, int cropX, int cropY, int cropWidth, int cropHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
-        byte[] data = ReadStream(stream);
+        var data = ReadStream(stream);
         return Crop(data, cropX, cropY, cropWidth, cropHeight, colorspace);
     }
 
@@ -180,29 +194,29 @@ public static class WebPImage
         if (webpData == null || webpData.Length == 0)
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
 
-        return WebPDecoder.DecodeWithFlip(webpData, colorspace);
+        return Decoder.WebPDecoder.DecodeWithFlip(webpData, colorspace);
     }
 
     public static byte[] Flip(string filePath, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
-        byte[] data = File.ReadAllBytes(filePath);
+        var data = File.ReadAllBytes(filePath);
         return Flip(data, colorspace);
     }
 
     public static byte[] Flip(Stream stream, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
-        byte[] data = ReadStream(stream);
+        var data = ReadStream(stream);
         return Flip(data, colorspace);
     }
 
     public static byte[] EncodeWithScaling(byte[] rgbaData, int width, int height, int targetWidth, int targetHeight, float quality = 75.0f)
     {
-        return WebPEncoder.EncodeWithScaling(rgbaData, width, height, targetWidth, targetHeight, quality);
+        return Encoder.WebPEncoder.EncodeWithScaling(rgbaData, width, height, targetWidth, targetHeight, quality);
     }
 
     public static byte[] EncodeWithCropping(byte[] rgbaData, int width, int height, int cropX, int cropY, int cropWidth, int cropHeight, float quality = 75.0f)
     {
-        return WebPEncoder.EncodeWithCropping(rgbaData, width, height, cropX, cropY, cropWidth, cropHeight, quality);
+        return Encoder.WebPEncoder.EncodeWithCropping(rgbaData, width, height, cropX, cropY, cropWidth, cropHeight, quality);
     }
 
     public static bool IsValidWebP(byte[] data)
@@ -217,10 +231,10 @@ public static class WebPImage
 
     public static string GetVersion()
     {
-        int version = NativeMethods.WebPGetDecoderVersion();
-        int major = (version >> 16) & 0xFF;
-        int minor = (version >> 8) & 0xFF;
-        int patch = version & 0xFF;
+        var version = NativeMethods.WebPGetDecoderVersion();
+        var major = (version >> 16) & 0xFF;
+        var minor = (version >> 8) & 0xFF;
+        var patch = version & 0xFF;
         return $"{major}.{minor}.{patch}";
     }
 
@@ -240,8 +254,8 @@ public static class WebPImage
 
     private static WebPInfo GetImageDimensions(byte[] rgbaData)
     {
-        int pixelCount = rgbaData.Length / 4;
-        int size = (int)Math.Sqrt(pixelCount);
+        var pixelCount = rgbaData.Length / 4;
+        var size = (int)Math.Sqrt(pixelCount);
         return new WebPInfo
         {
             Width = size,

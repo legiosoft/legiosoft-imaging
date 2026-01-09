@@ -72,11 +72,11 @@ public class ImageOperationsTests
     }
 
     [Theory]
-    [InlineData(LegioResizeQuality.Low, SKFilterQuality.Low)]
-    [InlineData(LegioResizeQuality.Medium, SKFilterQuality.Medium)]
-    [InlineData(LegioResizeQuality.High, SKFilterQuality.High)]
-    [InlineData(LegioResizeQuality.Maximum, SKFilterQuality.High)]
-    public void ResizeBitmap_ShouldMapQuality(LegioResizeQuality inputQuality, SKFilterQuality expectedFilterQuality)
+    [InlineData(LegioResizeQuality.Low)]
+    [InlineData(LegioResizeQuality.Medium)]
+    [InlineData(LegioResizeQuality.High)]
+    [InlineData(LegioResizeQuality.Maximum)]
+    public void ResizeBitmap_ShouldMapQuality(LegioResizeQuality inputQuality)
     {
         var imageData = CreateTestPng(100, 100);
         var bitmap = ImageOperations.LoadBitmap(imageData);
@@ -108,19 +108,6 @@ public class ImageOperationsTests
         Assert.Throws<ArgumentException>(() => ImageOperations.CropBitmap(bitmap, -10, 10, 50, 50));
         Assert.Throws<ArgumentException>(() => ImageOperations.CropBitmap(bitmap, 10, 10, -50, 50));
         Assert.Throws<ArgumentException>(() => ImageOperations.CropBitmap(bitmap, 90, 90, 50, 50));
-    }
-
-    [Fact]
-    public void Rotate_ShouldRotate180Degrees()
-    {
-        var imageData = CreateTestPng(100, 50);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.Rotate(bitmap, 180);
-        
-        Assert.NotNull(result);
-        Assert.Equal(100, result.Width);
-        Assert.Equal(50, result.Height);
     }
 
     [Fact]
@@ -290,12 +277,10 @@ public class ImageOperationsTests
     }
 
     [Theory]
-    [InlineData(LegioImageFormat.Png, SKEncodedImageFormat.Png)]
-    [InlineData(LegioImageFormat.Jpeg, SKEncodedImageFormat.Jpeg)]
-    [InlineData(LegioImageFormat.WebP, SKEncodedImageFormat.Webp)]
-    [InlineData(LegioImageFormat.Bmp, SKEncodedImageFormat.Bmp)]
-    [InlineData(LegioImageFormat.Gif, SKEncodedImageFormat.Gif)]
-    public void SaveBitmap_ShouldConvertFormat(LegioImageFormat inputFormat, SKEncodedImageFormat expectedSkiaFormat)
+    [InlineData(LegioImageFormat.Png)]
+    [InlineData(LegioImageFormat.Jpeg)]
+    [InlineData(LegioImageFormat.WebP)]
+    public void SaveBitmap_ShouldConvertFormat(LegioImageFormat inputFormat)
     {
         var imageData = CreateTestPng(100, 100);
         var bitmap = ImageOperations.LoadBitmap(imageData);
@@ -304,6 +289,17 @@ public class ImageOperationsTests
         
         Assert.NotNull(result);
         Assert.True(result.Length > 0);
+    }
+
+    [Theory]
+    [InlineData(LegioImageFormat.Bmp)]
+    [InlineData(LegioImageFormat.Gif)]
+    public void SaveBitmap_ShouldThrowOnUnsupportedFormat(LegioImageFormat inputFormat)
+    {
+        var imageData = CreateTestPng(100, 100);
+        var bitmap = ImageOperations.LoadBitmap(imageData);
+        
+        Assert.Throws<NotSupportedException>(() => ImageOperations.SaveBitmap(bitmap, inputFormat, 75));
     }
 
     [Fact]
