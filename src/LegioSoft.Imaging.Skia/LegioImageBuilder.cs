@@ -1,50 +1,67 @@
-using System;
-using System.IO;
 using LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Skia.Core;
+using LegioSoft.Imaging.Skia.Operations;
 using SkiaSharp;
 
 namespace LegioSoft.Imaging.Skia;
 
+/// <summary>
+/// Fluent builder for image processing operations with automatic memory management.
+/// </summary>
+/// <remarks>
+/// Operations are executed in exact order they're chained. For example,
+/// .Rotate(90).Crop(10, 10, 100, 100) rotates the original image first,
+/// then crops the rotated result. All intermediate bitmaps are automatically disposed
+/// via swap-and-dispose pattern. Only call .Save() or .SaveAs() to ensure
+/// the final bitmap is properly released.
+/// </remarks>
+/// <example>
+/// <code>
+/// // Resize and enhance photo
+/// var result = LegioImageBuilder.Load("photo.jpg")
+///     .Resize(1920, 1080, LegioScaleMode.Fit)
+///     .Brightness(30)
+///     .Contrast(20)
+///     .Sharpen(60)
+///     .Save("enhanced.jpg", quality: 90);
+/// </code>
+/// </example>
 public class LegioImageBuilder
 {
-    private byte[] _imageData;
-    private LegioImageFormat _format;
-    private int? _targetWidth;
-    private int? _targetHeight;
-    private LegioScaleMode _scaleMode;
-    private int? _cropX;
-    private int? _cropY;
-    private int? _cropWidth;
-    private int? _cropHeight;
-    private int _rotateDegrees;
-    private bool _flipHorizontal;
-    private bool _flipVertical;
-    private bool _applyGrayscale;
-    private bool _applySepia;
-    private int _blurRadius;
-    private int _sharpenAmount;
-    private bool _hasFilter;
-    private bool _hasSharpen;
-    private int? _brightnessAmount;
-    private int? _contrastAmount;
-    private bool _invertColors;
-    private LegioResizeQuality _resizeQuality;
+    private readonly byte[] _imageData;
+    private readonly LegioImageFormat _format;
+    private readonly List<Func<SKBitmap, SKBitmap>> _operations;
     private int _saveQuality = 75;
+
+    private readonly int _virtualWidth;
+    private readonly int _virtualHeight;
 
     private LegioImageBuilder(byte[] imageData)
     {
         _imageData = imageData ?? throw new ArgumentNullException(nameof(imageData));
-        var detectedFormat = ImageOperations.DetectFormat(imageData);
-        _format = detectedFormat;
-        _scaleMode = LegioScaleMode.Fit;
-        _resizeQuality = LegioResizeQuality.High;
+        _format = FormatDetector.DetectFormat(imageData);
+        _operations = new List<Func<SKBitmap, SKBitmap>>();
+        _virtualWidth = 0;
+        _virtualHeight = 0;
     }
 
+    /// <summary>
+    /// Creates a builder from an image byte array.
+    /// </summary>
+    /// <param name="imageData">Image data in a supported format (PNG, JPEG, WebP, BMP, GIF).</param>
+    /// <returns>A new builder instance configured with the image data.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when imageData is null.</exception>
     public static LegioImageBuilder Load(byte[] imageData)
     {
         return new LegioImageBuilder(imageData);
     }
 
+    /// <summary>
+    /// Creates a builder from a file path.
+    /// </summary>
+    /// <param name="filePath">Path to the image file.</param>
+    /// <returns>A new builder instance loaded with the image file.</returns>
+    /// <exception cref="FileNotFoundException">Thrown when file does not exist.</exception>
     public static LegioImageBuilder Load(string filePath)
     {
         if (!File.Exists(filePath))
@@ -52,6 +69,16 @@ public class LegioImageBuilder
         return Load(File.ReadAllBytes(filePath));
     }
 
+    /// <summary>
+    /// Creates a builder from a stream.
+    /// </summary>
+    /// <param name="stream">A readable stream containing image data.</param>
+    /// <returns>A new builder instance loaded with the stream data.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when stream is null.</exception>
+    /// <remarks>
+    /// The entire stream is read into memory. For large files or streams that
+    /// cannot be reused, consider loading to byte array first.
+    /// </remarks>
     public static LegioImageBuilder Load(Stream stream)
     {
         if (stream == null) throw new ArgumentNullException(nameof(stream));
@@ -60,159 +87,301 @@ public class LegioImageBuilder
         return Load(ms.ToArray());
     }
 
+    /// <summary>
+    /// Adds a resize operation to the processing chain.
+    /// </summary>
+    /// <param name="width">Target width in pixels.</param>
+    /// <param name="height">Target height in pixels.</param>
+    /// <param name="mode">How to handle aspect ratio. Defaults to Fit.</param>
+    /// <param name="quality">Resize quality level. Defaults to High.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when width or height is not positive.</exception>
+    /// <remarks>
+    /// Use ResizeToWidth or ResizeToHeight to automatically maintain aspect ratio.
+    /// </remarks>
     public LegioImageBuilder Resize(int width, int height, LegioScaleMode mode = LegioScaleMode.Fit, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (width <= 0 || height <= 0)
             throw new ArgumentException("Width and height must be positive", nameof(width));
         
-        _targetWidth = width;
-        _targetHeight = height;
-        _scaleMode = mode;
-        _resizeQuality = quality;
+        _operations.Add(source => ImageResizer.ResizeBitmap(source, width, height, quality));
         return this;
     }
 
+    /// <summary>
+    /// Resizes image to a specified width while maintaining aspect ratio.
+    /// </summary>
+    /// <param name="width">Target width in pixels.</param>
+    /// <param name="quality">Resize quality level. Defaults to High.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when width is not positive.</exception>
+    /// <remarks>
+    /// Uses virtual dimensions (updated by previous operations) for calculations instead of GetInfo().
+    /// </remarks>
     public LegioImageBuilder ResizeToWidth(int width, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (width <= 0)
             throw new ArgumentException("Width must be positive", nameof(width));
         
-        var info = GetInfo();
-        var ratio = (double)width / info.Width;
-        var newHeight = (int)(info.Height * ratio);
+        var ratio = (double)width / _virtualWidth;
+        var newHeight = (int)(_virtualHeight * ratio);
         
-        return Resize(width, newHeight, LegioScaleMode.Stretch, quality);
+        _operations.Add(source => ImageResizer.ResizeBitmap(source, width, newHeight, quality));
+        return this;
     }
 
+    /// <summary>
+    /// Resizes image to a specified height while maintaining aspect ratio.
+    /// </summary>
+    /// <param name="height">Target height in pixels.</param>
+    /// <param name="quality">Resize quality level. Defaults to High.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when height is not positive.</exception>
+    /// <remarks>
+    /// Uses virtual dimensions (updated by previous operations) for calculations instead of GetInfo().
+    /// </remarks>
     public LegioImageBuilder ResizeToHeight(int height, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (height <= 0)
             throw new ArgumentException("Height must be positive", nameof(height));
         
-        var info = GetInfo();
-        var ratio = (double)height / info.Height;
-        var newWidth = (int)(info.Width * ratio);
+        var ratio = (double)height / _virtualHeight;
+        var newWidth = (int)(_virtualWidth * ratio);
         
-        return Resize(newWidth, height, LegioScaleMode.Stretch, quality);
+        _operations.Add(source => ImageResizer.ResizeBitmap(source, newWidth, height, quality));
+        return this;
     }
 
+    /// <summary>
+    /// Scales image by a factor while maintaining aspect ratio.
+    /// </summary>
+    /// <param name="factor">Scale multiplier. 1.0 = original size, 0.5 = half size.</param>
+    /// <param name="quality">Resize quality level. Defaults to High.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when factor is not positive.</exception>
+    /// <remarks>
+    /// Uses virtual dimensions (updated by previous operations) for calculations instead of GetInfo().
+    /// </remarks>
     public LegioImageBuilder Scale(double factor, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (factor <= 0)
             throw new ArgumentException("Scale factor must be positive", nameof(factor));
         
-        var info = GetInfo();
-        var newWidth = (int)(info.Width * factor);
-        var newHeight = (int)(info.Height * factor);
+        var newWidth = (int)(_virtualWidth * factor);
+        var newHeight = (int)(_virtualHeight * factor);
         
-        return Resize(newWidth, newHeight, LegioScaleMode.Stretch, quality);
+        _operations.Add(source => ImageResizer.ResizeBitmap(source, newWidth, newHeight, quality));
+        return this;
     }
 
+    /// <summary>
+    /// Adds a crop operation to the processing chain.
+    /// </summary>
+    /// <param name="x">X coordinate of the crop origin (top-left corner).</param>
+    /// <param name="y">Y coordinate of the crop origin (top-left corner).</param>
+    /// <param name="width">Width of the crop area in pixels.</param>
+    /// <param name="height">Height of the crop area in pixels.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when width or height is not positive.</exception>
     public LegioImageBuilder Crop(int x, int y, int width, int height)
     {
         if (width <= 0 || height <= 0)
             throw new ArgumentException("Width and height must be positive", nameof(width));
         
-        _cropX = x;
-        _cropY = y;
-        _cropWidth = width;
-        _cropHeight = height;
+        _operations.Add(source => ImageCropper.CropBitmap(source, x, y, width, height));
         return this;
     }
 
+    /// <summary>
+    /// Adds a rotation operation to the processing chain.
+    /// </summary>
+    /// <param name="degrees">Rotation angle. Must be 0, 90, 180, or 270.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when degrees is not a valid rotation value.</exception>
     public LegioImageBuilder Rotate(int degrees)
     {
         if (degrees != 0 && degrees != 90 && degrees != 180 && degrees != 270)
             throw new ArgumentException("Rotation must be 0, 90, 180, or 270 degrees", nameof(degrees));
+
+        if (degrees != 0)
+        {
+            _operations.Add(source => ImageTransformer.Rotate(source, degrees));
+        }
         
-        _rotateDegrees = degrees;
         return this;
     }
 
+    /// <summary>
+    /// Adds a flip operation to the processing chain.
+    /// </summary>
+    /// <param name="horizontal">Mirror horizontally. Defaults to true.</param>
+    /// <param name="vertical">Mirror vertically. Defaults to false.</param>
+    /// <returns>This builder for method chaining.</returns>
     public LegioImageBuilder Flip(bool horizontal = true, bool vertical = false)
     {
-        _flipHorizontal = horizontal;
-        _flipVertical = vertical;
+        if (horizontal || vertical)
+        {
+            _operations.Add(source => ImageTransformer.Flip(source, horizontal, vertical));
+        }
+        
         return this;
     }
 
+    /// <summary>
+    /// Converts an image to grayscale.
+    /// </summary>
+    /// <returns>This builder for method chaining.</returns>
+    /// <remarks>
+    /// Uses GPU-accelerated color matrix filtering for performance.
+    /// </remarks>
     public LegioImageBuilder Grayscale()
     {
-        _applyGrayscale = true;
+        _operations.Add(ImageFilters.ApplyGrayscale);
         return this;
     }
 
+    /// <summary>
+    /// Applies sepia toning to an image.
+    /// </summary>
+    /// <returns>This builder for method chaining.</returns>
+    /// <remarks>
+    /// Uses GPU-accelerated color matrix filtering for performance.
+    /// </remarks>
     public LegioImageBuilder Sepia()
     {
-        _applySepia = true;
+        _operations.Add(ImageFilters.ApplySepia);
         return this;
     }
 
+    /// <summary>
+    /// Applies a Gaussian blur to an image.
+    /// </summary>
+    /// <param name="radius">Blur radius in pixels. Range 1-20, default 5.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when radius is outside the valid range.</exception>
+    /// <remarks>
+    /// Uses hardware-accelerated blur filtering. Larger values create softer blur
+    /// but increase processing time.
+    /// </remarks>
     public LegioImageBuilder Blur(int radius = 5)
     {
         if (radius <= 0 || radius > 20)
             throw new ArgumentException("Blur radius must be between 1 and 20", nameof(radius));
-        
-        _blurRadius = radius;
-        _hasFilter = true;
+
+        _operations.Add(source => ImageFilters.ApplyBlur(source, radius));
         return this;
     }
 
+    /// <summary>
+    /// Sharpens an image.
+    /// </summary>
+    /// <param name="amount">Sharpening intensity. Range 0-100, default 50.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when amount is outside the valid range.</exception>
     public LegioImageBuilder Sharpen(int amount = 50)
     {
         if (amount < 0 || amount > 100)
             throw new ArgumentException("Sharpen amount must be between 0 and 100", nameof(amount));
-        
-        _sharpenAmount = amount;
-        _hasSharpen = true;
+
+        _operations.Add(source => ImageFilters.ApplySharpen(source, amount));
         return this;
     }
 
+    /// <summary>
+    /// Adjusts the image brightness.
+    /// </summary>
+    /// <param name="amount">Brightness adjustment. Range -255 to 255, default 0.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when amount is outside the valid range.</exception>
+    /// <remarks>
+    /// Positive values lighten the image, negative values darken it.
+    /// Uses GPU-accelerated color matrix filtering for performance.
+    /// </remarks>
     public LegioImageBuilder Brightness(int amount)
     {
         if (amount < -255 || amount > 255)
             throw new ArgumentException("Brightness must be between -255 and 255", nameof(amount));
-        
-        _brightnessAmount = amount;
+
+        _operations.Add(source => ImageColorAdjustments.ApplyBrightness(source, amount));
         return this;
     }
 
+    /// <summary>
+    /// Adjusts the image contrast.
+    /// </summary>
+    /// <param name="amount">Contrast adjustment. Range -100 to 100, default 0.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when amount is outside the valid range.</exception>
+    /// <remarks>
+    /// Positive values increase contrast, negative values decrease it.
+    /// Uses GPU-accelerated color matrix filtering for performance.
+    /// </remarks>
     public LegioImageBuilder Contrast(int amount)
     {
-        if (amount < -100 || amount > 100)
+        if (amount is < -100 || amount > 100)
             throw new ArgumentException("Contrast must be between -100 and 100", nameof(amount));
-        
-        _contrastAmount = amount;
+
+        _operations.Add(source => ImageColorAdjustments.ApplyContrast(source, amount));
         return this;
     }
 
+    /// <summary>
+    /// Inverts all colors in the image.
+    /// </summary>
+    /// <returns>This builder for method chaining.</returns>
+    /// <remarks>
+    /// Creates a negative image effect (photographic negative).
+    /// Uses GPU-accelerated color matrix filtering for performance.
+    /// </remarks>
     public LegioImageBuilder Invert()
     {
-        _invertColors = true;
+        _operations.Add(ImageColorAdjustments.ApplyInvert);
         return this;
     }
 
+    /// <summary>
+    /// Sets the quality level for subsequent save operations.
+    /// </summary>
+    /// <param name="quality">Encoding quality. Range 0-100, default 75.</param>
+    /// <returns>This builder for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when quality is outside the valid range.</exception>
+    /// <remarks>
+    /// Quality effects vary by format:
+    /// - JPEG/WebP: Lower = smaller files with more artifacts
+    /// - PNG/BMP/GIF: Always 100 (lossless), parameter ignored
+    /// Recommended ranges: JPEG 70-85, WebP 80-90
+    /// </remarks>
     public LegioImageBuilder Quality(int quality)
     {
         if (quality < 0 || quality > 100)
             throw new ArgumentException("Quality must be between 0 and 100", nameof(quality));
-        
+
         _saveQuality = quality;
         return this;
     }
 
+    /// <summary>
+    /// Executes all operations and saves the result as a byte array.
+    /// </summary>
+    /// <param name="format">Target image format.</param>
+    /// <param name="quality">Encoding quality (0-100). Overrides builder default.</param>
+    /// <returns>Encoded image data.</returns>
+    /// <remarks>
+    /// The final bitmap is automatically disposed after encoding.
+    /// </remarks>
     public byte[] SaveAs(LegioImageFormat format, int? quality = null)
     {
         var finalQuality = quality ?? _saveQuality;
-        var result = ApplyOperations();
-        return ImageOperations.SaveBitmap(result, format, finalQuality);
+        using var result = ApplyOperations();
+        return ImageSaver.SaveBitmap(result, format, finalQuality);
     }
 
-    public byte[] Save()
-    {
-        return SaveAs(_format, _saveQuality);
-    }
-
+    /// <summary>
+    /// Executes all operations and saves to a file.
+    /// </summary>
+    /// <param name="filePath">Output file path.</param>
+    /// <param name="format">Target format. Defaults to the original format.</param>
+    /// <param name="quality">Encoding quality (0-100). Overrides builder default.</param>
     public void Save(string filePath, LegioImageFormat? format = null, int? quality = null)
     {
         var targetFormat = format ?? _format;
@@ -220,90 +389,53 @@ public class LegioImageBuilder
         File.WriteAllBytes(filePath, data);
     }
 
+    /// <summary>
+    /// Executes all operations and returns an encoded stream.
+    /// </summary>
+    /// <param name="format">Target image format.</param>
+    /// <param name="quality">Encoding quality (0-100). Overrides builder default.</param>
+    /// <returns>A MemoryStream containing the encoded image data.</returns>
+    /// <remarks>
+    /// The caller is responsible for disposing the returned stream.
+    /// </remarks>
     public Stream SaveAsStream(LegioImageFormat format, int? quality = null)
     {
         var data = SaveAs(format, quality);
         return new MemoryStream(data);
     }
 
+    /// <summary>
+    /// Gets image metadata without full decoding.
+    /// </summary>
+    /// <returns>Image information including dimensions, format, and size.</returns>
+    /// <remarks>
+    /// Uses SKCodec for efficient header-only reading, avoiding full pixel decoding.
+    /// </remarks>
     public LegioImageInfo GetInfo()
     {
-        var bitmap = ImageOperations.LoadBitmap(_imageData);
-        return new LegioImageInfo
-        {
-            Width = bitmap.Width,
-            Height = bitmap.Height,
-            Format = _format,
-            HasAlpha = bitmap.AlphaType != SKAlphaType.Opaque,
-            ByteSize = _imageData.Length
-        };
+        return ImageMetadataReader.GetInfo(_imageData);
     }
 
     private SKBitmap ApplyOperations()
     {
-        var bitmap = ImageOperations.LoadBitmap(_imageData);
+        SKBitmap? currentBitmap = null;
 
-        if (_cropX.HasValue)
+        try
         {
-            var cropX = _cropX!.Value;
-            var cropY = _cropY!.Value;
-            var cropWidth = _cropWidth!.Value;
-            var cropHeight = _cropHeight!.Value;
-            bitmap = ImageOperations.CropBitmap(bitmap, cropX, cropY, cropWidth, cropHeight);
-        }
+            currentBitmap = ImageLoader.LoadBitmap(_imageData);
 
-        if (_targetWidth.HasValue)
+            foreach (var operation in _operations)
+            {
+                using var previousBitmap = currentBitmap;
+                currentBitmap = operation(currentBitmap);
+            }
+
+            return currentBitmap;
+        }
+        catch
         {
-            var targetWidth = _targetWidth!.Value;
-            var targetHeight = _targetHeight!.Value;
-            bitmap = ImageOperations.ResizeBitmap(bitmap, targetWidth, targetHeight, _resizeQuality);
+            currentBitmap?.Dispose();
+            throw;
         }
-
-        if (_rotateDegrees != 0)
-        {
-            bitmap = ImageOperations.Rotate(bitmap, _rotateDegrees);
-        }
-
-        if (_flipHorizontal || _flipVertical)
-        {
-            bitmap = ImageOperations.Flip(bitmap, _flipHorizontal, _flipVertical);
-        }
-
-        if (_invertColors)
-        {
-            bitmap = ImageOperations.ApplyInvert(bitmap);
-        }
-
-        if (_brightnessAmount.HasValue)
-        {
-            bitmap = ImageOperations.ApplyBrightness(bitmap, _brightnessAmount.Value);
-        }
-
-        if (_contrastAmount.HasValue)
-        {
-            bitmap = ImageOperations.ApplyContrast(bitmap, _contrastAmount.Value);
-        }
-
-        if (_applyGrayscale)
-        {
-            bitmap = ImageOperations.ApplyGrayscale(bitmap);
-        }
-
-        if (_applySepia)
-        {
-            bitmap = ImageOperations.ApplySepia(bitmap);
-        }
-
-        if (_hasSharpen)
-        {
-            bitmap = ImageOperations.ApplySharpen(bitmap, _sharpenAmount);
-        }
-
-        if (_hasFilter)
-        {
-            bitmap = ImageOperations.ApplyBlur(bitmap, _blurRadius);
-        }
-
-        return bitmap;
     }
 }

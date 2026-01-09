@@ -282,6 +282,18 @@ LegioImageBuilder.Load("product.jpg")
 
 ### LegioSoft.Imaging.Core
 
+Lightweight core package (~20KB) with interfaces, enums, and base types.
+
+Use FormatDetector to identify image format:
+
+```csharp
+using LegioSoft.Imaging.Core;
+
+var imageData = File.ReadAllBytes("image.jpg");
+var format = FormatDetector.DetectFormat(imageData);
+Console.WriteLine($"Format: {format}"); // Jpeg
+```
+
 Lightweight core package with interfaces, enums, and base types.
 
 - `ILegioImageEncoder` - Encode images
@@ -290,6 +302,7 @@ Lightweight core package with interfaces, enums, and base types.
 - `ILegioImageCropper` - Crop operations
 - `ILegioImageTransformer` - Rotate/flip operations
 - `ILegioImageFilter` - Filter operations
+- `FormatDetector` - Detect image format from byte array
 - `LegioImageFormat` - PNG, JPEG, WebP, BMP, GIF
 - `LegioScaleMode` - Fit, Fill, Stretch
 - `LegioResizeQuality` - Low, Medium, High, Maximum
@@ -306,10 +319,22 @@ Lightweight WebP codec using native libwebp.
 
 ### LegioSoft.Imaging.Skia
 
+Full-featured image processing with SkiaSharp (~5MB).
+
+Lightweight WebP codec using native libwebp.
+
+- Implements `ILegioImageEncoder` and `ILegioImageDecoder`
+- Native libraries for Windows x64, Linux x64, Linux ARM64
+- No SkiaSharp dependency
+- ~500KB package size
+
+### LegioSoft.Imaging.Skia
+
 Full-featured image processing with SkiaSharp.
 
 - Implements all core interfaces
 - Fluent builder API (`LegioImageBuilder`)
+- Modular operations: ImageLoader, ImageSaver, ImageResizer, ImageCropper, ImageTransformer, ImageFilters, ImageColorAdjustments
 - Resize, crop, rotate, flip
 - Filters: grayscale, sepia, blur, sharpen
 - Color adjustments: brightness, contrast, invert
@@ -342,6 +367,36 @@ Meta package that includes all components.
 - Batch operations in one builder chain to avoid loading image multiple times
 - Use appropriate quality settings (70-85 for JPEG, 80-90 for WebP)
 - Prefer WebP for web use (better compression than JPEG at similar quality)
+
+## Memory Management & Performance
+
+The Skia implementation includes automatic memory management to prevent leaks:
+
+### Operation Queue Pattern
+- Operations are executed in the exact order they're chained (`.Rotate().Crop()` executes rotate first, then crop)
+- Intermediate bitmaps are automatically disposed via swap-and-dispose pattern
+- Only the final bitmap is returned, all intermediates are cleaned up
+
+### Efficient Metadata Reading
+- `GetInfo()` uses `SKCodec` to read image metadata without full pixel decoding
+- Reduces memory usage when you only need dimensions/format information
+- Particularly useful for batch processing or validation
+
+### GPU-Accelerated Operations
+- Filters and color adjustments use SkiaSharp's GPU-accelerated rendering
+- Color matrix filters applied via `SKPaint` with `SKColorFilter`
+- Blur uses hardware-accelerated `SKImageFilter`
+- Much faster than pixel-by-pixel CPU operations
+
+### Automatic Disposal
+- Helper classes (`ImageResizer`, `ImageCropper`, etc.) create new bitmaps but don't dispose inputs
+- `LegioImageBuilder` owns the lifecycle and disposes all intermediate bitmaps
+- Final bitmap is properly disposed via `using` statements in save methods
+
+### Best Practices
+- Call `.Save()` or `.SaveAs()` to ensure final bitmap is disposed
+- For long-lived processing, consider processing images sequentially rather than holding many builders in memory
+- Use `GetInfo()` before loading full bitmap when you only need metadata
 
 ## Platform Support
 

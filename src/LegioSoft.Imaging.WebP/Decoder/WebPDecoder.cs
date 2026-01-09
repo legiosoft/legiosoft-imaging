@@ -1,8 +1,4 @@
-using System;
-using System.IO;
-using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Models;
-using LegioSoft.Imaging.WebP.Native;
 
 namespace LegioSoft.Imaging.WebP.Decoder;
 

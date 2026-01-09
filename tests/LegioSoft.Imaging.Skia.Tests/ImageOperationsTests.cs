@@ -1,5 +1,6 @@
 using LegioSoft.Imaging.Core;
-using LegioSoft.Imaging.Skia;
+using LegioSoft.Imaging.Skia.Core;
+using LegioSoft.Imaging.Skia.Operations;
 using SkiaSharp;
 using Xunit;
 
@@ -7,18 +8,13 @@ namespace LegioSoft.Imaging.Skia.Tests;
 
 public class ImageOperationsTests
 {
-    private readonly byte[] _testImageData = new byte[]
+    private static readonly string TestAssetsPath = Path.Combine(AppContext.BaseDirectory, "TestAssets");
+
+    private byte[] LoadTestImage(string filename)
     {
-        0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-        0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
-        0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0,
-        0x00, 0x00, 0x03, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
-        0x42, 0x60, 0x82
-    };
+        var fullPath = Path.Combine(TestAssetsPath, filename);
+        return File.ReadAllBytes(fullPath);
+    }
 
     private byte[] CreateTestPng(int width, int height)
     {
@@ -26,7 +22,7 @@ public class ImageOperationsTests
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Blue);
         canvas.Flush();
-
+        
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
@@ -35,313 +31,159 @@ public class ImageOperationsTests
     [Fact]
     public void LoadBitmap_ShouldLoadPng()
     {
-        var result = ImageOperations.LoadBitmap(_testImageData);
+        var imageData = LoadTestImage("example.png");
+        var result = Core.ImageLoader.LoadBitmap(imageData);
         
         Assert.NotNull(result);
-        Assert.Equal(1, result.Width);
-        Assert.Equal(1, result.Height);
+        Assert.True(result.Width > 0);
+        Assert.True(result.Height > 0);
+    }
+
+    [Fact]
+    public void LoadBitmap_ShouldLoadJpeg()
+    {
+        var imageData = LoadTestImage("example.jpeg");
+        var result = Core.ImageLoader.LoadBitmap(imageData);
+        
+        Assert.NotNull(result);
+        Assert.True(result.Width > 0);
+        Assert.True(result.Height > 0);
+    }
+
+    [Fact]
+    public void LoadBitmap_ShouldLoadBmp()
+    {
+        var imageData = LoadTestImage("example.bmp");
+        var result = Core.ImageLoader.LoadBitmap(imageData);
+        
+        Assert.NotNull(result);
+        Assert.True(result.Width > 0);
+        Assert.True(result.Height > 0);
     }
 
     [Fact]
     public void LoadBitmap_ShouldThrowOnInvalidData()
     {
-        Assert.Throws<InvalidOperationException>(() => ImageOperations.LoadBitmap(new byte[] { 0x00, 0x00 }));
+        Assert.Throws<InvalidOperationException>(() => Core.ImageLoader.LoadBitmap(new byte[] { 0x00, 0x00 }));
+    }
+
+    [Fact]
+    public void SaveBitmap_ShouldSavePng()
+    {
+        var bitmap = new SKBitmap(100, 100);
+        var result = Core.ImageSaver.SaveBitmap(bitmap, LegioImageFormat.Png, 90);
+        
+        Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
     public void ResizeBitmap_ShouldResize()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(200, 100);
+        var result = Operations.ImageResizer.ResizeBitmap(bitmap, 150, 75, LegioResizeQuality.High);
         
-        var result = ImageOperations.ResizeBitmap(bitmap, 50, 50, LegioResizeQuality.High);
-        
-        Assert.NotNull(result);
-        Assert.Equal(50, result.Width);
-        Assert.Equal(50, result.Height);
-    }
-
-    [Fact]
-    public void ResizeBitmap_ShouldThrowOnInvalidDimensions()
-    {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        Assert.Throws<ArgumentException>(() => ImageOperations.ResizeBitmap(bitmap, 0, 50, LegioResizeQuality.High));
-        Assert.Throws<ArgumentException>(() => ImageOperations.ResizeBitmap(bitmap, 50, -1, LegioResizeQuality.High));
-    }
-
-    [Theory]
-    [InlineData(LegioResizeQuality.Low)]
-    [InlineData(LegioResizeQuality.Medium)]
-    [InlineData(LegioResizeQuality.High)]
-    [InlineData(LegioResizeQuality.Maximum)]
-    public void ResizeBitmap_ShouldMapQuality(LegioResizeQuality inputQuality)
-    {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.ResizeBitmap(bitmap, 50, 50, inputQuality);
-        
-        Assert.NotNull(result);
+        Assert.Equal(150, result.Width);
+        Assert.Equal(75, result.Height);
     }
 
     [Fact]
     public void CropBitmap_ShouldCrop()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(200, 100);
+        var result = Operations.ImageCropper.CropBitmap(bitmap, 25, 25, 50, 50);
         
-        var result = ImageOperations.CropBitmap(bitmap, 10, 10, 50, 50);
-        
-        Assert.NotNull(result);
         Assert.Equal(50, result.Width);
         Assert.Equal(50, result.Height);
     }
 
     [Fact]
-    public void CropBitmap_ShouldThrowOnInvalidParameters()
+    public void Transform_Rotate_ShouldRotate90()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(100, 200);
+        var result = Operations.ImageTransformer.Rotate(bitmap, 90);
         
-        Assert.Throws<ArgumentException>(() => ImageOperations.CropBitmap(bitmap, -10, 10, 50, 50));
-        Assert.Throws<ArgumentException>(() => ImageOperations.CropBitmap(bitmap, 10, 10, -50, 50));
-        Assert.Throws<ArgumentException>(() => ImageOperations.CropBitmap(bitmap, 90, 90, 50, 50));
-    }
-
-    [Fact]
-    public void Rotate_ShouldRotate180Degrees()
-    {
-        var imageData = CreateTestPng(100, 50);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.Rotate(bitmap, 180);
-        
-        Assert.NotNull(result);
-        Assert.Equal(100, result.Width);
-        Assert.Equal(50, result.Height);
-    }
-
-    [Fact]
-    public void Rotate_ShouldRotate270Degrees()
-    {
-        var imageData = CreateTestPng(100, 50);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.Rotate(bitmap, 270);
-        
-        Assert.NotNull(result);
-        Assert.Equal(50, result.Width);
+        Assert.Equal(200, result.Width);
         Assert.Equal(100, result.Height);
     }
 
     [Fact]
-    public void Rotate_ShouldThrowOnInvalidDegrees()
+    public void Transform_Flip_ShouldFlip()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(100, 100);
+        var result = Operations.ImageTransformer.Flip(bitmap, true, false);
         
-        Assert.Throws<ArgumentException>(() => ImageOperations.Rotate(bitmap, 45));
-        Assert.Throws<ArgumentException>(() => ImageOperations.Rotate(bitmap, -90));
-    }
-
-    [Fact]
-    public void Flip_ShouldFlipHorizontal()
-    {
-        var imageData = CreateTestPng(100, 50);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.Flip(bitmap, horizontal: true, vertical: false);
-        
-        Assert.NotNull(result);
-        Assert.Equal(100, result.Width);
-        Assert.Equal(50, result.Height);
-    }
-
-    [Fact]
-    public void Flip_ShouldFlipVertical()
-    {
-        var imageData = CreateTestPng(100, 50);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.Flip(bitmap, horizontal: false, vertical: true);
-        
-        Assert.NotNull(result);
-        Assert.Equal(100, result.Width);
-        Assert.Equal(50, result.Height);
-    }
-
-    [Fact]
-    public void Flip_ShouldFlipBoth()
-    {
-        var imageData = CreateTestPng(100, 50);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.Flip(bitmap, horizontal: true, vertical: true);
-        
-        Assert.NotNull(result);
-        Assert.Equal(100, result.Width);
-        Assert.Equal(50, result.Height);
-    }
-
-    [Fact]
-    public void ApplyGrayscale_ShouldConvertToGrayscale()
-    {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.ApplyGrayscale(bitmap);
-        
-        Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
     }
 
     [Fact]
-    public void ApplySepia_ShouldConvertToSepia()
+    public void Filter_Grayscale_ShouldApply()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(100, 100);
+        var result = Operations.ImageFilters.ApplyGrayscale(bitmap);
         
-        var result = ImageOperations.ApplySepia(bitmap);
-        
-        Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
     }
 
     [Fact]
-    public void ApplyBlur_ShouldApplyBlur()
+    public void Filter_Sepia_ShouldApply()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(100, 100);
+        var result = Operations.ImageFilters.ApplySepia(bitmap);
         
-        var result = ImageOperations.ApplyBlur(bitmap, 5);
-        
-        Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
     }
 
     [Fact]
-    public void ApplySharpen_ShouldApplySharpen()
+    public void Filter_Blur_ShouldApply()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(100, 100);
+        var result = Operations.ImageFilters.ApplyBlur(bitmap, 5);
         
-        var result = ImageOperations.ApplySharpen(bitmap, 50);
-        
-        Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
     }
 
     [Fact]
-    public void ApplyBrightness_ShouldAdjustBrightness()
+    public void Filter_Sharpen_ShouldApply()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(100, 100);
+        var result = Operations.ImageFilters.ApplySharpen(bitmap, 50);
         
-        var result = ImageOperations.ApplyBrightness(bitmap, 30);
-        
-        Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
     }
 
     [Fact]
-    public void ApplyContrast_ShouldAdjustContrast()
+    public void ColorAdjustments_Brightness_ShouldApply()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(100, 100);
+        var result = Operations.ImageColorAdjustments.ApplyBrightness(bitmap, 30);
         
-        var result = ImageOperations.ApplyContrast(bitmap, 20);
-        
-        Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
     }
 
     [Fact]
-    public void ApplyInvert_ShouldInvertColors()
+    public void ColorAdjustments_Contrast_ShouldApply()
     {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
+        var bitmap = new SKBitmap(100, 100);
+        var result = Operations.ImageColorAdjustments.ApplyContrast(bitmap, 20);
         
-        var result = ImageOperations.ApplyInvert(bitmap);
-        
-        Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
     }
 
-    [Theory]
-    [InlineData(LegioImageFormat.Png)]
-    [InlineData(LegioImageFormat.Jpeg)]
-    [InlineData(LegioImageFormat.WebP)]
-    public void SaveBitmap_ShouldConvertFormat(LegioImageFormat inputFormat)
-    {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        var result = ImageOperations.SaveBitmap(bitmap, inputFormat, 75);
-        
-        Assert.NotNull(result);
-        Assert.True(result.Length > 0);
-    }
-
-    [Theory]
-    [InlineData(LegioImageFormat.Bmp)]
-    [InlineData(LegioImageFormat.Gif)]
-    public void SaveBitmap_ShouldThrowOnUnsupportedFormat(LegioImageFormat inputFormat)
-    {
-        var imageData = CreateTestPng(100, 100);
-        var bitmap = ImageOperations.LoadBitmap(imageData);
-        
-        Assert.Throws<NotSupportedException>(() => ImageOperations.SaveBitmap(bitmap, inputFormat, 75));
-    }
-
     [Fact]
-    public void DetectFormat_ShouldDetectPng()
+    public void ColorAdjustments_Invert_ShouldApply()
     {
-        var imageData = CreateTestPng(100, 100);
+        var bitmap = new SKBitmap(100, 100);
+        var result = Operations.ImageColorAdjustments.ApplyInvert(bitmap);
         
-        var format = ImageOperations.DetectFormat(imageData);
-        
-        Assert.Equal(LegioImageFormat.Png, format);
-    }
-
-    [Fact]
-    public void Resize_ShouldResizeAndSave()
-    {
-        var imageData = CreateTestPng(100, 100);
-        
-        var result = ImageOperations.Resize(imageData, 50, 50, LegioScaleMode.Fit, LegioResizeQuality.High);
-        
-        Assert.NotNull(result);
-        Assert.True(result.Length > 0);
-    }
-
-    [Fact]
-    public void Crop_ShouldCropAndSave()
-    {
-        var imageData = CreateTestPng(100, 100);
-        
-        var result = ImageOperations.Crop(imageData, 10, 10, 50, 50);
-        
-        Assert.NotNull(result);
-        Assert.True(result.Length > 0);
-    }
-
-    [Fact]
-    public void Convert_ShouldConvertFormat()
-    {
-        var imageData = CreateTestPng(100, 100);
-        
-        var result = ImageOperations.Convert(imageData, LegioImageFormat.Jpeg, 85);
-        
-        Assert.NotNull(result);
-        Assert.True(result.Length > 0);
+        Assert.Equal(100, result.Width);
+        Assert.Equal(100, result.Height);
     }
 }

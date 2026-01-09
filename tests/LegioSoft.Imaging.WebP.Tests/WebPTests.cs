@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using LegioSoft.Imaging.WebP;
 using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Helpers;
 using LegioSoft.Imaging.WebP.Models;

@@ -1,9 +1,6 @@
-using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Models;
-using LegioSoft.Imaging.WebP.Native;
 
 namespace LegioSoft.Imaging.WebP.Encoder;
 

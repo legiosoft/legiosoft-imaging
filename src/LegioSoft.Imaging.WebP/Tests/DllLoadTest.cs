@@ -1,5 +1,3 @@
-using System;
-using LegioSoft.Imaging.WebP;
 using LegioSoft.Imaging.WebP.Helpers;
 using LegioSoft.Imaging.WebP.Native;
 

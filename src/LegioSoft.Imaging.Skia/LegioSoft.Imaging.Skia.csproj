@@ -9,18 +9,20 @@
     <Description>
       Full-featured image processing library built on SkiaSharp. Implements ILegioImageResizer, ILegioImageCropper, ILegioImageTransformer, and ILegioImageFilter interfaces. Provides fluent builder API for easy image manipulation. Supports resize, crop, rotate, flip, and filters (grayscale, sepia, blur, sharpen, brightness, contrast, invert). Format conversion for PNG, JPEG, WebP, BMP, and GIF. Cross-platform support for Windows, macOS, and Linux. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
     </Description>
-    <PackageTags>image;processing;SkiaSharp;resize;crop;transform;rotate;flip;grayscale;sepia;blur;sharpen;brightness;contrast;invert;format-conversion;builder-pattern</PackageTags>
+    <PackageTags>image;processing;SkiaSharp;resize;crop;transform;rotate;flip;grayscale;sepia;blur;sharpen;brightness;contrast;invert;format-conversion;builder-pattern;filters;color-adjustments;cross-platform;bitmap;security;validation;modular-operations</PackageTags>
     <PackageReleaseNotes>
-      1.0.0-beta1 - Initial beta release of LegioSoft.Imaging.Skia.
+      1.0.0-beta2 - Initial beta release of LegioSoft.Imaging.Skia.
 
       Features:
+      - Refactored into modular structure (Core, Operations, Processors modules)
       - Fluent builder API (LegioImageBuilder) for easy image manipulation
       - Resize operations with multiple scale modes (Fit, Fill, Stretch)
       - Crop, rotate (90/180/270 degrees), flip (horizontal/vertical)
       - Filter operations: grayscale, sepia, blur (configurable radius), sharpen
       - Color adjustments: brightness, contrast, invert
       - Format conversion: PNG, JPEG, WebP, BMP, GIF
-      - Automatic format detection
+      - Secure image saving with validation and quality adjustment
+      - Automatic format detection (moved to Core package)
       - Quality control (0-100) for lossy formats
       - Load from file, byte array, or stream
       - Save to file, byte array, or stream
@@ -42,8 +44,8 @@
     </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\icon.png" Pack="true" PackagePath="/" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="/" />
+    <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

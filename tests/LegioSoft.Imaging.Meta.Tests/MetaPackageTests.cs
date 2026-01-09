@@ -1,7 +1,6 @@
 using LegioSoft.Imaging.Core;
 using LegioSoft.Imaging.Skia;
 using LegioSoft.Imaging.WebP;
-using Xunit;
 
 namespace LegioSoft.Imaging.Meta.Tests;
 
@@ -53,7 +52,7 @@ public class MetaPackageTests
     {
         Assert.NotNull(typeof(LegioImageBuilder).GetMethod("Load", new[] { typeof(byte[]) }));
         Assert.NotNull(typeof(LegioImageBuilder).GetMethod("Load", new[] { typeof(string) }));
-        Assert.NotNull(typeof(LegioImageBuilder).GetMethod("Load", new[] { typeof(System.IO.Stream) }));
+        Assert.NotNull(typeof(LegioImageBuilder).GetMethod("Load", new[] { typeof(Stream) }));
     }
 
     [Fact]

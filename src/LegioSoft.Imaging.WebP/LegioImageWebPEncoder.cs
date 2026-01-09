@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using LegioSoft.Imaging.Core;
 
 namespace LegioSoft.Imaging.WebP;

@@ -1,4 +1,4 @@
-using LegioSoft.Imaging.Core;
+using System;
 using Xunit;
 
 namespace LegioSoft.Imaging.Core.Tests;
@@ -150,5 +150,150 @@ public class LegioImageInfoTests
         Assert.Equal(LegioImageFormat.Jpeg, info.Format);
         Assert.False(info.HasAlpha);
         Assert.Equal(102400, info.ByteSize);
+    }
+}
+
+public class FormatDetectorTests
+{
+    [Fact]
+    public void DetectFormat_WithNullData_ShouldThrowArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => FormatDetector.DetectFormat(null!));
+    }
+
+    [Fact]
+    public void DetectFormat_WithEmptyData_ShouldThrowArgumentException()
+    {
+        Assert.Throws<ArgumentException>(() => FormatDetector.DetectFormat(Array.Empty<byte>()));
+    }
+
+    [Fact]
+    public void DetectFormat_WithTooShortData_ShouldThrowArgumentException()
+    {
+        var shortData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        Assert.Throws<ArgumentException>(() => FormatDetector.DetectFormat(shortData));
+    }
+
+    [Fact]
+    public void DetectFormat_WithPngSignature_ShouldReturnPng()
+    {
+        var pngData = new byte[]
+        {
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x49, 0x45, 0x4E, 0x44, 0x00, 0x00, 0x00, 0x00, 0x00, 0x49,
+            0x45, 0x4E, 0x44, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        };
+        
+        var result = FormatDetector.DetectFormat(pngData);
+        Assert.Equal(LegioImageFormat.Png, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithJpegSignature_ShouldReturnJpeg()
+    {
+        var jpegData = new byte[]
+        {
+            0xFF, 0xD8, 0xFF, 0xE0,
+            0xFF, 0xD8, 0xFF, 0xD9
+        };
+        
+        var result = FormatDetector.DetectFormat(jpegData);
+        Assert.Equal(LegioImageFormat.Jpeg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithWebPSignature_ShouldReturnWebP()
+    {
+        var webpData = new byte[]
+        {
+            0x52, 0x49, 0x46, 0x46,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x57, 0x45, 0x66, 0x50, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        };
+        
+        var result = FormatDetector.DetectFormat(webpData);
+        Assert.Equal(LegioImageFormat.WebP, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithBmpSignature_ShouldReturnBmp()
+    {
+        var bmpData = new byte[]
+        {
+            0x42, 0x4D, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x36,
+            0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        };
+        
+        var result = FormatDetector.DetectFormat(bmpData);
+        Assert.Equal(LegioImageFormat.Bmp, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithGif87ASignature_ShouldReturnGif()
+    {
+        var gifData = new byte[]
+        {
+            0x47, 0x49, 0x46, 0x38, 0x37, 0x61
+        };
+        
+        var result = FormatDetector.DetectFormat(gifData);
+        Assert.Equal(LegioImageFormat.Gif, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithGif89ASignature_ShouldReturnGif()
+    {
+        var gifData = new byte[]
+        {
+            0x47, 0x49, 0x46, 0x38, 0x39, 0x62
+        };
+        
+        var result = FormatDetector.DetectFormat(gifData);
+        Assert.Equal(LegioImageFormat.Gif, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithUnknownSignature_ShouldThrowNotSupportedException()
+    {
+        var unknownData = new byte[]
+        {
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        };
+        
+        Assert.Throws<NotSupportedException>(() => FormatDetector.DetectFormat(unknownData));
+    }
+
+    [Fact]
+    public void DetectFormat_WithInvalidJpegNoEndMarker_ShouldThrowArgumentException()
+    {
+        var invalidJpeg = new byte[]
+        {
+            0xFF, 0xD8, 0xFF, 0xE0,
+            0xFF, 0xD8, 0xFF, 0x00
+        };
+        
+        Assert.Throws<ArgumentException>(() => FormatDetector.DetectFormat(invalidJpeg));
+    }
+
+    [Fact]
+    public void DetectFormat_WithInvalidPngNoIEND_ShouldReturnPng()
+    {
+        var invalidPng = new byte[]
+        {
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x49, 0x45, 0x4E, 0x00, 0x00, 0x00, 0x00
+        };
+        
+        var result = FormatDetector.DetectFormat(invalidPng);
+        Assert.Equal(LegioImageFormat.Png, result);
     }
 }

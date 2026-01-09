@@ -17,11 +17,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+    <PackageReference Include="xunit" Version="2.5.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\LegioSoft.Imaging.Skia\LegioSoft.Imaging.Skia.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\test-photos\**\*">
+      <Link>TestAssets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

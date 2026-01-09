@@ -1,6 +1,4 @@
 using LegioSoft.Imaging.Core;
-using LegioSoft.Imaging.WebP;
-using Xunit;
 
 namespace LegioSoft.Imaging.WebP.Tests;
 
@@ -46,7 +44,7 @@ public class LegioImageWebPEncoderTests
     {
         var encoder = new LegioImageWebPEncoder();
         var testPngData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        using var stream = new System.IO.MemoryStream(testPngData);
+        using var stream = new MemoryStream(testPngData);
         
         Assert.Throws<NotImplementedException>(() => encoder.Encode(stream, LegioImageFormat.WebP, LegioEncodingQuality.High));
     }
@@ -74,7 +72,7 @@ public class LegioImageWebPEncoderTests
     {
         var encoder = new LegioImageWebPEncoder();
         var webpData = new byte[] { 0x52, 0x49, 0x46, 0x46, 0x10, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50 };
-        using var stream = new System.IO.MemoryStream(webpData);
+        using var stream = new MemoryStream(webpData);
         
         Assert.Throws<NotImplementedException>(() => encoder.GetImageInfo(stream));
     }

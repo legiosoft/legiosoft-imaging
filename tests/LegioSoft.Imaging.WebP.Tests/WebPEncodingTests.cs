@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using Xunit;
-using LegioSoft.Imaging.WebP;
 using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Encoder;
 using LegioSoft.Imaging.WebP.Models;

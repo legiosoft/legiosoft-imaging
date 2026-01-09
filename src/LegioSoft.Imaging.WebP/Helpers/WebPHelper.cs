@@ -1,5 +1,3 @@
-using System;
-
 namespace LegioSoft.Imaging.WebP.Helpers;
 
 public static class WebPHelper

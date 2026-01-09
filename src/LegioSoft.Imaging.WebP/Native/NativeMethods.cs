@@ -1,6 +1,5 @@
 using System.Runtime.InteropServices;
 using LegioSoft.Imaging.WebP.Enums;
-using LegioSoft.Imaging.WebP.Models;
 
 namespace LegioSoft.Imaging.WebP.Native;
 
