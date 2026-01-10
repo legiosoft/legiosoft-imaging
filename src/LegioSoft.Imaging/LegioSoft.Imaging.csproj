@@ -13,7 +13,7 @@
     </Description>
     <PackageTags>image;processing;meta;unified;WebP;SkiaSharp;all-in-one;complete;full-stack</PackageTags>
     <PackageReleaseNotes>
-      1.0.0-beta1 - Initial beta release of LegioSoft.Imaging meta package.
+      1.0.0-beta3 - Initial beta release of LegioSoft.Imaging meta package.
 
       Features:
       - Includes all LegioSoft.Imaging packages in one installation
