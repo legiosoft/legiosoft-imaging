@@ -1,14 +1,16 @@
-# Building WebP Libraries
+# Build WebP Native Libraries
 
-## Usage
+Build libwebp native libraries for Windows and Linux.
+
+## Run
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build_webp.ps1
 ```
 
-The script will prompt for the libwebp version (default: v1.6.0).
+Enter libwebp version (default: v1.6.0).
 
-## Result
+## Output
 
 ```
 src/LegioSoft.Imaging.WebP/runtimes/
