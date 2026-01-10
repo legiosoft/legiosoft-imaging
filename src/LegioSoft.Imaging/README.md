@@ -1,37 +1,182 @@
 # LegioSoft.Imaging
 
-Meta package providing unified API for image processing.
+Meta package with all LegioSoft.Imaging components.
 
 ## Installation
 
-```xml
-<PackageReference Include="LegioSoft.Imaging" Version="1.0.0-beta1" />
+```bash
+dotnet add package LegioSoft.Imaging
 ```
 
-Or install individually:
-```xml
-<PackageReference Include="LegioSoft.Imaging.Skia" Version="1.0.0-beta1" />
-<PackageReference Include="LegioSoft.Imaging.WebP" Version="1.0.0-beta1" />
+## What's Included
+
+- **LegioSoft.Imaging.Core** (~20KB) - Interfaces, enums, and types
+- **LegioSoft.Imaging.WebP** (~500KB) - WebP encoding/decoding with libwebp 1.6.0
+- **LegioSoft.Imaging.Skia** (~565KB) - Full image processing with SkiaSharp 2.88.6
+
+## Supported Frameworks
+
+.NET 6.0, 7.0, 8.0, 9.0, 10.0
+
+## Quick Start
+
+### Skia Package - Image Processing
+
+```csharp
+using LegioSoft.Imaging.Skia;
+
+// Load, resize, save
+LegioImageBuilder.Load("photo.jpg")
+    .Resize(800, 600)
+    .Save("output.jpg");
+
+// Multiple operations
+LegioImageBuilder.Load("image.png")
+    .Resize(1920, 1080, LegioScaleMode.Fit)
+    .Crop(100, 100, 400, 400)
+    .Rotate(90)
+    .Grayscale()
+    .Save("processed.jpg", 90);
+
+// Get metadata
+var info = LegioImageBuilder.Load("image.jpg").GetInfo();
+// info.Width, info.Height, info.Format, info.HasAlpha, info.ByteSize
 ```
 
-## Package Structure
-
-- **LegioSoft.Imaging** - Meta package combining all packages
-- **LegioSoft.Imaging.Skia** - SkiaSharp-based image operations
-- **LegioSoft.Imaging.WebP** - Native WebP codec (lightweight)
-
-## Usage
+### WebP Package - WebP Encode/Decode
 
 ```csharp
 using LegioSoft.Imaging.WebP;
 
-// Encode WebP
-var webpData = WebPHelper.Encode(bitmap, quality: 85);
+// Encode RGBA to WebP
+byte[] rgbaData = new byte[width * height * 4];
+byte[] webpData = WebPImage.Encode(rgbaData, width, height, 85);
+File.WriteAllBytes("output.webp", webpData);
 
-// Decode WebP
-var bitmap = WebPHelper.Decode(webpData);
+// Decode WebP to RGBA
+byte[] decoded = WebPImage.Decode(webpData);
+
+// Advanced options
+var options = new WebPEncodeOptions
+{
+    Preset = WebPPreset.PHOTO,
+    Quality = 85.0f,
+    Method = 6
+};
+byte[] webpData = WebPImage.EncodeAdvanced(rgbaData, width, height, options);
+
+// Get info
+WebPInfo info = WebPImage.GetInfo(webpData);
+// info.Width, info.Height, info.HasAlpha
 ```
 
-## Status
+### Core Package - Format Detection
 
-**Early development** - API may change.
+```csharp
+using LegioSoft.Imaging.Core;
+
+var imageData = File.ReadAllBytes("image.jpg");
+var format = FormatDetector.DetectFormat(imageData);
+```
+
+## Skia Operations
+
+```csharp
+// Resize
+.Resize(800, 600)                              // Exact
+.Resize(800, 600, LegioScaleMode.Fit)          // Fit within
+.Resize(800, 600, LegioScaleMode.Fill)         // Fill and crop
+.Resize(800, 600, LegioScaleMode.Stretch)      // Stretch
+.ResizeToWidth(1200)                           // Maintain aspect ratio
+.ResizeToHeight(800)                            // Maintain aspect ratio
+.Scale(0.5)                                    // Half size
+
+// Transform
+.Crop(100, 100, 400, 400)
+.Rotate(90)                                    // 0, 90, 180, or 270
+.Flip(horizontal: true, vertical: false)
+
+// Filters
+.Grayscale()
+.Sepia()
+.Blur(5)                                      // Radius 1-20
+.Sharpen(50)                                  // Amount 0-100
+
+// Color adjustments
+.Brightness(30)                                // -255 to 255
+.Contrast(20)                                  // -100 to 100
+.Invert()
+
+// Save
+.Save("output.jpg")
+.Save("output.png", LegioImageFormat.Png)
+.Save("output.jpg", quality: 90)
+byte[] data = SaveAs(LegioImageFormat.Jpeg, 90);
+using var stream = SaveAsStream(LegioImageFormat.Png);
+```
+
+## WebP Operations
+
+```csharp
+// Encode
+WebPImage.Encode(rgbaData, width, height, 85)
+WebPImage.EncodeRGB(rgbData, width, height, 85)
+WebPImage.EncodeLossless(rgbaData, width, height)
+WebPImage.EncodeAdvanced(rgbaData, width, height, options)
+
+// Decode
+WebPImage.Decode(webpData)
+WebPImage.Decode(webpData, WEBP_CSP_MODE.MODE_RGB)
+WebPImage.Decode("input.webp")
+WebPImage.Decode(stream)
+
+// Transform
+WebPImage.Scale(webpData, 400, 300)
+WebPImage.Crop(webpData, 100, 100, 400, 300)
+WebPImage.Flip(webpData)
+
+// Info
+WebPInfo info = WebPImage.GetInfo(webpData)
+bool isValid = WebPImage.IsValidWebP(data)
+string version = WebPImage.GetVersion() // "1.6.0"
+```
+
+## Supported Formats
+
+**Input**: PNG, JPEG, WebP, BMP, GIF
+
+**Output**: PNG, JPEG, WebP, BMP, GIF
+
+## Platforms
+
+- Windows x64
+- Linux x64, ARM64
+- macOS x64, ARM64
+
+## Individual Packages
+
+If you don't need all packages, install individually:
+
+**WebP Only:**
+```bash
+dotnet add package LegioSoft.Imaging.Core
+dotnet add package LegioSoft.Imaging.WebP
+```
+
+**Full Processing:**
+```bash
+dotnet add package LegioSoft.Imaging.Skia
+```
+
+**Core Only:**
+```bash
+dotnet add package LegioSoft.Imaging.Core
+```
+
+## License
+
+Apache License 2.0
+
+## Repository
+
+https://github.com/legiosoft/legiosoft-imaging
