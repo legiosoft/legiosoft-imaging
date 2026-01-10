@@ -1,421 +1,260 @@
 # LegioSoft.Imaging
 
-Modular .NET image processing library with unified API. Lightweight WebP support for simple use cases, or full-featured image processing with SkiaSharp for advanced operations.
+Modular .NET image processing library.
 
 ## Installation
 
-### Meta Package (Recommended)
-
-Install all packages at once:
+### All Features
 
 ```bash
 dotnet add package LegioSoft.Imaging
 ```
 
-Or via NuGet Package Manager Console:
+### WebP Only (~500KB)
 
-```
-Install-Package LegioSoft.Imaging
-```
-
-### Individual Packages
-
-**Lightweight WebP Only** (~500KB):
 ```bash
 dotnet add package LegioSoft.Imaging.Core
 dotnet add package LegioSoft.Imaging.WebP
 ```
 
-**Full Image Processing** (~5MB):
+### Full Processing (~565KB)
+
 ```bash
-dotnet add package LegioSoft.Imaging.Core
 dotnet add package LegioSoft.Imaging.Skia
 ```
 
 **Supported Frameworks**: .NET 6.0, 7.0, 8.0, 9.0, 10.0
 
-## Quick Start
+## Skia Package
 
-### Basic Image Processing
-
-Resize, crop, rotate, and save in one fluent chain:
+### Basic Operations
 
 ```csharp
 using LegioSoft.Imaging.Skia;
 
-// Simple resize
+// Load, process, save
 LegioImageBuilder.Load("photo.jpg")
     .Resize(800, 600)
-    .Save("resized.jpg");
+    .Save("output.jpg");
 
 // Multiple operations
-var result = LegioImageBuilder.Load("image.png")
+LegioImageBuilder.Load("image.png")
     .Resize(1920, 1080, LegioScaleMode.Fit)
     .Crop(100, 100, 400, 400)
     .Rotate(90)
     .Grayscale()
-    .Save("processed.jpg", quality: 90);
+    .Save("processed.jpg", 90);
 ```
-
-### Format Conversion
-
-Convert between PNG, JPEG, WebP, BMP, and GIF:
-
-```csharp
-// PNG to WebP with quality control
-var webpData = LegioImageBuilder.Load("image.png")
-    .SaveAs(LegioImageFormat.WebP, quality: 85);
-
-// JPEG to PNG (lossless)
-LegioImageBuilder.Load("photo.jpg")
-    .Save("photo.png");
-```
-
-### Image Information
-
-Get image metadata:
-
-```csharp
-var info = LegioImageBuilder.Load("image.jpg").GetInfo();
-
-Console.WriteLine($"Dimensions: {info.Width}x{info.Height}");
-Console.WriteLine($"Format: {info.Format}");
-Console.WriteLine($"Has Alpha: {info.HasAlpha}");
-Console.WriteLine($"Size: {info.ByteSize} bytes");
-```
-
-## Fluent Builder API
-
-The `LegioImageBuilder` provides a fluent, chainable API for image operations:
 
 ### Load
 
 ```csharp
-// From file path
-var builder = LegioImageBuilder.Load("image.jpg");
+// From file, bytes, or stream
+LegioImageBuilder.Load("image.jpg")
+LegioImageBuilder.Load(File.ReadAllBytes("image.jpg"))
+LegioImageBuilder.Load(stream)
 
-// From byte array
-var imageData = File.ReadAllBytes("image.jpg");
-var builder = LegioImageBuilder.Load(imageData);
-
-// From stream
-using var stream = File.OpenRead("image.jpg");
-var builder = LegioImageBuilder.Load(stream);
+// Get metadata
+var info = LegioImageBuilder.Load("image.jpg").GetInfo();
+// info.Width, info.Height, info.Format, info.HasAlpha, info.ByteSize
 ```
 
 ### Resize
 
 ```csharp
-// Exact dimensions
-.Resize(800, 600)
-
-// Scale mode
-.Resize(800, 600, LegioScaleMode.Fit)   // Fit within bounds
-.Resize(800, 600, LegioScaleMode.Fill)  // Fill and crop
-.Resize(800, 600, LegioScaleMode.Stretch) // Stretch to fit
-
-// Resize to width only (maintains aspect ratio)
-.ResizeToWidth(1200)
-
-// Resize to height only (maintains aspect ratio)
-.ResizeToHeight(800)
-
-// Scale by factor
-.Scale(0.5)  // 50% of original size
-.Scale(2.0)  // 200% of original size
-
-// Quality control
-.Resize(800, 600, quality: LegioResizeQuality.High)
+.Resize(800, 600)                              // Exact
+.Resize(800, 600, LegioScaleMode.Fit)          // Fit within
+.Resize(800, 600, LegioScaleMode.Fill)         // Fill and crop
+.Resize(800, 600, LegioScaleMode.Stretch)      // Stretch
+.ResizeToWidth(1200)                           // Maintain aspect ratio
+.ResizeToHeight(800)                            // Maintain aspect ratio
+.Scale(0.5)                                    // Half size
 ```
 
-### Crop
+### Crop, Rotate, Flip
 
 ```csharp
-// Crop from (x, y) with width and height
 .Crop(100, 100, 400, 400)
+.Rotate(90)    // 0, 90, 180, or 270
+.Flip(horizontal: true, vertical: false)
 ```
 
-### Transform
+### Filters & Color
 
 ```csharp
-// Rotate (90, 180, or 270 degrees)
-.Rotate(90)
-.Rotate(180)
-.Rotate(270)
-
-// Flip
-.Flip(horizontal: true, vertical: false)  // Horizontal flip
-.Flip(horizontal: false, vertical: true)  // Vertical flip
-.Flip(true, true)                        // Both
-```
-
-### Filters
-
-```csharp
-// Grayscale
 .Grayscale()
-
-// Sepia tone
 .Sepia()
-
-// Blur (radius 1-20, default 5)
-.Blur()
-.Blur(10)
-
-// Sharpen (amount 0-100, default 50)
-.Sharpen()
-.Sharpen(70)
-```
-
-### Color Adjustments
-
-```csharp
-// Brightness (-255 to 255)
-.Brightness(50)   // Lighten
-.Brightness(-50)  // Darken
-
-// Contrast (-100 to 100)
-.Contrast(30)
-.Contrast(-20)
-
-// Invert colors
+.Blur(5)          // Radius 1-20
+.Sharpen(50)      // Amount 0-100
+.Brightness(30)    // -255 to 255
+.Contrast(20)      // -100 to 100
 .Invert()
 ```
 
 ### Save
 
 ```csharp
-// Save with detected format
-.Save("output.jpg")
+.Save("output.jpg")                              // Auto format
+.Save("output.png", LegioImageFormat.Png)        // Specific format
+.Save("output.jpg", quality: 90)                 // With quality
 
-// Save with specific format
-.Save("output.png", LegioImageFormat.Png)
-
-// Save with quality (0-100, for lossy formats)
-.Save("output.jpg", quality: 85)
-
-// Save as byte array
-var jpegData = SaveAs(LegioImageFormat.Jpeg, quality: 90);
-var webpData = SaveAs(LegioImageFormat.WebP, quality: 80);
-
-// Save as stream
-using var stream = SaveAsStream(LegioImageFormat.Png);
+byte[] data = SaveAs(LegioImageFormat.Jpeg, 90); // As bytes
+using var stream = SaveAsStream(LegioImageFormat.Png); // As stream
 ```
 
-## Complete Examples
-
-### WebP Optimization
+### Quality
 
 ```csharp
-// Convert to WebP for web use
-var optimized = LegioImageBuilder.Load("large-photo.jpg")
-    .ResizeToWidth(1920)
-    .Quality(85)
-    .SaveAs(LegioImageFormat.WebP);
-
-File.WriteAllBytes("optimized.webp", optimized);
+.Quality(85)  // 0-100
 ```
 
-### Thumbnail Generation
+- JPEG: 70-85 recommended
+- WebP: 80-90 recommended
+- PNG/BMP/GIF: always lossless
+
+## WebP Package
+
+### Encode
 
 ```csharp
-// Generate thumbnail maintaining aspect ratio
-LegioImageBuilder.Load("image.jpg")
-    .Resize(300, 300, LegioScaleMode.Fit)
-    .Quality(80)
-    .Save("thumbnail.jpg");
-```
+using LegioSoft.Imaging.WebP;
 
-### Image Enhancement
+// RGBA to WebP
+byte[] rgbaData = new byte[width * height * 4];
+byte[] webpData = WebPImage.Encode(rgbaData, width, height, 85);
+File.WriteAllBytes("output.webp", webpData);
 
-```csharp
-// Enhance photo with multiple adjustments
-LegioImageBuilder.Load("dark-photo.jpg")
-    .Brightness(30)
-    .Contrast(20)
-    .Sharpen(60)
-    .Blur(1)
-    .Save("enhanced.jpg", quality: 90);
-```
+// RGB to WebP
+byte[] rgbData = new byte[width * height * 3];
+byte[] webpData = WebPImage.EncodeRGB(rgbData, width, height, 85);
 
-### Batch Processing
+// Lossless
+byte[] webpData = WebPImage.EncodeLossless(rgbaData, width, height);
 
-```csharp
-// Process all images in directory
-var inputFiles = Directory.GetFiles("input", "*.jpg");
-
-foreach (var file in inputFiles)
+// Advanced options
+var options = new WebPEncodeOptions
 {
-    var fileName = Path.GetFileNameWithoutExtension(file);
-    var outputPath = Path.Combine("output", $"{fileName}.png");
-
-    LegioImageBuilder.Load(file)
-        .Resize(1920, 1080, LegioScaleMode.Fit)
-        .Quality(90)
-        .Save(outputPath, LegioImageFormat.Png);
-}
+    Preset = WebPPreset.PHOTO,
+    Quality = 85.0f,
+    Method = 6,
+    SnsStrength = 75,
+    FilterStrength = 80
+};
+byte[] webpData = WebPImage.EncodeAdvanced(rgbaData, width, height, options);
 ```
 
-### Profile Picture Processing
+### Decode
 
 ```csharp
-// Create square profile picture from any image
-var processed = LegioImageBuilder.Load("profile-photo.jpg")
-    .Resize(500, 500, LegioScaleMode.Fill)  // Square
-    .Brightness(10)
-    .Contrast(15)
-    .SaveAs(LegioImageFormat.Jpeg, quality: 85);
+// Decode to RGBA
+byte[] webpData = File.ReadAllBytes("input.webp");
+byte[] rgbaData = WebPImage.Decode(webpData);
+
+// With colorspace
+byte[] rgbData = WebPImage.Decode(webpData, WEBP_CSP_MODE.MODE_RGB);
+byte[] bgraData = WebPImage.Decode(webpData, WEBP_CSP_MODE.MODE_BGRA);
+
+// From file/stream
+byte[] data = WebPImage.Decode("input.webp");
+byte[] data = WebPImage.Decode(stream);
 ```
 
-### Watermark Effect
+### Transform
 
 ```csharp
-// Apply subtle blur for watermark effect
-LegioImageBuilder.Load("product.jpg")
-    .Resize(1200, 800)
-    .Blur(2)
-    .Grayscale()
-    .Save("watermark-preview.jpg");
+byte[] scaled = WebPImage.Scale(webpData, 400, 300);
+byte[] cropped = WebPImage.Crop(webpData, 100, 100, 400, 300);
+byte[] flipped = WebPImage.Flip(webpData);
 ```
 
-## Package Structure
+### Info
 
-### LegioSoft.Imaging.Core
+```csharp
+WebPInfo info = WebPImage.GetInfo(webpData);
+// info.Width, info.Height, info.HasAlpha, info.HasAnimation
 
-Lightweight core package (~20KB) with interfaces, enums, and base types.
+bool isValid = WebPImage.IsValidWebP(data);
+string version = WebPImage.GetVersion(); // "1.6.0"
+```
 
-Use FormatDetector to identify image format:
+## Core Package
 
 ```csharp
 using LegioSoft.Imaging.Core;
 
+// Detect format
 var imageData = File.ReadAllBytes("image.jpg");
 var format = FormatDetector.DetectFormat(imageData);
-Console.WriteLine($"Format: {format}"); // Jpeg
 ```
 
-Lightweight core package with interfaces, enums, and base types.
+## Examples
 
-- `ILegioImageEncoder` - Encode images
-- `ILegioImageDecoder` - Decode and get metadata
-- `ILegioImageResizer` - Resize operations
-- `ILegioImageCropper` - Crop operations
-- `ILegioImageTransformer` - Rotate/flip operations
-- `ILegioImageFilter` - Filter operations
-- `FormatDetector` - Detect image format from byte array
-- `LegioImageFormat` - PNG, JPEG, WebP, BMP, GIF
-- `LegioScaleMode` - Fit, Fill, Stretch
-- `LegioResizeQuality` - Low, Medium, High, Maximum
-- `LegioImageInfo` - Image metadata
+### Thumbnail
 
-### LegioSoft.Imaging.WebP
+```csharp
+LegioImageBuilder.Load("photo.jpg")
+    .ResizeToWidth(200)
+    .Quality(80)
+    .Save("thumb.jpg");
+```
 
-Lightweight WebP codec using native libwebp.
+### Profile Picture
 
-- Implements `ILegioImageEncoder` and `ILegioImageDecoder`
-- Native libraries for Windows x64, Linux x64, Linux ARM64
-- No SkiaSharp dependency
-- ~500KB package size
+```csharp
+LegioImageBuilder.Load("photo.jpg")
+    .Resize(500, 500, LegioScaleMode.Fill)
+    .Brightness(10)
+    .Contrast(15)
+    .Save("profile.jpg", 90);
+```
 
-### LegioSoft.Imaging.Skia
+### Web Optimization
 
-Full-featured image processing with SkiaSharp (~5MB).
+```csharp
+var data = LegioImageBuilder.Load("large.jpg")
+    .ResizeToWidth(1920)
+    .SaveAs(LegioImageFormat.WebP, 85);
+File.WriteAllBytes("optimized.webp", data);
+```
 
-Lightweight WebP codec using native libwebp.
+### Batch Process
 
-- Implements `ILegioImageEncoder` and `ILegioImageDecoder`
-- Native libraries for Windows x64, Linux x64, Linux ARM64
-- No SkiaSharp dependency
-- ~500KB package size
+```csharp
+foreach (var file in Directory.GetFiles("input", "*.jpg"))
+{
+    var name = Path.GetFileNameWithoutExtension(file);
+    LegioImageBuilder.Load(file)
+        .Resize(1920, 1080, LegioScaleMode.Fit)
+        .Quality(85)
+        .Save($"output/{name}_resized.jpg");
+}
+```
 
-### LegioSoft.Imaging.Skia
+## Packages
 
-Full-featured image processing with SkiaSharp.
+| Package | Size | Purpose |
+|---------|------|---------|
+| LegioSoft.Imaging | All-in-one | Core + WebP + Skia |
+| LegioSoft.Imaging.Skia | ~565KB | Full image processing |
+| LegioSoft.Imaging.WebP | ~500KB | WebP encode/decode |
+| LegioSoft.Imaging.Core | ~20KB | Interfaces and types |
 
-- Implements all core interfaces
-- Fluent builder API (`LegioImageBuilder`)
-- Modular operations: ImageLoader, ImageSaver, ImageResizer, ImageCropper, ImageTransformer, ImageFilters, ImageColorAdjustments
-- Resize, crop, rotate, flip
-- Filters: grayscale, sepia, blur, sharpen
-- Color adjustments: brightness, contrast, invert
-- Format conversion
-- Cross-platform (Windows, macOS, Linux)
-- ~5MB package size
+## Formats
 
-### LegioSoft.Imaging
+**Input**: PNG, JPEG, WebP, BMP, GIF
 
-Meta package that includes all components.
+**Output**:
+- PNG - Lossless, transparency
+- JPEG - Lossy, photos
+- WebP - Modern, compressed
+- BMP - Uncompressed
+- GIF - Limited colors
 
-- All-in-one installation
-- Core + WebP + SkiaSharp
-- ~5.5MB package size
+## Platforms
 
-## Supported Formats
-
-**Input Formats**: PNG, JPEG, WebP, BMP, GIF
-
-**Output Formats**:
-- PNG - Lossless, supports transparency
-- JPEG - Lossy, best for photos
-- WebP - Modern format, good compression
-- BMP - Uncompressed, Windows bitmap
-- GIF - Limited color, simple animation support
-
-## Performance Tips
-
-- Use `ResizeToWidth` or `ResizeToHeight` to maintain aspect ratio without extra calculations
-- Batch operations in one builder chain to avoid loading image multiple times
-- Use appropriate quality settings (70-85 for JPEG, 80-90 for WebP)
-- Prefer WebP for web use (better compression than JPEG at similar quality)
-
-## Memory Management & Performance
-
-The Skia implementation includes automatic memory management to prevent leaks:
-
-### Operation Queue Pattern
-- Operations are executed in the exact order they're chained (`.Rotate().Crop()` executes rotate first, then crop)
-- Intermediate bitmaps are automatically disposed via swap-and-dispose pattern
-- Only the final bitmap is returned, all intermediates are cleaned up
-
-### Efficient Metadata Reading
-- `GetInfo()` uses `SKCodec` to read image metadata without full pixel decoding
-- Reduces memory usage when you only need dimensions/format information
-- Particularly useful for batch processing or validation
-
-### GPU-Accelerated Operations
-- Filters and color adjustments use SkiaSharp's GPU-accelerated rendering
-- Color matrix filters applied via `SKPaint` with `SKColorFilter`
-- Blur uses hardware-accelerated `SKImageFilter`
-- Much faster than pixel-by-pixel CPU operations
-
-### Automatic Disposal
-- Helper classes (`ImageResizer`, `ImageCropper`, etc.) create new bitmaps but don't dispose inputs
-- `LegioImageBuilder` owns the lifecycle and disposes all intermediate bitmaps
-- Final bitmap is properly disposed via `using` statements in save methods
-
-### Best Practices
-- Call `.Save()` or `.SaveAs()` to ensure final bitmap is disposed
-- For long-lived processing, consider processing images sequentially rather than holding many builders in memory
-- Use `GetInfo()` before loading full bitmap when you only need metadata
-
-## Platform Support
-
-- **Windows**: x64
-- **Linux**: x64, ARM64
-- **macOS**: x64, ARM64 (via SkiaSharp)
-
-## Dependencies
-
-**Core Package**: No external dependencies
-
-**WebP Package**:
-- LegioSoft.Imaging.Core
-- Native libwebp libraries (included)
-
-**Skia Package**:
-- LegioSoft.Imaging.Core
-- SkiaSharp 2.88.6
-- Platform-specific SkiaSharp native assets
+- Windows x64
+- Linux x64, ARM64
+- macOS x64, ARM64
 
 ## License
 
