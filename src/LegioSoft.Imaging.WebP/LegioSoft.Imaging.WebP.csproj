@@ -1,14 +1,37 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <RootNamespace>LegioSoft.Imaging.WebP</RootNamespace>
     <AssemblyName>LegioSoft.Imaging.WebP</AssemblyName>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <PackageId>LegioSoft.Imaging.WebP</PackageId>
+    <Description>
+      WebP codec wrapper using native libwebp v1.6.0. High-performance WebP encoding and decoding with support for RGBA, RGB, BGRA, BGR formats. Features include lossless/lossy compression, scaling, cropping, flip, and advanced encoding options. Updated for libwebp 1.6.0 with correct ABI version (0x0210) and proper memory management (WebPMemoryWriterClear). Cross-platform support (Windows, Linux, macOS). Implements ILegioImageEncoder and ILegioImageDecoder interfaces from Core package. Use FormatDetector from Core for format detection.
+    </Description>
+    <PackageTags>
+      webp;image;encoding;decoding;codec;libwebp;lossless;lossy;compression;
+      native;cross-platform;RGBA;RGB;BGRA;BGR;scale;crop;transform;flip;
+      imaging;graphics;multimedia
+    </PackageTags>
+    <PackageReleaseNotes>
+      1.0.0-beta3 - Initial beta release of LegioSoft.Imaging.WebP.
+
+      Features:
+      - WebP encoding (RGBA, RGB, BGRA, BGR formats) with proper memory management
+      - WebP decoding with multiple colorspaces
+      - Lossless and lossy compression modes
+      - Advanced encoding options (method, filter, alpha, etc.)
+      - Image transformation (scale, crop, flip)
+      - WebP metadata extraction (width, height, alpha, animation)
+      - Cross-platform native library support (Windows, Linux, macOS)
+      - ILegioImageEncoder and ILegioImageDecoder interface implementation
+      - Support for .NET 6.0, 7.0, 8.0, 9.0, and 10.0
+      - Updated to libwebp 1.6.0 ABI version (0x0210)
+      - Fixed memory leaks with proper WebPMemoryWriterClear calls
+      - Refactored to 1 class = 1 file structure
+    </PackageReleaseNotes>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
     <DllImportLoadContextAttribute>true</DllImportLoadContextAttribute>
     <NativeLibrary>libwebp.dll</NativeLibrary>
   </PropertyGroup>
@@ -36,8 +59,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\icon.png" Pack="true" PackagePath="/" />
-    <None Include="..\..\README.md" Pack="true" PackagePath="/" />
+    <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,9 @@
 using LegioSoft.Imaging.Core;
 using LegioSoft.Imaging.Skia;
+using LegioSoft.Imaging.Skia.Core;
+using LegioSoft.Imaging.Skia.Operations;
 using LegioSoft.Imaging.WebP;
+using SkiaSharp;
 
 namespace LegioSoft.Imaging.Meta.Tests;
 
@@ -30,9 +33,27 @@ public class MetaPackageTests
     }
 
     [Fact]
-    public void Skia_ImageOperations_ShouldBeAccessible()
+    public void Skia_ImageLoader_ShouldBeAccessible()
     {
-        Assert.NotNull(typeof(ImageOperations));
+        Assert.NotNull(typeof(ImageLoader));
+    }
+
+    [Fact]
+    public void Skia_ImageResizer_ShouldBeAccessible()
+    {
+        Assert.NotNull(typeof(ImageResizer));
+    }
+
+    [Fact]
+    public void Skia_ImageCropper_ShouldBeAccessible()
+    {
+        Assert.NotNull(typeof(ImageCropper));
+    }
+
+    [Fact]
+    public void Skia_ImageTransformer_ShouldBeAccessible()
+    {
+        Assert.NotNull(typeof(ImageTransformer));
     }
 
     [Fact]
@@ -56,13 +77,30 @@ public class MetaPackageTests
     }
 
     [Fact]
-    public void ImageOperations_ShouldHaveStaticMethods()
+    public void ImageLoader_ShouldHaveLoadBitmapMethods()
     {
-        Assert.NotNull(typeof(ImageOperations).GetMethod("LoadBitmap", new[] { typeof(byte[]) }));
-        Assert.NotNull(typeof(ImageOperations).GetMethod("ResizeBitmap", new[] { typeof(SkiaSharp.SKBitmap), typeof(int), typeof(int), typeof(LegioResizeQuality) }));
-        Assert.NotNull(typeof(ImageOperations).GetMethod("CropBitmap", new[] { typeof(SkiaSharp.SKBitmap), typeof(int), typeof(int), typeof(int), typeof(int) }));
-        Assert.NotNull(typeof(ImageOperations).GetMethod("Rotate", new[] { typeof(SkiaSharp.SKBitmap), typeof(int) }));
-        Assert.NotNull(typeof(ImageOperations).GetMethod("Flip", new[] { typeof(SkiaSharp.SKBitmap), typeof(bool), typeof(bool) }));
+        Assert.NotNull(typeof(ImageLoader).GetMethod("LoadBitmap", new[] { typeof(byte[]) }));
+        Assert.NotNull(typeof(ImageLoader).GetMethod("LoadBitmap", new[] { typeof(Stream) }));
+        Assert.NotNull(typeof(ImageLoader).GetMethod("LoadBitmap", new[] { typeof(string) }));
+    }
+
+    [Fact]
+    public void ImageResizer_ShouldHaveResizeBitmapMethod()
+    {
+        Assert.NotNull(typeof(ImageResizer).GetMethod("ResizeBitmap", new[] { typeof(SKBitmap), typeof(int), typeof(int), typeof(LegioResizeQuality) }));
+    }
+
+    [Fact]
+    public void ImageCropper_ShouldHaveCropBitmapMethod()
+    {
+        Assert.NotNull(typeof(ImageCropper).GetMethod("CropBitmap", new[] { typeof(SKBitmap), typeof(int), typeof(int), typeof(int), typeof(int) }));
+    }
+
+    [Fact]
+    public void ImageTransformer_ShouldHaveRotateAndFlipMethods()
+    {
+        Assert.NotNull(typeof(ImageTransformer).GetMethod("Rotate", new[] { typeof(SKBitmap), typeof(int) }));
+        Assert.NotNull(typeof(ImageTransformer).GetMethod("Flip", new[] { typeof(SKBitmap), typeof(bool), typeof(bool) }));
     }
 
     [Fact]

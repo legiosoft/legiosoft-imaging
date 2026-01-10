@@ -9,7 +9,7 @@ internal static class NativeLibraryLoader
     
     private static readonly Lazy<IntPtr> _nativeLibrary = new(() =>
     {
-        string libraryPath = GetNativeLibraryPath();
+        string? libraryPath = GetNativeLibraryPath();
         
         if (libraryPath == null)
         {
@@ -21,7 +21,8 @@ internal static class NativeLibraryLoader
 
     private static string? GetNativeLibraryPath()
     {
-        string? assemblyDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        string? assemblyLocation = Assembly.GetExecutingAssembly().Location;
+        string? assemblyDirectory = assemblyLocation != null ? Path.GetDirectoryName(assemblyLocation) : null;
         
         if (string.IsNullOrEmpty(assemblyDirectory))
         {

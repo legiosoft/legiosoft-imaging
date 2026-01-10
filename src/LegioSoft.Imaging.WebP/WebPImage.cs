@@ -217,12 +217,7 @@ public static class WebPImage
 
     public static bool IsValidWebP(byte[] data)
     {
-        return WebPHelper.IsWebP(data);
-    }
-
-    public static ImageFormat DetectFormat(byte[] imageData)
-    {
-        return WebPHelper.DetectImageFormat(imageData);
+        return WebPValidationHelper.IsWebP(data);
     }
 
     public static string GetVersion()

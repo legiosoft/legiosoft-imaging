@@ -1,36 +1,52 @@
 using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Helpers;
 using LegioSoft.Imaging.WebP.Models;
+using LegioSoft.Imaging.Core;
 
 namespace LegioSoft.Imaging.WebP.Tests;
 
+/// <summary>
+/// Manual test suite for WebP functionality.
+/// This class provides a comprehensive manual testing interface with console output.
+/// 
+/// Usage:
+///   - Compile and run this class directly as a console application
+///   - Not used by xUnit test runner (see WebPEncodingTests.cs for unit tests)
+///   - Useful for manual verification, debugging, and demonstrating API usage
+///   
+/// Note: This is a standalone manual test class. The automated unit tests are in WebPEncodingTests.cs.
+/// </summary>
 public class WebPTests
 {
     private const string TestImageFile = "item.jpg";
     private static string TestImagePath => Path.Combine(GetBaseDirectory(), TestImageFile);
-    
+
     private static string GetBaseDirectory()
     {
         return AppDomain.CurrentDomain.BaseDirectory;
     }
-    
+
     private static void PrintSection(string title)
     {
         Console.WriteLine();
         Console.WriteLine($"=== {title} ===");
         Console.WriteLine();
     }
-    
+
     private static void PrintSuccess(string message)
     {
         Console.WriteLine($"✅ {message}");
     }
-    
+
     private static void PrintError(string message)
     {
         Console.WriteLine($"❌ {message}");
     }
-    
+
+    /// <summary>
+    /// Main entry point for manual testing.
+    /// Call this method directly (not via xUnit) to run comprehensive manual tests.
+    /// </summary>
     public static void MainManual(string[] args)
     {
         Console.WriteLine("LegioSoft.Imaging.WebP - Comprehensive Test Suite");
@@ -96,56 +112,56 @@ public class WebPTests
         var passed = 0;
         
         var validWebP = new byte[] {
-            0x52, 0x49, 0x46, 0x46, 
-            0x00, 0x00, 0x00, 0x00, 
+            0x52, 0x49, 0x46, 0x46,
+            0x00, 0x00, 0x00, 0x00,
             0x57, 0x45, 0x42, 0x50
         };
-        
+
+        var format = FormatDetector.DetectFormat(validWebP);
+        if (format == LegioImageFormat.WebP)
+        {
+            PrintSuccess($"FormatDetector returned WebP for valid data");
+            passed++;
+        }
+        else
+        {
+            PrintError($"FormatDetector failed for WebP data: {format}");
+        }
+
         if (WebPImage.IsValidWebP(validWebP))
         {
-            PrintSuccess("Valid WebP header detected");
+            PrintSuccess("WebPImage.IsValidWebP correctly identified valid WebP header");
             passed++;
         }
         else
         {
-            PrintError("Failed to detect valid WebP header");
+            PrintError("WebPImage.IsValidWebP failed to detect valid WebP header");
         }
-        
+
         var invalidData = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
-        
+
         if (!WebPImage.IsValidWebP(invalidData))
         {
-            PrintSuccess("Non-WebP data correctly rejected");
+            PrintSuccess("WebPImage.IsValidWebP correctly rejected non-WebP data");
             passed++;
         }
         else
         {
-            PrintError("Incorrectly identified non-WebP data as WebP");
+            PrintError("WebPImage.IsValidWebP incorrectly identified non-WebP data as WebP");
         }
-        
-        var format = WebPImage.DetectFormat(validWebP);
-        if (format == ImageFormat.WebP)
-        {
-            PrintSuccess($"Format detection returned WebP for valid data");
-            passed++;
-        }
-        else
-        {
-            PrintError($"Format detection failed for WebP data: {format}");
-        }
-        
+
         var jpegData = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 };
-        format = WebPImage.DetectFormat(jpegData);
-        if (format == ImageFormat.Jpeg)
+        format = FormatDetector.DetectFormat(jpegData);
+        if (format == LegioImageFormat.Jpeg)
         {
-            PrintSuccess("JPEG format detected correctly");
+            PrintSuccess("FormatDetector detected JPEG format correctly");
             passed++;
         }
         else
         {
-            PrintError($"JPEG format not detected: {format}");
+            PrintError($"FormatDetector did not detect JPEG: {format}");
         }
-        
+
         return passed;
     }
 

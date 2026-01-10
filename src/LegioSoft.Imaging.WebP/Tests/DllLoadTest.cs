@@ -21,7 +21,7 @@ public class DllLoadTest
                 0x57, 0x45, 0x42, 0x50  // "WEBP"
             };
 
-            var isWebP = WebPHelper.IsWebP(validWebP);
+            var isWebP = WebPValidationHelper.IsWebP(validWebP);
             Console.WriteLine($"✅ IsWebP() works: {isWebP}");
         }
         catch (Exception ex)

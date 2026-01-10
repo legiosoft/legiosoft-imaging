@@ -6,7 +6,7 @@ namespace LegioSoft.Imaging.WebP.Encoder;
 
 public class WebPEncoder
 {
-    private const int WEBP_ENCODER_ABI_VERSION = 0x0200;
+    private const int WEBP_ENCODER_ABI_VERSION = 0x0210;
 
     public static byte[] Encode(byte[] rgbaData, int width, int height, float quality = 75.0f)
     {
@@ -203,7 +203,7 @@ public class WebPEncoder
         if (options == null)
             options = new WebPEncodeOptions();
 
-        var config = new Native.NativeMethods.WebPConfig();
+        var config = new Native.WebPConfig();
         
         if (Native.NativeMethods.WebPConfigInitInternal(ref config, options.Preset, options.Quality, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP encoder config (version mismatch)");
@@ -213,7 +213,7 @@ public class WebPEncoder
         if (Native.NativeMethods.WebPValidateConfig(ref config) == 0)
             throw new InvalidOperationException("Invalid WebP encoder configuration");
 
-        var pic = new Native.NativeMethods.WebPPicture();
+        var pic = new Native.WebPPicture();
         
         if (Native.NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP picture (version mismatch)");
@@ -240,12 +240,14 @@ public class WebPEncoder
             if (importResult == 0)
                 throw new InvalidOperationException("Failed to import image data into WebP picture");
 
-            var writer = new Native.NativeMethods.WebPMemoryWriter();
+            var writer = new Native.WebPMemoryWriter();
             Native.NativeMethods.WebPMemoryWriterInit(ref writer);
             
-            pic.writer = writer.mem;
-            pic.custom_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(writer));
-            Marshal.StructureToPtr(writer, pic.custom_ptr, false);
+            var writerPtr = Marshal.AllocHGlobal(Marshal.SizeOf<Native.WebPMemoryWriter>());
+            Marshal.StructureToPtr(writer, writerPtr, false);
+            
+            pic.writer = Marshal.GetFunctionPointerForDelegate<Native.NativeMethods.WebPWriterFunction>(Native.NativeMethods.WebPMemoryWrite);
+            pic.custom_ptr = writerPtr;
 
             var encodeResult = Native.NativeMethods.WebPEncode(ref config, ref pic);
             
@@ -254,6 +256,7 @@ public class WebPEncoder
 
             var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
+            Native.NativeMethods.WebPMemoryWriterClear(ref writer);
             
             return result;
         }
@@ -274,7 +277,7 @@ public class WebPEncoder
         if (width <= 0 || height <= 0 || targetWidth <= 0 || targetHeight <= 0)
             throw new ArgumentException("Width and height must be positive", nameof(width));
 
-        var pic = new Native.NativeMethods.WebPPicture();
+        var pic = new Native.WebPPicture();
         
         if (Native.NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP picture (version mismatch)");
@@ -283,7 +286,7 @@ public class WebPEncoder
         pic.width = width;
         pic.height = height;
 
-        var config = new Native.NativeMethods.WebPConfig();
+        var config = new Native.WebPConfig();
         
         if (Native.NativeMethods.WebPConfigInitInternal(ref config, WebPPreset.DEFAULT, quality, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP encoder config (version mismatch)");
@@ -300,12 +303,14 @@ public class WebPEncoder
             if (Native.NativeMethods.WebPPictureRescale(ref pic, targetWidth, targetHeight) == 0)
                 throw new InvalidOperationException("Failed to scale WebP picture");
 
-            var writer = new Native.NativeMethods.WebPMemoryWriter();
+            var writer = new Native.WebPMemoryWriter();
             Native.NativeMethods.WebPMemoryWriterInit(ref writer);
             
-            pic.writer = writer.mem;
-            pic.custom_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(writer));
-            Marshal.StructureToPtr(writer, pic.custom_ptr, false);
+            var writerPtr = Marshal.AllocHGlobal(Marshal.SizeOf<Native.WebPMemoryWriter>());
+            Marshal.StructureToPtr(writer, writerPtr, false);
+            
+            pic.writer = Marshal.GetFunctionPointerForDelegate<Native.NativeMethods.WebPWriterFunction>(Native.NativeMethods.WebPMemoryWrite);
+            pic.custom_ptr = writerPtr;
 
             var encodeResult = Native.NativeMethods.WebPEncode(ref config, ref pic);
             
@@ -314,6 +319,7 @@ public class WebPEncoder
 
             var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
+            Native.NativeMethods.WebPMemoryWriterClear(ref writer);
             
             return result;
         }
@@ -334,7 +340,7 @@ public class WebPEncoder
         if (cropWidth <= 0 || cropHeight <= 0 || cropX < 0 || cropY < 0)
             throw new ArgumentException("Invalid crop parameters", nameof(cropWidth));
 
-        var pic = new Native.NativeMethods.WebPPicture();
+        var pic = new Native.WebPPicture();
         
         if (Native.NativeMethods.WebPPictureInitInternal(ref pic, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP picture (version mismatch)");
@@ -343,7 +349,7 @@ public class WebPEncoder
         pic.width = width;
         pic.height = height;
 
-        var config = new Native.NativeMethods.WebPConfig();
+        var config = new Native.WebPConfig();
         
         if (Native.NativeMethods.WebPConfigInitInternal(ref config, WebPPreset.DEFAULT, quality, WEBP_ENCODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP encoder config (version mismatch)");
@@ -360,12 +366,14 @@ public class WebPEncoder
             if (Native.NativeMethods.WebPPictureCrop(ref pic, cropX, cropY, cropWidth, cropHeight) == 0)
                 throw new InvalidOperationException("Failed to crop WebP picture");
 
-            var writer = new Native.NativeMethods.WebPMemoryWriter();
+            var writer = new Native.WebPMemoryWriter();
             Native.NativeMethods.WebPMemoryWriterInit(ref writer);
             
-            pic.writer = writer.mem;
-            pic.custom_ptr = Marshal.AllocHGlobal(Marshal.SizeOf(writer));
-            Marshal.StructureToPtr(writer, pic.custom_ptr, false);
+            var writerPtr = Marshal.AllocHGlobal(Marshal.SizeOf<Native.WebPMemoryWriter>());
+            Marshal.StructureToPtr(writer, writerPtr, false);
+            
+            pic.writer = Marshal.GetFunctionPointerForDelegate<Native.NativeMethods.WebPWriterFunction>(Native.NativeMethods.WebPMemoryWrite);
+            pic.custom_ptr = writerPtr;
 
             var encodeResult = Native.NativeMethods.WebPEncode(ref config, ref pic);
             
@@ -374,6 +382,7 @@ public class WebPEncoder
 
             var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
+            Native.NativeMethods.WebPMemoryWriterClear(ref writer);
             
             return result;
         }
@@ -386,7 +395,7 @@ public class WebPEncoder
         }
     }
 
-    private static void ApplyEncodeOptions(ref Native.NativeMethods.WebPConfig config, WebPEncodeOptions options)
+    private static void ApplyEncodeOptions(ref Native.WebPConfig config, WebPEncodeOptions options)
     {
         if (options.Lossless)
         {

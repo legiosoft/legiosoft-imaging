@@ -137,7 +137,7 @@ public class WebPDecoder
         if (scaledWidth <= 0 || scaledHeight <= 0)
             throw new ArgumentException("Scaled dimensions must be positive", nameof(scaledWidth));
 
-        var config = new Native.NativeMethods.WebPDecoderConfig();
+        var config = new Native.WebPDecoderConfig();
         
         if (Native.NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP decoder config (version mismatch)");
@@ -186,7 +186,7 @@ public class WebPDecoder
         if (cropWidth <= 0 || cropHeight <= 0 || cropLeft < 0 || cropTop < 0)
             throw new ArgumentException("Invalid crop parameters");
 
-        var config = new Native.NativeMethods.WebPDecoderConfig();
+        var config = new Native.WebPDecoderConfig();
         
         if (Native.NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP decoder config (version mismatch)");
@@ -234,7 +234,7 @@ public class WebPDecoder
 
         var info = GetInfo(webpData);
 
-        var config = new Native.NativeMethods.WebPDecoderConfig();
+        var config = new Native.WebPDecoderConfig();
         
         if (Native.NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
             throw new InvalidOperationException("Failed to initialize WebP decoder config (version mismatch)");
@@ -285,3 +285,4 @@ public class WebPDecoder
         }
     }
 }
+

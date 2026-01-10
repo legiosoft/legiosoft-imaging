@@ -5,6 +5,8 @@ namespace LegioSoft.Imaging.WebP.Native;
 
 internal static class NativeMethods
 {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int WebPWriterFunction(IntPtr data, UIntPtr data_size, ref WebPPicture picture);
     static NativeMethods()
     {
         NativeLibraryLoader.GetNativeLibrary();
@@ -216,6 +218,12 @@ internal static class NativeMethods
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern void WebPMemoryWriterInit(ref WebPMemoryWriter writer);
 
+    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern void WebPMemoryWriterClear(ref WebPMemoryWriter writer);
+
+    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
+    public static extern int WebPMemoryWrite(IntPtr data, UIntPtr data_size, ref WebPPicture picture);
+
     #endregion
 
     #region Utility Functions
@@ -228,158 +236,6 @@ internal static class NativeMethods
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int WebPGetEncoderVersion();
-
-    #endregion
-
-    #region Structs
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WebPBitstreamFeatures
-    {
-        public int width;
-        public int height;
-        public int has_alpha;
-        public int has_animation;
-        public int format;
-        private uint pad1, pad2, pad3, pad4, pad5;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WebPRGBABuffer
-    {
-        public IntPtr rgba;
-        public int stride;
-        public UIntPtr size;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WebPYUVABuffer
-    {
-        public IntPtr y;
-        public IntPtr u;
-        public IntPtr v;
-        public IntPtr a;
-        public int y_stride;
-        public int u_stride;
-        public int v_stride;
-        public int a_stride;
-        public UIntPtr y_size;
-        public UIntPtr u_size;
-        public UIntPtr v_size;
-        public UIntPtr a_size;
-    }
-
-    [StructLayout(LayoutKind.Explicit)]
-    public struct WebPDecBuffer
-    {
-        [FieldOffset(0)]
-        public WEBP_CSP_MODE colorspace;
-
-        [FieldOffset(4)]
-        public int width;
-
-        [FieldOffset(8)]
-        public int height;
-
-        [FieldOffset(12)]
-        public int is_external_memory;
-
-        [FieldOffset(16)]
-        public WebPRGBABuffer rgba;
-
-        [FieldOffset(16)]
-        public WebPYUVABuffer yuva;
-
-        [FieldOffset(48)]
-        private uint pad1, pad2, pad3, pad4;
-
-        [FieldOffset(64)]
-        public IntPtr private_memory;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WebPDecoderOptions
-    {
-        public int bypass_filtering;
-        public int no_fancy_upsampling;
-        public int use_cropping;
-        public int crop_left;
-        public int crop_top;
-        public int crop_width;
-        public int crop_height;
-        public int use_scaling;
-        public int scaled_width;
-        public int scaled_height;
-        public int use_threads;
-        public int dithering_strength;
-        public int flip;
-        public int alpha_dithering_strength;
-        private uint pad1, pad2, pad3, pad4, pad5;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WebPDecoderConfig
-    {
-        public WebPBitstreamFeatures input;
-        public WebPDecBuffer output;
-        public WebPDecoderOptions options;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WebPConfig
-    {
-        public int lossless;
-        public float quality;
-        public int method;
-        public WebPImageHint image_hint;
-        public int target_size;
-        public float target_PSNR;
-        public int segments;
-        public int sns_strength;
-        public int filter_strength;
-        public int filter_sharpness;
-        public int filter_type;
-        public int autofilter;
-        public int alpha_compression;
-        public int alpha_filtering;
-        public int alpha_quality;
-        public int pass;
-        public int show_compressed;
-        public int preprocessing;
-        public int partitions;
-        public int partition_limit;
-        public int use_sharp_yuv;
-        private uint pad1, pad2, pad3;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WebPPicture
-    {
-        public int use_argb;
-        public int colorspace;
-        public int width;
-        public int height;
-        public IntPtr y;
-        public IntPtr u;
-        public IntPtr v;
-        public int y_stride;
-        public int uv_stride;
-        public IntPtr a;
-        public int a_stride;
-        public IntPtr argb;
-        public int argb_stride;
-        public IntPtr writer;
-        public IntPtr custom_ptr;
-        public WebPEncodingError error_code;
-        private uint pad1, pad2, pad3, pad4;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    public struct WebPMemoryWriter
-    {
-        public IntPtr mem;
-        public UIntPtr size;
-    }
 
     #endregion
 }

@@ -27,18 +27,36 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\win-x64\libwebp.dll">
+    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\win-x64\libwebp.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libwebp.dll</Link>
-    </None>
-    <None Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\linux-x64\libwebp.so">
+      <Pack>false</Pack>
+    </Content>
+    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\linux-x64\libwebp.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libwebp.so</Link>
-    </None>
-    <None Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\linux-arm64\libwebp.so">
+      <Pack>false</Pack>
+    </Content>
+    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\linux-arm64\libwebp.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>libwebp.so</Link>
-    </None>
+      <Pack>false</Pack>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\win-x64\libwebp.dll">
+      <Link>runtimes\win-x64\libwebp.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>false</Pack>
+    </Content>
+    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\linux-x64\libwebp.so">
+      <Link>runtimes\linux-x64\libwebp.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>false</Pack>
+    </Content>
+    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\linux-arm64\libwebp.so">
+      <Link>runtimes\linux-arm64\libwebp.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>false</Pack>
+    </Content>
   </ItemGroup>
 
 </Project>
