@@ -10,8 +10,8 @@ public static class FormatDetector
         if (imageData.Length == 0)
             throw new ArgumentException("Image data cannot be empty", nameof(imageData));
         
-        if (imageData.Length < 12)
-            throw new ArgumentException("Image data is too short to determine format", nameof(imageData));
+        if (imageData.Length < 3)
+            throw new ArgumentException("Image data is too short to determine format (minimum 3 bytes required)", nameof(imageData));
 
         return DetectFormatInternal(imageData);
     }
