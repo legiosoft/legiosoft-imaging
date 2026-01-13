@@ -19,6 +19,7 @@ dotnet add package LegioSoft.Imaging.Core
 ### Classes
 
 - `FormatDetector` - Securely detect image format from byte arrays with validation
+- `LegioImageInfo` - Image metadata (width, height, format, alpha channel, byte size)
 
 ### Interfaces
 
@@ -37,10 +38,6 @@ dotnet add package LegioSoft.Imaging.Core
 - `LegioEncodingQuality` - Quality levels for encoding
 - `LegioTransformType` - Rotation transformations
 - `LegioFilterType` - Filter types
-
-### Classes
-
-- `LegioImageInfo` - Image metadata (width, height, format, alpha channel, byte size)
 
 ## Usage
 
