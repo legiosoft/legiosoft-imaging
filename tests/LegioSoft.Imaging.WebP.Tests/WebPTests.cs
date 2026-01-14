@@ -1,5 +1,4 @@
 using LegioSoft.Imaging.WebP.Enums;
-using LegioSoft.Imaging.WebP.Helpers;
 using LegioSoft.Imaging.WebP.Models;
 using LegioSoft.Imaging.Core;
 

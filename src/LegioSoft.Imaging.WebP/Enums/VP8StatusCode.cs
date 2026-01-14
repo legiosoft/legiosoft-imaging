@@ -1,13 +1,13 @@
-﻿namespace LegioSoft.Imaging.WebP.Enums;
+namespace LegioSoft.Imaging.WebP.Enums;
 
 public enum VP8StatusCode
 {
-    OK,
-    OUT_OF_MEMORY,
-    INVALID_PARAM,
-    BITSTREAM_ERROR,
-    UNSUPPORTED_FEATURE,
-    SUSPENDED,
-    USER_ABORT,
-    NOT_ENOUGH_DATA
+    OK = 0,
+    OUT_OF_MEMORY = 1,
+    INVALID_PARAM = 2,
+    BITSTREAM_ERROR = 3,
+    UNSUPPORTED_FEATURE = 4,
+    SUSPENDED = 5,
+    USER_ABORT = 6,
+    NOT_ENOUGH_DATA = 7
 }

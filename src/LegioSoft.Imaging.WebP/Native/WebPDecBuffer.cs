@@ -4,29 +4,26 @@ using LegioSoft.Imaging.WebP.Enums;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Explicit)]
-public unsafe struct WebPDecBuffer
+public struct WebPDecBufferUnion
 {
     [FieldOffset(0)]
+    public WebPRGBABuffer RGBA;
+
+    [FieldOffset(0)]
+    public WebPYUVABuffer YUVA;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public unsafe struct WebPDecBuffer
+{
     public WEBP_CSP_MODE colorspace;
-
-    [FieldOffset(4)]
     public int width;
-
-    [FieldOffset(8)]
     public int height;
-
-    [FieldOffset(12)]
     public int is_external_memory;
+    public WebPDecBufferUnion u;
 
-    [FieldOffset(16)]
-    public WebPRGBABuffer rgba;
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+    private uint[] pad;
 
-    [FieldOffset(16)]
-    public WebPYUVABuffer yuva;
-
-    [FieldOffset(48)]
-    private fixed uint pad[4];
-
-    [FieldOffset(64)]
     public IntPtr private_memory;
 }

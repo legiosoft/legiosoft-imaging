@@ -2,12 +2,15 @@ using System.Runtime.InteropServices;
 using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Models;
 using LegioSoft.Imaging.WebP.Native;
+using LegioSoft.Imaging.WebP.Delegates;
 
 namespace LegioSoft.Imaging.WebP.Encoder;
 
 public class WebPEncoder
 {
     private const int WEBP_ENCODER_ABI_VERSION = 0x0210;
+
+    private static readonly WebPWriterFunction _writerDelegate = WebPMemoryWriterCallbacks.Write;
 
     public static byte[] Encode(byte[] rgbaData, int width, int height, float quality = 75.0f)
     {
@@ -295,29 +298,43 @@ public class WebPEncoder
 
             var writer = new WebPMemoryWriter();
             NativeMethods.WebPMemoryWriterInit(ref writer);
-            
+
             var writerPtr = Marshal.AllocHGlobal(Marshal.SizeOf<WebPMemoryWriter>());
             Marshal.StructureToPtr(writer, writerPtr, false);
-            
-            pic.writer = Marshal.GetFunctionPointerForDelegate<NativeMethods.WebPWriterFunction>(NativeMethods.WebPMemoryWrite);
+
+            pic.writer = Marshal.GetFunctionPointerForDelegate(_writerDelegate);
             pic.custom_ptr = writerPtr;
 
-            var encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
+            if (NativeMethods.WebPEncode(ref config, ref pic) == 0)
+            {
+                throw new InvalidOperationException("Failed to encode image");
+            }
 
-             writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
-var result = new byte[(int)writer.size];
+            writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+
+            if (writer.size == UIntPtr.Zero)
+            {
+                throw new InvalidOperationException("Encoded data is empty");
+            }
+
+            var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             NativeMethods.WebPMemoryWriterClear(ref writer);
-            
+
             return result;
         }
         finally
         {
             if (pic.custom_ptr != IntPtr.Zero)
             {
+                var writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+                if (writer.mem != IntPtr.Zero)
+                {
+                    NativeMethods.WebPFree(writer.mem);
+                }
                 Marshal.FreeHGlobal(pic.custom_ptr);
             }
-            
+
             NativeMethods.WebPPictureFree(ref pic);
         }
     }
@@ -373,29 +390,43 @@ var result = new byte[(int)writer.size];
 
             var writer = new WebPMemoryWriter();
             NativeMethods.WebPMemoryWriterInit(ref writer);
-            
+
             var writerPtr = Marshal.AllocHGlobal(Marshal.SizeOf<WebPMemoryWriter>());
             Marshal.StructureToPtr(writer, writerPtr, false);
-            
-            pic.writer = Marshal.GetFunctionPointerForDelegate<NativeMethods.WebPWriterFunction>(NativeMethods.WebPMemoryWrite);
+
+            pic.writer = Marshal.GetFunctionPointerForDelegate(_writerDelegate);
             pic.custom_ptr = writerPtr;
 
-            var encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
+            if (NativeMethods.WebPEncode(ref config, ref pic) == 0)
+            {
+                throw new InvalidOperationException("Failed to encode scaled image");
+            }
 
-             writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
-var result = new byte[(int)writer.size];
+            writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+
+            if (writer.size == UIntPtr.Zero)
+            {
+                throw new InvalidOperationException("Encoded data is empty");
+            }
+
+            var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             NativeMethods.WebPMemoryWriterClear(ref writer);
-            
+
             return result;
         }
         finally
         {
             if (pic.custom_ptr != IntPtr.Zero)
             {
+                var writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+                if (writer.mem != IntPtr.Zero)
+                {
+                    NativeMethods.WebPFree(writer.mem);
+                }
                 Marshal.FreeHGlobal(pic.custom_ptr);
             }
-            
+
             NativeMethods.WebPPictureFree(ref pic);
         }
     }
@@ -451,29 +482,43 @@ var result = new byte[(int)writer.size];
 
             var writer = new WebPMemoryWriter();
             NativeMethods.WebPMemoryWriterInit(ref writer);
-            
+
             var writerPtr = Marshal.AllocHGlobal(Marshal.SizeOf<WebPMemoryWriter>());
             Marshal.StructureToPtr(writer, writerPtr, false);
-            
-            pic.writer = Marshal.GetFunctionPointerForDelegate<NativeMethods.WebPWriterFunction>(NativeMethods.WebPMemoryWrite);
+
+            pic.writer = Marshal.GetFunctionPointerForDelegate(_writerDelegate);
             pic.custom_ptr = writerPtr;
 
-            var encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
+            if (NativeMethods.WebPEncode(ref config, ref pic) == 0)
+            {
+                throw new InvalidOperationException("Failed to encode cropped image");
+            }
 
-             writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
-var result = new byte[(int)writer.size];
+            writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+
+            if (writer.size == UIntPtr.Zero)
+            {
+                throw new InvalidOperationException("Encoded data is empty");
+            }
+
+            var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             NativeMethods.WebPMemoryWriterClear(ref writer);
-            
+
             return result;
         }
         finally
         {
             if (pic.custom_ptr != IntPtr.Zero)
             {
+                var writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+                if (writer.mem != IntPtr.Zero)
+                {
+                    NativeMethods.WebPFree(writer.mem);
+                }
                 Marshal.FreeHGlobal(pic.custom_ptr);
             }
-            
+
             NativeMethods.WebPPictureFree(ref pic);
         }
     }

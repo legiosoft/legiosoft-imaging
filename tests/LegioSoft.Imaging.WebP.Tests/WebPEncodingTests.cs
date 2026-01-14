@@ -1,7 +1,6 @@
 using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Encoder;
 using LegioSoft.Imaging.WebP.Models;
-using Xunit;
 
 namespace LegioSoft.Imaging.WebP.Tests;
 

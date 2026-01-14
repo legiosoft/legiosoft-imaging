@@ -14,13 +14,6 @@ internal static class NativeMethods
 
     #endregion
 
-    #region Delegate
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate int WebPWriterFunction(IntPtr data, UIntPtr data_size, ref WebPPicture picture);
-
-    #endregion
-
     #region Constructor
 
     static NativeMethods()

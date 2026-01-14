@@ -7,7 +7,7 @@ namespace LegioSoft.Imaging.WebP.Native;
 public unsafe struct WebPPicture
 {
     public int use_argb;
-    public int colorspace;
+    public WebPEncCSP colorspace;
     public int width;
     public int height;
     public IntPtr y;

@@ -204,7 +204,7 @@ public class WebPDecoder
 
             var size = scaledWidth * scaledHeight * bytesPerPixel;
             var decodedData = new byte[size];
-            Marshal.Copy(config.output.rgba.rgba, decodedData, 0, size);
+            Marshal.Copy(config.output.u.RGBA.rgba, decodedData, 0, size);
 
             return decodedData;
         }
@@ -267,7 +267,7 @@ public class WebPDecoder
 
             var size = cropWidth * cropHeight * bytesPerPixel;
             var decodedData = new byte[size];
-            Marshal.Copy(config.output.rgba.rgba, decodedData, 0, size);
+            Marshal.Copy(config.output.u.RGBA.rgba, decodedData, 0, size);
 
             return decodedData;
         }
@@ -317,7 +317,7 @@ public class WebPDecoder
 
             var size = info.Width * info.Height * bytesPerPixel;
             var decodedData = new byte[size];
-            Marshal.Copy(config.output.rgba.rgba, decodedData, 0, size);
+            Marshal.Copy(config.output.u.RGBA.rgba, decodedData, 0, size);
 
             return decodedData;
         }

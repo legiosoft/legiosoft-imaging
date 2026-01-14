@@ -1,6 +1,4 @@
 using LegioSoft.Imaging.Core;
-using LegioSoft.Imaging.Skia.Core;
-using LegioSoft.Imaging.Skia.Operations;
 using SkiaSharp;
 using Xunit;
 
