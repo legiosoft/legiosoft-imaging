@@ -1,4 +1,4 @@
-namespace LegioSoft.Imaging.Core;
+namespace LegioSoft.Imaging.Core.Interfaces;
 
 /// <summary>
 /// Interface for transforming images (rotation and flipping).

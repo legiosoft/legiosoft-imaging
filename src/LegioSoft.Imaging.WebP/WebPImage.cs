@@ -1,7 +1,3 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security;
 using LegioSoft.Imaging.WebP.Decoder;
 using LegioSoft.Imaging.WebP.Encoder;
 using LegioSoft.Imaging.WebP.Enums;

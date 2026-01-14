@@ -1,4 +1,7 @@
-namespace LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Classes;
+using LegioSoft.Imaging.Core.Enums;
+
+namespace LegioSoft.Imaging.Core.Interfaces;
 
 /// <summary>
 /// Interface for decoding images and retrieving image information.

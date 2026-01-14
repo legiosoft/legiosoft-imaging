@@ -1,4 +1,4 @@
-namespace LegioSoft.Imaging.Core;
+namespace LegioSoft.Imaging.Core.Enums;
 
 /// <summary>
 /// Scaling modes for image resizing.

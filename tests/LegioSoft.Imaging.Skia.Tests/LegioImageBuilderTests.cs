@@ -1,6 +1,5 @@
 using LegioSoft.Imaging.Core;
 using LegioSoft.Imaging.Core.Enums;
-using LegioSoft.Imaging.Skia;
 using SkiaSharp;
 using Xunit;
 

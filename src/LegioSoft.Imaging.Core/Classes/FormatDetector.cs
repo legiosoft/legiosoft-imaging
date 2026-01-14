@@ -1,12 +1,13 @@
-namespace LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Enums;
+
+namespace LegioSoft.Imaging.Core.Classes;
 
 public static class FormatDetector
 {
     public static LegioImageFormat DetectFormat(byte[] imageData)
     {
-        if (imageData == null)
-            throw new ArgumentNullException(nameof(imageData));
-        
+        ArgumentNullException.ThrowIfNull(imageData);
+
         if (imageData.Length == 0)
             throw new ArgumentException("Image data cannot be empty", nameof(imageData));
         

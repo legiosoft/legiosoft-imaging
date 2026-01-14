@@ -1,4 +1,6 @@
-namespace LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Enums;
+
+namespace LegioSoft.Imaging.Core.Classes;
 
 /// <summary>
 /// Contains metadata information about an image.

@@ -1,4 +1,6 @@
-namespace LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Enums;
+
+namespace LegioSoft.Imaging.Core.Interfaces;
 
 /// <summary>
 /// Interface for encoding images to different formats.

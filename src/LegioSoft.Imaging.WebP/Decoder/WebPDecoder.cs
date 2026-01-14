@@ -1,4 +1,3 @@
-using System.IO;
 using System.Runtime.InteropServices;
 using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Models;
