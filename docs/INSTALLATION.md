@@ -2,14 +2,6 @@
 
 ## Packages
 
-### LegioSoft.Imaging (Meta)
-
-```bash
-dotnet add package LegioSoft.Imaging
-```
-
-Includes Core, WebP, and Skia packages.
-
 ### LegioSoft.Imaging.WebP
 
 ```bash
@@ -50,7 +42,6 @@ Core interfaces and types. ~20KB.
 
 | Need | Package |
 |------|---------|
-| All features | LegioSoft.Imaging |
 | WebP only | LegioSoft.Imaging.WebP |
 | Full processing | LegioSoft.Imaging.Skia |
 | Core types | LegioSoft.Imaging.Core |

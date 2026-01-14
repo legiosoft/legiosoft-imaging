@@ -47,12 +47,6 @@ For detailed usage guides, see the `docs/` folder:
 
 ## Installation
 
-### Quick Install (Meta Package - All Features)
-
-```bash
-dotnet add package LegioSoft.Imaging
-```
-
 ### Install Lightweight (WebP Only)
 
 ```bash
