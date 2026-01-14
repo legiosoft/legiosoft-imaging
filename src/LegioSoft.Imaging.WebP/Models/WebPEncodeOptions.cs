@@ -1,61 +1,30 @@
+using LegioSoft.Imaging.WebP.Enums;
+
 namespace LegioSoft.Imaging.WebP.Models;
 
 public class WebPEncodeOptions
 {
-    public WebPEncodeOptions()
-    {
-        Preset = Enums.WebPPreset.DEFAULT;
-        Quality = 75.0f;
-        Lossless = false;
-        InputFormat = WebPInputFormat.RGBA;
-        Method = 4;
-        ImageHint = Enums.WebPImageHint.DEFAULT;
-        TargetSize = 0;
-        TargetPSNR = 0.0f;
-        Segments = 4;
-        SnsStrength = 50;
-        FilterStrength = 60;
-        FilterSharpness = 0;
-        FilterType = 0;
-        Autofilter = true;
-        AlphaCompression = 1;
-        AlphaFiltering = 1;
-        AlphaQuality = 100;
-        Pass = 1;
-        Preprocessing = 0;
-        Partitions = 3;
-        PartitionLimit = 0;
-        UseSharpYUV = false;
-    }
-
-    public Enums.WebPPreset Preset { get; set; }
-    public float Quality { get; set; }
+    public WebPPreset Preset { get; set; } = WebPPreset.DEFAULT;
+    public float Quality { get; set; } = 75.0f;
     public bool Lossless { get; set; }
-    public WebPInputFormat InputFormat { get; set; }
-    public int Method { get; set; }
-    public Enums.WebPImageHint ImageHint { get; set; }
-    public int TargetSize { get; set; }
-    public float TargetPSNR { get; set; }
-    public int Segments { get; set; }
-    public int SnsStrength { get; set; }
-    public int FilterStrength { get; set; }
-    public int FilterSharpness { get; set; }
-    public int FilterType { get; set; }
-    public bool Autofilter { get; set; }
-    public int AlphaCompression { get; set; }
-    public int AlphaFiltering { get; set; }
-    public int AlphaQuality { get; set; }
-    public int Pass { get; set; }
-    public int Preprocessing { get; set; }
-    public int Partitions { get; set; }
-    public int PartitionLimit { get; set; }
-    public bool UseSharpYUV { get; set; }
+    public WebPInputFormat InputFormat { get; set; } = WebPInputFormat.RGBA;
+    public int Method { get; set; } = 4;
+    public WebPImageHint ImageHint { get; set; } = WebPImageHint.DEFAULT;
+    public int TargetSize { get; set; } = 0;
+    public float TargetPSNR { get; set; } = 0.0f;
+    public int Segments { get; set; } = 4;
+    public int SnsStrength { get; set; } = 50;
+    public int FilterStrength { get; set; } = 60;
+    public int FilterSharpness { get; set; } = 0;
+    public int FilterType { get; set; } = 0;
+    public bool Autofilter { get; set; } = true;
+    public int AlphaCompression { get; set; } = 1;
+    public int AlphaFiltering { get; set; } = 1;
+    public int AlphaQuality { get; set; } = 100;
+    public int Pass { get; set; } = 1;
+    public int Preprocessing { get; set; } = 0;
+    public int Partitions { get; set; } = 3;
+    public int PartitionLimit { get; set; } = 0;
+    public bool UseSharpYUV { get; set; } = false;
 }
 
-public enum WebPInputFormat
-{
-    RGBA,
-    BGRA,
-    RGB,
-    BGR
-}

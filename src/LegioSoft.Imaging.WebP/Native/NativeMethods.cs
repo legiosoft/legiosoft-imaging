@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
 using LegioSoft.Imaging.WebP.Enums;
 
@@ -7,9 +8,20 @@ internal static class NativeMethods
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int WebPWriterFunction(IntPtr data, UIntPtr data_size, ref WebPPicture picture);
+
     static NativeMethods()
     {
-        NativeLibraryLoader.GetNativeLibrary();
+        NativeLibrary.SetDllImportResolver(typeof(NativeMethods).Assembly, DllImportResolver);
+    }
+
+    private static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+    {
+        if (libraryName == "libwebp")
+        {
+            return NativeLibraryLoader.GetNativeLibrary();
+        }
+
+        return IntPtr.Zero;
     }
 
     private const string LibraryName = "libwebp";

@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <PackageId>LegioSoft.Imaging.WebP</PackageId>
     <Description>
-      WebP codec wrapper using native libwebp v1.6.0. High-performance WebP encoding and decoding with support for RGBA, RGB, BGRA, BGR formats. Features include lossless/lossy compression, scaling, cropping, flip, and advanced encoding options. Updated for libwebp 1.6.0 with correct ABI version (0x0210) and proper memory management (WebPMemoryWriterClear). Cross-platform support (Windows, Linux, macOS). Implements ILegioImageEncoder and ILegioImageDecoder interfaces from Core package. Use FormatDetector from Core for format detection.
+      WebP codec wrapper using native libwebp. High-performance WebP encoding and decoding with support for RGBA, RGB, BGRA, BGR formats. Features include lossless/lossy compression, scaling, cropping, flip, and advanced encoding options. Updated for libwebp 1.6.0 with correct ABI version (0x0210) and proper memory management (WebPMemoryWriterClear). Cross-platform support (Windows, Linux, macOS). Implements ILegioImageEncoder and ILegioImageDecoder interfaces from Core package. Use FormatDetector from Core for format detection.
     </Description>
     <PackageTags>
       webp;image;encoding;decoding;codec;libwebp;lossless;lossy;compression;
@@ -15,7 +15,7 @@
       imaging;graphics;multimedia
     </PackageTags>
     <PackageReleaseNotes>
-      1.0.0-beta3 - Initial beta release of LegioSoft.Imaging.WebP.
+      1.0.0-beta* - Initial beta release of LegioSoft.Imaging.WebP.
 
       Features:
       - WebP encoding (RGBA, RGB, BGRA, BGR formats) with proper memory management
@@ -41,17 +41,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="runtimes\win-x64\libwebp.dll">
+    <None Include="runtimes\win-x64\*.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>true</Pack>
       <PackagePath>runtimes\win-x64\</PackagePath>
     </None>
-    <None Include="runtimes\linux-x64\libwebp.so">
+    <None Include="runtimes\linux-x64\*.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-x64\</PackagePath>
     </None>
-    <None Include="runtimes\linux-arm64\libwebp.so">
+    <None Include="runtimes\linux-arm64\*.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-arm64\</PackagePath>

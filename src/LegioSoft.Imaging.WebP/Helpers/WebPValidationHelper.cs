@@ -4,8 +4,10 @@ public static class WebPValidationHelper
 {
     public static bool IsWebP(byte[] imageData)
     {
-        if (imageData == null || imageData.Length < 12)
+        if (imageData.Length < 12)
+        {
             return false;
+        }
 
         return imageData[0] == 0x52 && 
                imageData[1] == 0x49 && 

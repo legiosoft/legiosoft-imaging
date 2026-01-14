@@ -145,12 +145,19 @@ Console.WriteLine($"libwebp version: {version}");
 - .NET 6.0, 7.0, 8.0, 9.0, 10.0
 - Windows (x64)
 - Linux (x64, ARM64)
-- macOS (supported via native library)
+- macOS (x64, ARM64)
 
 ## Dependencies
 
 - LegioSoft.Imaging.Core - Core interfaces and types
 - libwebp v1.6.0 native library (included)
+
+### Native Libraries
+
+The package includes pre-compiled libwebp libraries:
+- **Windows**: Built with Visual Studio Build Tools (see [BUILD_WEBP.md](../../docs/BUILD_WEBP.md))
+- **Linux**: Built with Docker (glibc) for x64 and ARM64 (see [BUILD_WEBP.md](../../docs/BUILD_WEBP.md))
+- **macOS**: Downloaded from official Google releases (see [BUILD_WEBP.md](../../docs/BUILD_WEBP.md))
 
 ## License
 

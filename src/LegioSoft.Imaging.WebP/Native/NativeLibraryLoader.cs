@@ -9,7 +9,7 @@ internal static class NativeLibraryLoader
     
     private static readonly Lazy<IntPtr> _nativeLibrary = new(() =>
     {
-        string? libraryPath = GetNativeLibraryPath();
+        var libraryPath = GetNativeLibraryPath();
         
         if (libraryPath == null)
         {
@@ -21,29 +21,29 @@ internal static class NativeLibraryLoader
 
     private static string? GetNativeLibraryPath()
     {
-        string? assemblyLocation = Assembly.GetExecutingAssembly().Location;
-        string? assemblyDirectory = assemblyLocation != null ? Path.GetDirectoryName(assemblyLocation) : null;
+        var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+        var assemblyDirectory = assemblyLocation != null ? Path.GetDirectoryName(assemblyLocation) : null;
         
         if (string.IsNullOrEmpty(assemblyDirectory))
         {
             return null;
         }
 
-        string? runtimeFolder = GetRuntimeFolder();
+        var runtimeFolder = GetRuntimeFolder();
         
         if (string.IsNullOrEmpty(runtimeFolder))
         {
             return null;
         }
 
-        string? libraryFileName = GetLibraryFileName();
+        var libraryFileName = GetLibraryFileName();
         
         if (string.IsNullOrEmpty(libraryFileName))
         {
             return null;
         }
 
-        string libraryPath = Path.Combine(assemblyDirectory, "runtimes", runtimeFolder, libraryFileName);
+        var libraryPath = Path.Combine(assemblyDirectory, "runtimes", runtimeFolder, libraryFileName);
 
         if (File.Exists(libraryPath))
         {
@@ -62,14 +62,14 @@ internal static class NativeLibraryLoader
 
     private static string? GetRuntimeFolder()
     {
-        string? os = GetOSPlatform();
+        var os = GetOSPlatform();
         
         if (string.IsNullOrEmpty(os))
         {
             return null;
         }
 
-        string architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+        var architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
         
         return $"{os}-{architecture}";
     }

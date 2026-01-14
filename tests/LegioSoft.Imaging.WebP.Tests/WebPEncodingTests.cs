@@ -5,28 +5,31 @@ using Xunit;
 
 namespace LegioSoft.Imaging.WebP.Tests;
 
-public class WebPEncodingTests : IDisposable
-{
-    private string TestDataPath;
-    private string OutputPath;
-    private static readonly bool NativeLibraryAvailable;
+ public class WebPEncodingTests : IDisposable
+ {
+     private string TestDataPath;
+     private string OutputPath;
+     private static readonly bool NativeLibraryAvailable;
+     private static Exception? NativeLibraryLoadException;
 
-    static WebPEncodingTests()
-    {
-        try
-        {
-            var version = WebPImage.GetVersion();
-            NativeLibraryAvailable = !string.IsNullOrEmpty(version);
-        }
-        catch (DllNotFoundException)
-        {
-            NativeLibraryAvailable = false;
-        }
-        catch (TypeInitializationException)
-        {
-            NativeLibraryAvailable = false;
-        }
-    }
+     static WebPEncodingTests()
+     {
+         try
+         {
+             var version = WebPImage.GetVersion();
+             NativeLibraryAvailable = !string.IsNullOrEmpty(version);
+         }
+         catch (DllNotFoundException ex)
+         {
+             NativeLibraryAvailable = false;
+             NativeLibraryLoadException = ex;
+         }
+         catch (TypeInitializationException ex)
+         {
+             NativeLibraryAvailable = false;
+             NativeLibraryLoadException = ex;
+         }
+     }
 
     public WebPEncodingTests()
     {
@@ -141,17 +144,34 @@ public class WebPEncodingTests : IDisposable
         Assert.True(data.Length > 0, $"{description}: Image data should not be empty");
     }
 
-    private void AssertFileExists(string path)
-    {
-        Assert.True(File.Exists(path), $"Expected file does not exist: {path}");
-    }
+     private void AssertFileExists(string path)
+     {
+         Assert.True(File.Exists(path), $"Expected file does not exist: {path}");
+     }
 
-    [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
-    public void Encode_RGBA_WithQuality_ReturnsWebPData()
-    {
-        if (!NativeLibraryAvailable)
-            return;
+     private void EnsureNativeLibraryAvailable()
+     {
+         if (!NativeLibraryAvailable)
+         {
+             var message = NativeLibraryLoadException != null
+                 ? $"Native WebP library failed to load: {NativeLibraryLoadException.Message}"
+                 : "Native WebP library is not available";
+
+             throw new InvalidOperationException(
+                 $"{message}\n\n" +
+                 "Tests require libwebp native library to be loadable.\n" +
+                 "Please ensure:\n" +
+                 "1. All required DLL files (libwebp.dll, libwebpdecoder.dll, libwebpdemux.dll, libwebpmux.dll) are in the runtimes folder\n" +
+                 "2. DLLs are for the correct architecture (x64)\n" +
+                 "3. Visual C++ runtime dependencies are installed\n" +
+                 "4. DLLs are not corrupted", NativeLibraryLoadException);
+         }
+     }
+
+     [Fact]
+     public void Encode_RGBA_WithQuality_ReturnsWebPData()
+     {
+         EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.Encode(rgbaData, 800, 600, 75.0f);
@@ -161,11 +181,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Encode_RGBA_DifferentQualityLevels_ProduceDifferentSizes()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
 
@@ -178,11 +196,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Encode_Lossless_ReturnsWebPData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -191,11 +207,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Encode_LosslessRGB_ReturnsWebPData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbData = CreateTestRGB(800, 600);
         var webpData = WebPImage.EncodeLosslessRGB(rgbData, 800, 600);
@@ -204,11 +218,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Encode_BGRA_WithQuality_ReturnsWebPData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var bgraData = CreateTestBGRA(800, 600);
         var webpData = WebPEncoder.EncodeBGRA(bgraData, 800, 600, 75.0f);
@@ -217,11 +229,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Encode_BGRA_Lossless_ReturnsWebPData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var bgraData = CreateTestBGRA(800, 600);
         var webpData = WebPEncoder.EncodeBGRA(bgraData, 800, 600, 75.0f, true);
@@ -230,11 +240,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Encode_BGR_WithQuality_ReturnsWebPData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var bgrData = CreateTestBGR(800, 600);
         var webpData = WebPEncoder.EncodeBGR(bgrData, 800, 600, 75.0f);
@@ -268,11 +276,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeToFile_CreatesValidFile()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var outputPath = GetOutputFilePath("test-output.webp");
@@ -298,11 +304,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeToFileRGBA_CreatesValidFile()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var outputPath = GetOutputFilePath("test-output-rgba.webp");
@@ -315,11 +319,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeAdvanced_WithPhotoP_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
 
@@ -337,11 +339,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeAdvanced_WithPicturePreset_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
 
@@ -359,11 +359,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeAdvanced_WithCustomConfiguration_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
 
@@ -386,11 +384,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeAdvanced_Lossless_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
 
@@ -407,11 +403,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeWithScaling_ScaleDown_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
 
@@ -421,11 +415,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeWithScaling_ScaleUp_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(400, 300);
 
@@ -435,11 +427,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeWithCropping_CropCenter_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
 
@@ -449,11 +439,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void EncodeWithCropping_CropTopLeft_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
 
@@ -463,11 +451,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Decode_WebPToRGBA_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -479,11 +465,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Decode_WebPToRGB_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -495,11 +479,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Decode_FromStream_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -511,11 +493,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Scale_DownToHalf_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -527,11 +507,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Scale_UpToDouble_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(400, 300);
         var webpData = WebPImage.EncodeLossless(rgbaData, 400, 300);
@@ -543,11 +521,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Crop_CenterRegion_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -559,11 +535,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Crop_TopLeftCorner_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -575,11 +549,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void Flip_Vertical_ReturnsValidData()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -591,11 +563,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void GetInfo_FromValidWebP_ReturnsCorrectInfo()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -608,11 +578,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void GetInfo_FromStream_ReturnsCorrectInfo()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -626,11 +594,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void IsValidWebP_ValidHeader_ReturnsTrue()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);
@@ -651,11 +617,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void GetVersion_ReturnsValidVersion()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var version = WebPImage.GetVersion();
 
@@ -665,11 +629,9 @@ public class WebPEncodingTests : IDisposable
     }
 
     [Fact]
-    [Trait("RequiresNativeLibrary", "true")]
     public void DecodeToFile_CreatesValidFile()
     {
-        if (!NativeLibraryAvailable)
-            return;
+        EnsureNativeLibraryAvailable();
 
         var rgbaData = CreateTestRGBA(800, 600);
         var webpData = WebPImage.EncodeLossless(rgbaData, 800, 600);

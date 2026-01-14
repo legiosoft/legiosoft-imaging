@@ -1,3 +1,5 @@
+using LegioSoft.Imaging.WebP.Enums;
+
 namespace LegioSoft.Imaging.WebP.Models;
 
 public class WebPInfo
@@ -9,9 +11,3 @@ public class WebPInfo
     public WebPFormat Format { get; set; }
 }
 
-public enum WebPFormat
-{
-    Mixed,
-    Lossy,
-    Lossless
-}
