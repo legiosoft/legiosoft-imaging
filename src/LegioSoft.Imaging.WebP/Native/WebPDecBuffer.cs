@@ -4,7 +4,7 @@ using LegioSoft.Imaging.WebP.Enums;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Explicit)]
-public struct WebPDecBuffer
+public unsafe struct WebPDecBuffer
 {
     [FieldOffset(0)]
     public WEBP_CSP_MODE colorspace;
@@ -25,7 +25,7 @@ public struct WebPDecBuffer
     public WebPYUVABuffer yuva;
 
     [FieldOffset(48)]
-    private uint pad1, pad2, pad3, pad4;
+    private fixed uint pad[4];
 
     [FieldOffset(64)]
     public IntPtr private_memory;

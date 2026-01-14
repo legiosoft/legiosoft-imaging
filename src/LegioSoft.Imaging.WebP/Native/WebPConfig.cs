@@ -4,7 +4,7 @@ using LegioSoft.Imaging.WebP.Enums;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct WebPConfig
+public unsafe struct WebPConfig
 {
     public int lossless;
     public float quality;
@@ -26,11 +26,13 @@ public struct WebPConfig
     public int preprocessing;
     public int partitions;
     public int partition_limit;
-    public int use_sharp_yuv;
+    public int emulate_jpeg_size;
+    public int thread_level;
     public int low_memory;
     public int near_lossless;
     public int exact;
     public int use_delta_palette;
-    public int use_low_memory;
-    private uint pad1, pad2;
+    public int use_sharp_yuv;
+    public int qmin;
+    public int qmax;
 }

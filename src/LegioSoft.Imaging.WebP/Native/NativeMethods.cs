@@ -9,8 +9,8 @@ internal static class NativeMethods
     #region Constants
 
     private const string LibraryName = "libwebp";
-    private const int WEBP_DECODER_ABI_VERSION = 0x020f;
-    private const int WEBP_ENCODER_ABI_VERSION = 0x020f;
+    private const int WEBP_DECODER_ABI_VERSION = 0x0210;
+    private const int WEBP_ENCODER_ABI_VERSION = 0x0210;
 
     #endregion
 
@@ -108,6 +108,35 @@ internal static class NativeMethods
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern VP8StatusCode WebPDecode(byte[] data, UIntPtr data_size, ref WebPDecoderConfig config);
+
+    #endregion
+
+    #region Init Helper Methods
+
+    public static int WebPConfigInit(ref WebPConfig config)
+    {
+        return WebPConfigInitInternal(ref config, WebPPreset.DEFAULT, 75.0f, WEBP_ENCODER_ABI_VERSION);
+    }
+
+    public static int WebPConfigInit(ref WebPConfig config, WebPPreset preset, float quality)
+    {
+        return WebPConfigInitInternal(ref config, preset, quality, WEBP_ENCODER_ABI_VERSION);
+    }
+
+    public static int WebPPictureInit(ref WebPPicture picture)
+    {
+        return WebPPictureInitInternal(ref picture, WEBP_ENCODER_ABI_VERSION);
+    }
+
+    public static int WebPInitDecoderConfig(ref WebPDecoderConfig config)
+    {
+        return WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION);
+    }
+
+    public static int WebPInitDecBuffer(ref WebPDecBuffer buffer)
+    {
+        return WebPInitDecBufferInternal(ref buffer, WEBP_DECODER_ABI_VERSION);
+    }
 
     #endregion
 
@@ -280,9 +309,14 @@ internal static class NativeMethods
 
     #region Safe Wrappers - Decode
 
-    public static T SafeDecodeRGBA<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    public static T SafeDecodeRGBA<T>(byte[] data, Func<IntPtr, int, int, T> callback)
     {
-        IntPtr decoded = WebPDecodeRGBA(data, data_size, out int width, out int height);
+        if (data == null || data.Length == 0)
+            throw new ArgumentException("Data cannot be null or empty", nameof(data));
+
+        UIntPtr dataSize = new UIntPtr((uint)data.Length);
+        IntPtr decoded = WebPDecodeRGBA(data, dataSize, out int width, out int height);
+
         if (decoded == IntPtr.Zero)
             return default!;
 
@@ -296,9 +330,14 @@ internal static class NativeMethods
         }
     }
 
-    public static T SafeDecodeARGB<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    public static T SafeDecodeARGB<T>(byte[] data, Func<IntPtr, int, int, T> callback)
     {
-        IntPtr decoded = WebPDecodeARGB(data, data_size, out int width, out int height);
+        if (data == null || data.Length == 0)
+            throw new ArgumentException("Data cannot be null or empty", nameof(data));
+
+        UIntPtr dataSize = new UIntPtr((uint)data.Length);
+        IntPtr decoded = WebPDecodeARGB(data, dataSize, out int width, out int height);
+
         if (decoded == IntPtr.Zero)
             return default!;
 
@@ -312,9 +351,14 @@ internal static class NativeMethods
         }
     }
 
-    public static T SafeDecodeBGRA<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    public static T SafeDecodeBGRA<T>(byte[] data, Func<IntPtr, int, int, T> callback)
     {
-        IntPtr decoded = WebPDecodeBGRA(data, data_size, out int width, out int height);
+        if (data == null || data.Length == 0)
+            throw new ArgumentException("Data cannot be null or empty", nameof(data));
+
+        UIntPtr dataSize = new UIntPtr((uint)data.Length);
+        IntPtr decoded = WebPDecodeBGRA(data, dataSize, out int width, out int height);
+
         if (decoded == IntPtr.Zero)
             return default!;
 
@@ -328,9 +372,14 @@ internal static class NativeMethods
         }
     }
 
-    public static T SafeDecodeRGB<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    public static T SafeDecodeRGB<T>(byte[] data, Func<IntPtr, int, int, T> callback)
     {
-        IntPtr decoded = WebPDecodeRGB(data, data_size, out int width, out int height);
+        if (data == null || data.Length == 0)
+            throw new ArgumentException("Data cannot be null or empty", nameof(data));
+
+        UIntPtr dataSize = new UIntPtr((uint)data.Length);
+        IntPtr decoded = WebPDecodeRGB(data, dataSize, out int width, out int height);
+
         if (decoded == IntPtr.Zero)
             return default!;
 
@@ -344,9 +393,14 @@ internal static class NativeMethods
         }
     }
 
-    public static T SafeDecodeBGR<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    public static T SafeDecodeBGR<T>(byte[] data, Func<IntPtr, int, int, T> callback)
     {
-        IntPtr decoded = WebPDecodeBGR(data, data_size, out int width, out int height);
+        if (data == null || data.Length == 0)
+            throw new ArgumentException("Data cannot be null or empty", nameof(data));
+
+        UIntPtr dataSize = new UIntPtr((uint)data.Length);
+        IntPtr decoded = WebPDecodeBGR(data, dataSize, out int width, out int height);
+
         if (decoded == IntPtr.Zero)
             return default!;
 
@@ -360,15 +414,20 @@ internal static class NativeMethods
         }
     }
 
-    public static T SafeDecodeYUV<T>(byte[] data, UIntPtr data_size, Func<IntPtr, IntPtr, int, int, int, int, T> callback)
+    public static T SafeDecodeYUV<T>(byte[] data, Func<IntPtr, IntPtr, IntPtr, int, int, int, int, T> callback)
     {
-        IntPtr decoded = WebPDecodeYUV(data, data_size, out int width, out int height, out IntPtr u, out IntPtr v, out int stride, out int uv_stride);
+        if (data == null || data.Length == 0)
+            throw new ArgumentException("Data cannot be null or empty", nameof(data));
+
+        UIntPtr dataSize = new UIntPtr((uint)data.Length);
+        IntPtr decoded = WebPDecodeYUV(data, dataSize, out int width, out int height, out IntPtr u, out IntPtr v, out int stride, out int uv_stride);
+
         if (decoded == IntPtr.Zero)
             return default!;
 
         try
         {
-            return callback(decoded, u, width, height, stride, uv_stride);
+            return callback(decoded, u, v, width, height, stride, uv_stride);
         }
         finally
         {
@@ -380,9 +439,8 @@ internal static class NativeMethods
 
     #region Safe Wrappers - Encode
 
-    public static T SafeEncodeRGB<T>(byte[] rgb, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
+    private static T ProcessEncodedOutput<T>(IntPtr output, UIntPtr size, Func<IntPtr, UIntPtr, T> callback)
     {
-        UIntPtr size = WebPEncodeRGB(rgb, width, height, stride, quality_factor, out IntPtr output);
         if (output == IntPtr.Zero || size == UIntPtr.Zero)
             return default!;
 
@@ -394,118 +452,78 @@ internal static class NativeMethods
         {
             WebPFree(output);
         }
+    }
+
+    public static T SafeEncodeRGB<T>(byte[] rgb, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
+    {
+        if (rgb == null || rgb.Length == 0)
+            throw new ArgumentException("RGB data cannot be null or empty", nameof(rgb));
+
+        UIntPtr size = WebPEncodeRGB(rgb, width, height, stride, quality_factor, out IntPtr output);
+        return ProcessEncodedOutput(output, size, callback);
     }
 
     public static T SafeEncodeBGR<T>(byte[] bgr, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
     {
-        UIntPtr size = WebPEncodeBGR(bgr, width, height, stride, quality_factor, out IntPtr output);
-        if (output == IntPtr.Zero || size == UIntPtr.Zero)
-            return default!;
+        if (bgr == null || bgr.Length == 0)
+            throw new ArgumentException("BGR data cannot be null or empty", nameof(bgr));
 
-        try
-        {
-            return callback(output, size);
-        }
-        finally
-        {
-            WebPFree(output);
-        }
+        UIntPtr size = WebPEncodeBGR(bgr, width, height, stride, quality_factor, out IntPtr output);
+        return ProcessEncodedOutput(output, size, callback);
     }
 
     public static T SafeEncodeRGBA<T>(byte[] rgba, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
     {
-        UIntPtr size = WebPEncodeRGBA(rgba, width, height, stride, quality_factor, out IntPtr output);
-        if (output == IntPtr.Zero || size == UIntPtr.Zero)
-            return default!;
+        if (rgba == null || rgba.Length == 0)
+            throw new ArgumentException("RGBA data cannot be null or empty", nameof(rgba));
 
-        try
-        {
-            return callback(output, size);
-        }
-        finally
-        {
-            WebPFree(output);
-        }
+        UIntPtr size = WebPEncodeRGBA(rgba, width, height, stride, quality_factor, out IntPtr output);
+        return ProcessEncodedOutput(output, size, callback);
     }
 
     public static T SafeEncodeBGRA<T>(byte[] bgra, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
     {
-        UIntPtr size = WebPEncodeBGRA(bgra, width, height, stride, quality_factor, out IntPtr output);
-        if (output == IntPtr.Zero || size == UIntPtr.Zero)
-            return default!;
+        if (bgra == null || bgra.Length == 0)
+            throw new ArgumentException("BGRA data cannot be null or empty", nameof(bgra));
 
-        try
-        {
-            return callback(output, size);
-        }
-        finally
-        {
-            WebPFree(output);
-        }
+        UIntPtr size = WebPEncodeBGRA(bgra, width, height, stride, quality_factor, out IntPtr output);
+        return ProcessEncodedOutput(output, size, callback);
     }
 
     public static T SafeEncodeLosslessRGB<T>(byte[] rgb, int width, int height, int stride, Func<IntPtr, UIntPtr, T> callback)
     {
-        UIntPtr size = WebPEncodeLosslessRGB(rgb, width, height, stride, out IntPtr output);
-        if (output == IntPtr.Zero || size == UIntPtr.Zero)
-            return default!;
+        if (rgb == null || rgb.Length == 0)
+            throw new ArgumentException("RGB data cannot be null or empty", nameof(rgb));
 
-        try
-        {
-            return callback(output, size);
-        }
-        finally
-        {
-            WebPFree(output);
-        }
+        UIntPtr size = WebPEncodeLosslessRGB(rgb, width, height, stride, out IntPtr output);
+        return ProcessEncodedOutput(output, size, callback);
     }
 
     public static T SafeEncodeLosslessBGR<T>(byte[] bgr, int width, int height, int stride, Func<IntPtr, UIntPtr, T> callback)
     {
-        UIntPtr size = WebPEncodeLosslessBGR(bgr, width, height, stride, out IntPtr output);
-        if (output == IntPtr.Zero || size == UIntPtr.Zero)
-            return default!;
+        if (bgr == null || bgr.Length == 0)
+            throw new ArgumentException("BGR data cannot be null or empty", nameof(bgr));
 
-        try
-        {
-            return callback(output, size);
-        }
-        finally
-        {
-            WebPFree(output);
-        }
+        UIntPtr size = WebPEncodeLosslessBGR(bgr, width, height, stride, out IntPtr output);
+        return ProcessEncodedOutput(output, size, callback);
     }
 
     public static T SafeEncodeLosslessRGBA<T>(byte[] rgba, int width, int height, int stride, Func<IntPtr, UIntPtr, T> callback)
     {
-        UIntPtr size = WebPEncodeLosslessRGBA(rgba, width, height, stride, out IntPtr output);
-        if (output == IntPtr.Zero || size == UIntPtr.Zero)
-            return default!;
+        if (rgba == null || rgba.Length == 0)
+            throw new ArgumentException("RGBA data cannot be null or empty", nameof(rgba));
 
-        try
-        {
-            return callback(output, size);
-        }
-        finally
-        {
-            WebPFree(output);
-        }
+        UIntPtr size = WebPEncodeLosslessRGBA(rgba, width, height, stride, out IntPtr output);
+        return ProcessEncodedOutput(output, size, callback);
     }
 
     public static T SafeEncodeLosslessBGRA<T>(byte[] bgra, int width, int height, int stride, Func<IntPtr, UIntPtr, T> callback)
     {
-        UIntPtr size = WebPEncodeLosslessBGRA(bgra, width, height, stride, out IntPtr output);
-        if (output == IntPtr.Zero || size == UIntPtr.Zero)
-            return default!;
+        if (bgra == null || bgra.Length == 0)
+            throw new ArgumentException("BGRA data cannot be null or empty", nameof(bgra));
 
-        try
-        {
-            return callback(output, size);
-        }
-        finally
-        {
-            WebPFree(output);
-        }
+        UIntPtr size = WebPEncodeLosslessBGRA(bgra, width, height, stride, out IntPtr output);
+        return ProcessEncodedOutput(output, size, callback);
     }
 
     #endregion

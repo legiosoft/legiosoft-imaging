@@ -248,11 +248,7 @@ public class WebPEncoder
 
         var config = new WebPConfig();
 
-        if (NativeMethods.WebPConfigInitInternal(
-                ref config,
-                options.Preset,
-                options.Quality,
-                WEBP_ENCODER_ABI_VERSION) == 0)
+        if (NativeMethods.WebPConfigInit(ref config, options.Preset, options.Quality) == 0)
         {
             throw new InvalidOperationException("Failed to initialize WebP encoder config (version mismatch)");
         }
@@ -308,12 +304,8 @@ public class WebPEncoder
 
             var encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
 
-            if (encodeResult == 0)
-            {
-                throw new InvalidOperationException($"Failed to encode image to WebP: {pic.error_code}");
-            }
-
-            var result = new byte[(int)writer.size];
+             writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             NativeMethods.WebPMemoryWriterClear(ref writer);
             
@@ -390,12 +382,8 @@ public class WebPEncoder
 
             var encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
 
-            if (encodeResult == 0)
-            {
-                throw new InvalidOperationException($"Failed to encode image to WebP: {pic.error_code}");
-            }
-
-            var result = new byte[(int)writer.size];
+             writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             NativeMethods.WebPMemoryWriterClear(ref writer);
             
@@ -472,12 +460,8 @@ public class WebPEncoder
 
             var encodeResult = NativeMethods.WebPEncode(ref config, ref pic);
 
-            if (encodeResult == 0)
-            {
-                throw new InvalidOperationException($"Failed to encode image to WebP: {pic.error_code}");
-            }
-
-            var result = new byte[(int)writer.size];
+             writer = Marshal.PtrToStructure<WebPMemoryWriter>(pic.custom_ptr);
+var result = new byte[(int)writer.size];
             Marshal.Copy(writer.mem, result, 0, (int)writer.size);
             NativeMethods.WebPMemoryWriterClear(ref writer);
             

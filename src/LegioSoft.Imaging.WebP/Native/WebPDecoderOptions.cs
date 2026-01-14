@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct WebPDecoderOptions
+public unsafe struct WebPDecoderOptions
 {
     public int bypass_filtering;
     public int no_fancy_upsampling;
@@ -19,5 +19,5 @@ public struct WebPDecoderOptions
     public int dithering_strength;
     public int flip;
     public int alpha_dithering_strength;
-    private uint pad1, pad2, pad3, pad4, pad5;
+    private fixed uint pad[5];
 }
