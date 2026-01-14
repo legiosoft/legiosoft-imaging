@@ -104,7 +104,7 @@ var info = LegioImageBuilder.Load("image.jpg").GetInfo();
 
 - JPEG: 70-85 recommended
 - WebP: 80-90 recommended
-- PNG/BMP/GIF: always lossless (quality ignored)
+- PNG: always lossless (quality ignored)
 
 ## Save
 
@@ -130,8 +130,6 @@ using var stream = SaveAsStream(LegioImageFormat.Png);
 - PNG - Lossless, supports transparency
 - JPEG - Lossy, best for photos
 - WebP - Modern, good compression
-- BMP - Uncompressed
-- GIF - Limited colors
 
 ## Examples
 

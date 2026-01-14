@@ -110,7 +110,7 @@ using var stream = SaveAsStream(LegioImageFormat.Png); // As stream
 
 - JPEG: 70-85 recommended
 - WebP: 80-90 recommended
-- PNG/BMP/GIF: always lossless
+- PNG: always lossless
 
 ## WebP Package
 
@@ -250,14 +250,12 @@ foreach (var file in Directory.GetFiles("input", "*.jpg"))
 
 ## Formats
 
-**Input**: PNG, JPEG, WebP, BMP, GIF
+**Input**: PNG, JPEG, WebP
 
 **Output**:
 - PNG - Lossless, transparency
 - JPEG - Lossy, photos
 - WebP - Modern, compressed
-- BMP - Uncompressed
-- GIF - Limited colors
 
 ## Platforms
 

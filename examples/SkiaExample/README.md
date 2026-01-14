@@ -176,7 +176,6 @@ var builder = LegioImageBuilder.Load("image.jpg");
 var png = builder.SaveAs(LegioImageFormat.Png, 100);
 var jpeg = builder.SaveAs(LegioImageFormat.Jpeg, 85);
 var webp = builder.SaveAs(LegioImageFormat.WebP, 85);
-var bmp = builder.SaveAs(LegioImageFormat.Bmp);
 ```
 
 ### Resize Quality
@@ -288,7 +287,7 @@ foreach (var file in Directory.GetFiles("input", "*.jpg"))
 1. **Quality settings:**
    - JPEG: 70-85
    - WebP: 80-90
-   - PNG/BMP/GIF: 100 (lossless)
+   - PNG: 100 (lossless)
 
 2. **Choose scale mode:**
    - **Fit**: Thumbnails, responsive images
