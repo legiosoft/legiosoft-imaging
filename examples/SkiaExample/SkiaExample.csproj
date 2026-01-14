@@ -18,4 +18,11 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\test-photos\example.png">
+      <Link>example.png</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

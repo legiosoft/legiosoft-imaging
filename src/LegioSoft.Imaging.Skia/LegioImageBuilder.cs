@@ -265,7 +265,7 @@ public class LegioImageBuilder
     /// </remarks>
     public LegioImageBuilder Blur(int radius = 5)
     {
-        if (radius <= 0 || radius > 20)
+        if (radius is <= 0 or > 20)
             throw new ArgumentException("Blur radius must be between 1 and 20", nameof(radius));
 
         _operations.Add(source => ImageFilters.ApplyBlur(source, radius));
@@ -280,7 +280,7 @@ public class LegioImageBuilder
     /// <exception cref="ArgumentException">Thrown when amount is outside the valid range.</exception>
     public LegioImageBuilder Sharpen(int amount = 50)
     {
-        if (amount < 0 || amount > 100)
+        if (amount is < 0 or > 100)
             throw new ArgumentException("Sharpen amount must be between 0 and 100", nameof(amount));
 
         _operations.Add(source => ImageFilters.ApplySharpen(source, amount));
@@ -299,7 +299,7 @@ public class LegioImageBuilder
     /// </remarks>
     public LegioImageBuilder Brightness(int amount)
     {
-        if (amount < -255 || amount > 255)
+        if (amount is < -255 or > 255)
             throw new ArgumentException("Brightness must be between -255 and 255", nameof(amount));
 
         _operations.Add(source => ImageColorAdjustments.ApplyBrightness(source, amount));
@@ -318,7 +318,7 @@ public class LegioImageBuilder
     /// </remarks>
     public LegioImageBuilder Contrast(int amount)
     {
-        if (amount is < -100 || amount > 100)
+        if (amount is < -100 or > 100)
             throw new ArgumentException("Contrast must be between -100 and 100", nameof(amount));
 
         _operations.Add(source => ImageColorAdjustments.ApplyContrast(source, amount));
@@ -353,7 +353,7 @@ public class LegioImageBuilder
     /// </remarks>
     public LegioImageBuilder Quality(int quality)
     {
-        if (quality < 0 || quality > 100)
+        if (quality is < 0 or > 100)
             throw new ArgumentException("Quality must be between 0 and 100", nameof(quality));
 
         _saveQuality = quality;

@@ -114,6 +114,15 @@ using var stream = SaveAsStream(LegioImageFormat.Png); // As stream
 
 ## WebP Package
 
+### Building Native Libraries
+
+For building libwebp native libraries for all platforms, see [Build Manual](docs/BUILD_WEBP.md).
+
+**Quick Summary:**
+- **Windows**: Built with Visual Studio Build Tools (x64)
+- **Linux**: Built with Docker (x64, ARM64, glibc)
+- **macOS**: Downloaded from Google releases (x64, ARM64)
+
 ### Encode
 
 ```csharp

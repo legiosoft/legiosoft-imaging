@@ -1,6 +1,6 @@
 # LegioSoft.Imaging
 
-Meta package with all LegioSoft.Imaging components.
+Meta package that aggregates all LegioSoft.Imaging libraries. Install this package to get full image processing capabilities.
 
 ## Installation
 
@@ -10,9 +10,9 @@ dotnet add package LegioSoft.Imaging
 
 ## What's Included
 
-- **LegioSoft.Imaging.Core** (~20KB) - Interfaces, enums, and types
+- **LegioSoft.Imaging.Core** (~20KB) - Interfaces, enums, and base types
 - **LegioSoft.Imaging.WebP** (~500KB) - WebP encoding/decoding with libwebp 1.6.0
-- **LegioSoft.Imaging.Skia** (~565KB) - Full image processing with SkiaSharp 2.88.6
+- **LegioSoft.Imaging.Skia** (~565KB) - Full-featured image processing with SkiaSharp 2.88.6
 
 ## Supported Frameworks
 
@@ -20,57 +20,30 @@ dotnet add package LegioSoft.Imaging
 
 ## Quick Start
 
-### Skia Package - Image Processing
+### Image Processing with Skia
 
 ```csharp
 using LegioSoft.Imaging.Skia;
 
-// Load, resize, save
 LegioImageBuilder.Load("photo.jpg")
     .Resize(800, 600)
-    .Save("output.jpg");
-
-// Multiple operations
-LegioImageBuilder.Load("image.png")
-    .Resize(1920, 1080, LegioScaleMode.Fit)
     .Crop(100, 100, 400, 400)
     .Rotate(90)
     .Grayscale()
     .Save("processed.jpg", 90);
-
-// Get metadata
-var info = LegioImageBuilder.Load("image.jpg").GetInfo();
-// info.Width, info.Height, info.Format, info.HasAlpha, info.ByteSize
 ```
 
-### WebP Package - WebP Encode/Decode
+### WebP Encode/Decode
 
 ```csharp
 using LegioSoft.Imaging.WebP;
 
-// Encode RGBA to WebP
 byte[] rgbaData = new byte[width * height * 4];
 byte[] webpData = WebPImage.Encode(rgbaData, width, height, 85);
-File.WriteAllBytes("output.webp", webpData);
-
-// Decode WebP to RGBA
 byte[] decoded = WebPImage.Decode(webpData);
-
-// Advanced options
-var options = new WebPEncodeOptions
-{
-    Preset = WebPPreset.PHOTO,
-    Quality = 85.0f,
-    Method = 6
-};
-byte[] webpData = WebPImage.EncodeAdvanced(rgbaData, width, height, options);
-
-// Get info
-WebPInfo info = WebPImage.GetInfo(webpData);
-// info.Width, info.Height, info.HasAlpha
 ```
 
-### Core Package - Format Detection
+### Format Detection
 
 ```csharp
 using LegioSoft.Imaging.Core;

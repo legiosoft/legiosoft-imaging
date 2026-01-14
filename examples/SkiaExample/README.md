@@ -1,6 +1,6 @@
 # SkiaSharp Image Processing Example
 
-This example demonstrates how to use **LegioSoft.Imaging.Skia** for comprehensive image processing operations.
+Comprehensive examples for **LegioSoft.Imaging.Skia** image operations.
 
 ## Installation
 
@@ -8,67 +8,74 @@ This example demonstrates how to use **LegioSoft.Imaging.Skia** for comprehensiv
 dotnet add package LegioSoft.Imaging.Skia
 ```
 
-Or via NuGet Package Manager:
-
-```
-Install-Package LegioSoft.Imaging.Skia
-```
-
 ## Requirements
 
 - .NET 6.0 or later
-- A test image file named `test-image.png` in the examples folder
+- Test image: `test-image.png`
 
-## Running the Example
+## Running
 
 ```bash
 dotnet run
 ```
 
-## Examples Covered
+## API Examples
 
-### 1. Load and Display Info
+### Load Image
+
 ```csharp
 var info = LegioImageBuilder.Load("image.jpg").GetInfo();
 
 Console.WriteLine($"Width: {info.Width}");
 Console.WriteLine($"Height: {info.Height}");
 Console.WriteLine($"Format: {info.Format}");
-Console.WriteLine($"Has Alpha: {info.HasAlpha}");
 Console.WriteLine($"Size: {info.ByteSize} bytes");
 ```
 
-### 2. Resize Operations
+### Resize
 
-#### Exact Dimensions
 ```csharp
+// Exact dimensions
 var resized = LegioImageBuilder.Load("image.jpg")
     .Resize(800, 600)
     .Save("resized.jpg", LegioImageFormat.Jpeg, 85);
-```
 
-#### Resize to Width (maintains aspect ratio)
-```csharp
-var resized = LegioImageBuilder.Load("image.jpg")
+// Resize to width (maintains aspect ratio)
+var toWidth = LegioImageBuilder.Load("image.jpg")
     .ResizeToWidth(800)
     .Save("resized.jpg", LegioImageFormat.Jpeg, 85);
-```
 
-#### Resize to Height (maintains aspect ratio)
-```csharp
-var resized = LegioImageBuilder.Load("image.jpg")
+// Resize to height (maintains aspect ratio)
+var toHeight = LegioImageBuilder.Load("image.jpg")
     .ResizeToHeight(600)
     .Save("resized.jpg", LegioImageFormat.Jpeg, 85);
-```
 
-#### Scale by Factor
-```csharp
-var resized = LegioImageBuilder.Load("image.jpg")
+// Scale by factor
+var scaled = LegioImageBuilder.Load("image.jpg")
     .Scale(0.5)
     .Save("resized.jpg", LegioImageFormat.Jpeg, 85);
 ```
 
-### 3. Crop Operations
+### Scale Modes
+
+```csharp
+// Fit: Maintain aspect ratio, fit within bounds
+var fit = LegioImageBuilder.Load("image.jpg")
+    .Resize(800, 600, LegioScaleMode.Fit)
+    .Save("fit.jpg", LegioImageFormat.Jpeg, 85);
+
+// Fill: Maintain aspect ratio, fill bounds (may crop)
+var fill = LegioImageBuilder.Load("image.jpg")
+    .Resize(800, 600, LegioScaleMode.Fill)
+    .Save("fill.jpg", LegioImageFormat.Jpeg, 85);
+
+// Stretch: Exact dimensions (may distort)
+var stretch = LegioImageBuilder.Load("image.jpg")
+    .Resize(800, 600, LegioScaleMode.Stretch)
+    .Save("stretch.jpg", LegioImageFormat.Jpeg, 85);
+```
+
+### Crop
 
 ```csharp
 var cropped = LegioImageBuilder.Load("image.jpg")
@@ -76,7 +83,7 @@ var cropped = LegioImageBuilder.Load("image.jpg")
     .Save("cropped.jpg", LegioImageFormat.Jpeg, 85);
 ```
 
-### 4. Rotate Operations
+### Rotate
 
 ```csharp
 var rotated = LegioImageBuilder.Load("image.jpg")
@@ -84,114 +91,95 @@ var rotated = LegioImageBuilder.Load("image.jpg")
     .Save("rotated.jpg", LegioImageFormat.Jpeg, 85);
 ```
 
-Valid rotation angles: 90, 180, 270 degrees
+Valid angles: 0, 90, 180, 270
 
-### 5. Flip Operations
+### Flip
 
 ```csharp
-var flipped = LegioImageBuilder.Load("image.jpg")
+// Horizontal
+var hFlip = LegioImageBuilder.Load("image.jpg")
+    .Flip(horizontal: true, vertical: false)
+    .Save("flipped-h.jpg", LegioImageFormat.Jpeg, 85);
+
+// Vertical
+var vFlip = LegioImageBuilder.Load("image.jpg")
+    .Flip(horizontal: false, vertical: true)
+    .Save("flipped-v.jpg", LegioImageFormat.Jpeg, 85);
+
+// Both
+var bothFlip = LegioImageBuilder.Load("image.jpg")
     .Flip(horizontal: true, vertical: true)
-    .Save("flipped.jpg", LegioImageFormat.Jpeg, 85);
+    .Save("flipped-both.jpg", LegioImageFormat.Jpeg, 85);
 ```
 
-### 6. Filter Operations
+### Filters
 
-#### Grayscale
 ```csharp
-var grayscale = LegioImageBuilder.Load("image.jpg")
+// Grayscale
+var gray = LegioImageBuilder.Load("image.jpg")
     .Grayscale()
     .Save("grayscale.jpg", LegioImageFormat.Jpeg, 85);
-```
 
-#### Sepia
-```csharp
+// Sepia
 var sepia = LegioImageBuilder.Load("image.jpg")
     .Sepia()
     .Save("sepia.jpg", LegioImageFormat.Jpeg, 85);
-```
 
-#### Blur
-```csharp
+// Blur (radius: 1-20)
 var blurred = LegioImageBuilder.Load("image.jpg")
-    .Blur(radius: 5)
+    .Blur(5)
     .Save("blurred.jpg", LegioImageFormat.Jpeg, 85);
-```
 
-Valid blur radius: 1-20
-
-#### Sharpen
-```csharp
+// Sharpen (amount: 0-100)
 var sharpened = LegioImageBuilder.Load("image.jpg")
-    .Sharpen(amount: 50)
+    .Sharpen(50)
     .Save("sharpened.jpg", LegioImageFormat.Jpeg, 85);
 ```
 
-Valid sharpen amount: 0-100
+### Color Adjustments
 
-### 7. Format Conversion
+```csharp
+// Brightness (-255 to 255)
+var bright = LegioImageBuilder.Load("image.jpg")
+    .Brightness(30)
+    .Save("bright.jpg", LegioImageFormat.Jpeg, 85);
+
+// Contrast (-100 to 100)
+var contrast = LegioImageBuilder.Load("image.jpg")
+    .Contrast(20)
+    .Save("contrast.jpg", LegioImageFormat.Jpeg, 85);
+
+// Invert colors
+var inverted = LegioImageBuilder.Load("image.jpg")
+    .Invert()
+    .Save("inverted.jpg", LegioImageFormat.Jpeg, 85);
+```
+
+### Quality Control
+
+```csharp
+// Set quality for save operations (0-100)
+var result = LegioImageBuilder.Load("image.jpg")
+    .Quality(90)
+    .Save("high-quality.jpg", LegioImageFormat.Jpeg);
+
+// Or override quality in Save() call
+var result = LegioImageBuilder.Load("image.jpg")
+    .Save("output.jpg", LegioImageFormat.Jpeg, 90);
+```
+
+### Format Conversion
 
 ```csharp
 var builder = LegioImageBuilder.Load("image.jpg");
 
-var png = builder.SaveAs(LegioImageFormat.Png);
+var png = builder.SaveAs(LegioImageFormat.Png, 100);
 var jpeg = builder.SaveAs(LegioImageFormat.Jpeg, 85);
 var webp = builder.SaveAs(LegioImageFormat.WebP, 85);
 var bmp = builder.SaveAs(LegioImageFormat.Bmp);
 ```
 
-### 8. Quality Control
-
-```csharp
-var low = LegioImageBuilder.Load("image.jpg")
-    .Quality(50)
-    .Save("low-quality.jpg", LegioImageFormat.Jpeg);
-
-var high = LegioImageBuilder.Load("image.jpg")
-    .Quality(90)
-    .Save("high-quality.jpg", LegioImageFormat.Jpeg);
-
-var maximum = LegioImageBuilder.Load("image.jpg")
-    .Quality(100)
-    .Save("max-quality.jpg", LegioImageFormat.Jpeg);
-```
-
-Quality range: 0-100 for JPEG, WebP
-
-### 9. Chained Operations
-
-```csharp
-var processed = LegioImageBuilder.Load("image.jpg")
-    .Resize(300, 300, LegioScaleMode.Fit)
-    .Crop(10, 10, 200, 200)
-    .Rotate(90)
-    .Brightness(20)
-    .Contrast(10)
-    .Grayscale()
-    .Save("processed.jpg", LegioImageFormat.Jpeg, 85);
-```
-
-### 10. Scale Modes
-
-```csharp
-var fit = LegioImageBuilder.Load("image.jpg")
-    .Resize(800, 600, LegioScaleMode.Fit)
-    .Save("fit.jpg", LegioImageFormat.Jpeg, 85);
-
-var fill = LegioImageBuilder.Load("image.jpg")
-    .Resize(800, 600, LegioScaleMode.Fill)
-    .Save("fill.jpg", LegioImageFormat.Jpeg, 85);
-
-var stretch = LegioImageBuilder.Load("image.jpg")
-    .Resize(800, 600, LegioScaleMode.Stretch)
-    .Save("stretch.jpg", LegioImageFormat.Jpeg, 85);
-```
-
-**Scale Modes:**
-- **Fit**: Resizes image to fit within bounds while maintaining aspect ratio
-- **Fill**: Resizes image to fill bounds while maintaining aspect ratio (may crop)
-- **Stretch**: Resizes image to exact dimensions (may distort)
-
-### 11. Resize Quality
+### Resize Quality
 
 ```csharp
 var low = LegioImageBuilder.Load("image.jpg")
@@ -207,50 +195,53 @@ var maximum = LegioImageBuilder.Load("image.jpg")
     .Save("maximum-resize.jpg", LegioImageFormat.Jpeg, 85);
 ```
 
-**Resize Quality Levels:**
-- **Low**: Fast resizing, lower quality
-- **Medium**: Balanced performance and quality
+**Quality Levels:**
+- **Low**: Fast, lower quality
+- **Medium**: Balanced
 - **High**: Best quality for most use cases
 - **Maximum**: Highest quality, slower
 
-### 12. Additional Operations
+### Chained Operations
 
-#### Brightness
 ```csharp
-var brighter = LegioImageBuilder.Load("image.jpg")
-    .Brightness(30)
-    .Save("brighter.jpg", LegioImageFormat.Jpeg, 85);
+var processed = LegioImageBuilder.Load("image.jpg")
+    .Resize(300, 300, LegioScaleMode.Fit)
+    .Crop(10, 10, 200, 200)
+    .Rotate(90)
+    .Brightness(20)
+    .Contrast(10)
+    .Grayscale()
+    .Save("processed.jpg", LegioImageFormat.Jpeg, 85);
 ```
 
-Range: -255 to 255
+### Save Methods
 
-#### Contrast
 ```csharp
-var contrast = LegioImageBuilder.Load("image.jpg")
-    .Contrast(20)
-    .Save("contrast.jpg", LegioImageFormat.Jpeg, 85);
-```
+var builder = LegioImageBuilder.Load("image.jpg");
 
-Range: -100 to 100
+// To byte array
+var bytes = builder.SaveAs(LegioImageFormat.Png);
 
-#### Invert Colors
-```csharp
-var inverted = LegioImageBuilder.Load("image.jpg")
-    .Invert()
-    .Save("inverted.jpg", LegioImageFormat.Jpeg, 85);
+// To file
+builder.Save("output.jpg", LegioImageFormat.Jpeg, 85);
+
+// To stream
+using var stream = builder.SaveAsStream(LegioImageFormat.Png);
 ```
 
 ## Common Patterns
 
 ### Thumbnail Generation
+
 ```csharp
 var thumbnail = LegioImageBuilder.Load("photo.jpg")
     .ResizeToWidth(200)
     .Quality(80)
-    .Save("thumbnail.jpg", LegioImageFormat.Jpeg, 80);
+    .Save("thumbnail.jpg", LegioImageFormat.Jpeg);
 ```
 
 ### Profile Picture
+
 ```csharp
 var profile = LegioImageBuilder.Load("photo.jpg")
     .Resize(500, 500, LegioScaleMode.Fill)
@@ -260,6 +251,7 @@ var profile = LegioImageBuilder.Load("photo.jpg")
 ```
 
 ### Photo Enhancement
+
 ```csharp
 var enhanced = LegioImageBuilder.Load("dark-photo.jpg")
     .Brightness(30)
@@ -270,6 +262,7 @@ var enhanced = LegioImageBuilder.Load("dark-photo.jpg")
 ```
 
 ### WebP Optimization
+
 ```csharp
 var optimized = LegioImageBuilder.Load("large-photo.jpg")
     .ResizeToWidth(1920)
@@ -279,10 +272,9 @@ File.WriteAllBytes("optimized.webp", optimized);
 ```
 
 ### Batch Processing
-```csharp
-var inputFiles = Directory.GetFiles("input", "*.jpg");
 
-foreach (var file in inputFiles)
+```csharp
+foreach (var file in Directory.GetFiles("input", "*.jpg"))
 {
     var filename = Path.GetFileNameWithoutExtension(file);
     LegioImageBuilder.Load(file)
@@ -291,84 +283,37 @@ foreach (var file in inputFiles)
 }
 ```
 
-## Error Handling
-
-```csharp
-try
-{
-    var result = LegioImageBuilder.Load("image.jpg")
-        .Resize(800, 600)
-        .Save("output.jpg", LegioImageFormat.Jpeg, 85);
-}
-catch (ArgumentException ex)
-{
-    Console.WriteLine($"Invalid parameters: {ex.Message}");
-}
-catch (FileNotFoundException ex)
-{
-    Console.WriteLine($"File not found: {ex.Message}");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Error: {ex.Message}");
-}
-```
-
-## Output Examples
-
-After running the example, you'll find these output files:
-
-- `output-resized-100x100.jpg` - Resized to 100x100
-- `output-resized-width50.jpg` - Resized to width 50
-- `output-resized-half.jpg` - Resized to 50% of original
-- `output-cropped.jpg` - Cropped to 100x100
-- `output-rotated-90.jpg` - Rotated 90 degrees
-- `output-rotated-180.jpg` - Rotated 180 degrees
-- `output-rotated-270.jpg` - Rotated 270 degrees
-- `output-flipped-horizontal.jpg` - Flipped horizontally
-- `output-flipped-vertical.jpg` - Flipped vertically
-- `output-flipped-both.jpg` - Flipped both directions
-- `output-grayscale.jpg` - Grayscale version
-- `output-sepia.jpg` - Sepia version
-- `output-blur.jpg` - Blurred version
-- `output-sharpen.jpg` - Sharpened version
-- `output-converted-png.png` - PNG format
-- `output-converted-jpeg.jpg` - JPEG format
-- `output-converted-webp.webp` - WebP format
-- `output-converted-bmp.bmp` - BMP format
-- `output-quality-low.jpg` - Low quality
-- `output-quality-medium.jpg` - Medium quality
-- `output-quality-high.jpg` - High quality
-- `output-quality-maximum.jpg` - Maximum quality
-- `output-chained.jpg` - Multiple operations chained
-- `output-scale-fit.jpg` - Fit scale mode
-- `output-scale-fill.jpg` - Fill scale mode
-- `output-scale-stretch.jpg` - Stretch scale mode
-
 ## Best Practices
 
-1. **Use appropriate quality settings:**
-   - 70-85 for JPEG (good balance of quality and size)
-   - 80-90 for WebP (good balance of quality and size)
-   - 100 for PNG (lossless)
+1. **Quality settings:**
+   - JPEG: 70-85
+   - WebP: 80-90
+   - PNG/BMP/GIF: 100 (lossless)
 
-2. **Batch operations to avoid loading image multiple times:**
+2. **Choose scale mode:**
+   - **Fit**: Thumbnails, responsive images
+   - **Fill**: Cover images, banners
+   - **Stretch**: Only when exact dimensions required
+
+3. **Batch operations** to avoid loading image multiple times:
    ```csharp
    var builder = LegioImageBuilder.Load("image.jpg");
    var result1 = builder.Resize(800, 600).Save("1.jpg");
    var result2 = builder.Crop(10, 10, 200, 200).Save("2.jpg");
    ```
 
-3. **Choose the right scale mode:**
-   - **Fit**: For thumbnails and responsive images
-   - **Fill**: For cover images and banners
-   - **Stretch**: Only when exact dimensions are required
+## Parameter Ranges
 
-4. **Dispose of builders:**
-   - The builder is designed for one-time use
-   - Load a new builder for each image or chain all operations
+| Parameter | Range | Default |
+|-----------|-------|---------|
+| Quality | 0-100 | 75 |
+| Blur radius | 1-20 | 5 |
+| Sharpen amount | 0-100 | 50 |
+| Brightness | -255 to 255 | 0 |
+| Contrast | -100 to 100 | 0 |
+| Rotation | 0, 90, 180, 270 | - |
 
 ## See Also
 
-- [SKIA_MANUAL.md](../../docs/SKIA_MANUAL.md) - Complete SkiaSharp usage guide
+- [SKIA_MANUAL.md](../../docs/SKIA_MANUAL.md) - Complete usage guide
 - [INSTALLATION.md](../../docs/INSTALLATION.md) - Installation instructions

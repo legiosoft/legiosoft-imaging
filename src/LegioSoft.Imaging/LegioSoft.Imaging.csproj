@@ -11,7 +11,7 @@
     <Description>
       Meta package that aggregates all LegioSoft.Imaging libraries. Install this package to get full image processing capabilities including LegioSoft.Imaging.Core (interfaces and types), LegioSoft.Imaging.WebP (lightweight WebP codec), and LegioSoft.Imaging.Skia (full-featured image processing with SkiaSharp). Provides everything you need for image manipulation in a single package. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
     </Description>
-    <PackageTags>image;processing;meta;unified;WebP;SkiaSharp;all-in-one;complete;full-stack</PackageTags>
+    <PackageTags>image;processing;meta;unified;WebP;SkiaSharp;all-in-one;complete;full-stack;resize;crop;rotate;transform;filter;codec;encode;decode;convert;cross-platform;net6;net7;net8;net9;net10</PackageTags>
     <PackageReleaseNotes>
       1.0.0-beta3 - Initial beta release of LegioSoft.Imaging meta package.
 
@@ -35,8 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)icon.png" Pack="true" PackagePath="/" />
-    <None Include="$(SolutionDir)README.md" Pack="true" PackagePath="/" />
+    <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

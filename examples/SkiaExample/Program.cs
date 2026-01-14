@@ -10,7 +10,7 @@ class Program
     {
         Console.WriteLine("=== LegioSoft.Imaging.Skia Examples ===\n");
 
-        var exampleImage = "test-image.png";
+        var exampleImage = "example.png";
 
         if (!File.Exists(exampleImage))
         {
@@ -26,11 +26,13 @@ class Program
             RotateExample(exampleImage);
             FlipExample(exampleImage);
             FilterExample(exampleImage);
+            ColorAdjustmentsExample(exampleImage);
             FormatConversionExample(exampleImage);
             QualityExample(exampleImage);
             ChainOperationsExample(exampleImage);
             SaveExample(exampleImage);
             ScaleModesExample(exampleImage);
+            ResizeQualityExample(exampleImage);
         }
         catch (Exception ex)
         {
@@ -46,7 +48,7 @@ class Program
         Console.WriteLine(new string('-', 50));
 
         var info = LegioImageBuilder.Load(imagePath).GetInfo();
-        
+
         Console.WriteLine($"  Width: {info.Width}");
         Console.WriteLine($"  Height: {info.Height}");
         Console.WriteLine($"  Format: {info.Format}");
@@ -62,19 +64,19 @@ class Program
 
         var baseSize = File.ReadAllBytes(imagePath).Length;
 
-        var resized100 = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Resize(100, 100, LegioScaleMode.Stretch, LegioResizeQuality.High)
             .Save("output-resized-100x100.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-resized-100x100.jpg ({File.ReadAllBytes("output-resized-100x100.jpg").Length} bytes)");
 
-        var resized50 = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .ResizeToWidth(50)
             .Save("output-resized-width50.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-resized-width50.jpg ({File.ReadAllBytes("output-resized-width50.jpg").Length} bytes)");
 
-        var resizedHalf = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Scale(0.5)
             .Save("output-resized-half.jpg", LegioImageFormat.Jpeg, 85);
 
@@ -87,7 +89,7 @@ class Program
         Console.WriteLine("3. Crop Operations");
         Console.WriteLine(new string('-', 50));
 
-        var cropped = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Crop(10, 10, 100, 100)
             .Save("output-cropped.jpg", LegioImageFormat.Jpeg, 85);
 
@@ -101,19 +103,19 @@ class Program
         Console.WriteLine("4. Rotate Operations");
         Console.WriteLine(new string('-', 50));
 
-        var rotated90 = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Rotate(90)
             .Save("output-rotated-90.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-rotated-90.jpg");
 
-        var rotated180 = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Rotate(180)
             .Save("output-rotated-180.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-rotated-180.jpg");
 
-        var rotated270 = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Rotate(270)
             .Save("output-rotated-270.jpg", LegioImageFormat.Jpeg, 85);
 
@@ -126,19 +128,19 @@ class Program
         Console.WriteLine("5. Flip Operations");
         Console.WriteLine(new string('-', 50));
 
-        var flippedH = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Flip(horizontal: true, vertical: false)
             .Save("output-flipped-horizontal.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-flipped-horizontal.jpg");
 
-        var flippedV = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Flip(horizontal: false, vertical: true)
             .Save("output-flipped-vertical.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-flipped-vertical.jpg");
 
-        var flippedBoth = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Flip(horizontal: true, vertical: true)
             .Save("output-flipped-both.jpg", LegioImageFormat.Jpeg, 85);
 
@@ -151,25 +153,25 @@ class Program
         Console.WriteLine("6. Filter Operations");
         Console.WriteLine(new string('-', 50));
 
-        var grayscale = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Grayscale()
             .Save("output-grayscale.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-grayscale.jpg");
 
-        var sepia = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Sepia()
             .Save("output-sepia.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-sepia.jpg");
 
-        var blur = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Blur(5)
             .Save("output-blur.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-blur.jpg");
 
-        var sharpen = LegioImageBuilder.Load(imagePath)
+        LegioImageBuilder.Load(imagePath)
             .Sharpen(50)
             .Save("output-sharpen.jpg", LegioImageFormat.Jpeg, 85);
 
@@ -177,28 +179,63 @@ class Program
         Console.WriteLine();
     }
 
-    static void FormatConversionExample(string imagePath)
+    static void ColorAdjustmentsExample(string imagePath)
     {
-        Console.WriteLine("7. Format Conversion");
+        Console.WriteLine("7. Color Adjustments");
         Console.WriteLine(new string('-', 50));
 
-        var png = LegioImageBuilder.Load(imagePath)
-            .SaveAs(LegioImageFormat.Png, 100);
+        LegioImageBuilder.Load(imagePath)
+            .Brightness(30)
+            .Save("output-brightness.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  Created: output-brightness.jpg (+30 brightness)");
+
+        LegioImageBuilder.Load(imagePath)
+            .Brightness(-30)
+            .Save("output-darkness.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  Created: output-darkness.jpg (-30 brightness)");
+
+        LegioImageBuilder.Load(imagePath)
+            .Contrast(30)
+            .Save("output-contrast-high.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  Created: output-contrast-high.jpg (+30 contrast)");
+
+        LegioImageBuilder.Load(imagePath)
+            .Contrast(-30)
+            .Save("output-contrast-low.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  Created: output-contrast-low.jpg (-30 contrast)");
+
+        LegioImageBuilder.Load(imagePath)
+            .Invert()
+            .Save("output-inverted.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  Created: output-inverted.jpg");
+        Console.WriteLine();
+    }
+
+    static void FormatConversionExample(string imagePath)
+    {
+        Console.WriteLine("8. Format Conversion");
+        Console.WriteLine(new string('-', 50));
+
+        var builder = LegioImageBuilder.Load(imagePath);
+
+        var png = builder.SaveAs(LegioImageFormat.Png, 100);
 
         Console.WriteLine($"  Created: output-converted-png.png ({png.Length} bytes)");
 
-        var jpeg = LegioImageBuilder.Load(imagePath)
-            .SaveAs(LegioImageFormat.Jpeg, 85);
+        var jpeg = builder.SaveAs(LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-converted-jpeg.jpg ({jpeg.Length} bytes)");
 
-        var webp = LegioImageBuilder.Load(imagePath)
-            .SaveAs(LegioImageFormat.WebP, 85);
+        var webp = builder.SaveAs(LegioImageFormat.WebP, 85);
 
         Console.WriteLine($"  Created: output-converted-webp.webp ({webp.Length} bytes)");
 
-        var bmp = LegioImageBuilder.Load(imagePath)
-            .SaveAs(LegioImageFormat.Bmp);
+        var bmp = builder.SaveAs(LegioImageFormat.Bmp);
 
         Console.WriteLine($"  Created: output-converted-bmp.bmp ({bmp.Length} bytes)");
         Console.WriteLine();
@@ -206,32 +243,32 @@ class Program
 
     static void QualityExample(string imagePath)
     {
-        Console.WriteLine("8. Quality Control");
+        Console.WriteLine("9. Quality Control");
         Console.WriteLine(new string('-', 50));
 
-        var low = LegioImageBuilder.Load(imagePath)
-            .Resize(200, 200)
+        LegioImageBuilder.Load(imagePath)
+            .Resize(200, 200, LegioScaleMode.Stretch, LegioResizeQuality.High)
             .Quality(50)
             .Save("output-quality-low.jpg", LegioImageFormat.Jpeg);
 
         Console.WriteLine($"  Low quality: {File.ReadAllBytes("output-quality-low.jpg").Length} bytes");
 
-        var medium = LegioImageBuilder.Load(imagePath)
-            .Resize(200, 200)
+        LegioImageBuilder.Load(imagePath)
+            .Resize(200, 200, LegioScaleMode.Stretch, LegioResizeQuality.High)
             .Quality(75)
             .Save("output-quality-medium.jpg", LegioImageFormat.Jpeg);
 
         Console.WriteLine($"  Medium quality: {File.ReadAllBytes("output-quality-medium.jpg").Length} bytes");
 
-        var high = LegioImageBuilder.Load(imagePath)
-            .Resize(200, 200)
+        LegioImageBuilder.Load(imagePath)
+            .Resize(200, 200, LegioScaleMode.Stretch, LegioResizeQuality.High)
             .Quality(90)
             .Save("output-quality-high.jpg", LegioImageFormat.Jpeg);
 
         Console.WriteLine($"  High quality: {File.ReadAllBytes("output-quality-high.jpg").Length} bytes");
 
-        var maximum = LegioImageBuilder.Load(imagePath)
-            .Resize(200, 200)
+        LegioImageBuilder.Load(imagePath)
+            .Resize(200, 200, LegioScaleMode.Stretch, LegioResizeQuality.High)
             .Quality(100)
             .Save("output-quality-maximum.jpg", LegioImageFormat.Jpeg);
 
@@ -241,11 +278,11 @@ class Program
 
     static void ChainOperationsExample(string imagePath)
     {
-        Console.WriteLine("9. Chained Operations");
+        Console.WriteLine("10. Chained Operations");
         Console.WriteLine(new string('-', 50));
 
-        var processed = LegioImageBuilder.Load(imagePath)
-            .Resize(300, 300, LegioScaleMode.Fit)
+        LegioImageBuilder.Load(imagePath)
+            .Resize(300, 300, LegioScaleMode.Fit, LegioResizeQuality.High)
             .Crop(10, 10, 200, 200)
             .Rotate(90)
             .Brightness(20)
@@ -260,7 +297,7 @@ class Program
 
     static void SaveExample(string imagePath)
     {
-        Console.WriteLine("10. Save Methods");
+        Console.WriteLine("11. Save Methods");
         Console.WriteLine(new string('-', 50));
 
         var builder = LegioImageBuilder.Load(imagePath);
@@ -281,26 +318,57 @@ class Program
 
     static void ScaleModesExample(string imagePath)
     {
-        Console.WriteLine("11. Scale Modes");
+        Console.WriteLine("12. Scale Modes");
         Console.WriteLine(new string('-', 50));
 
-        var fit = LegioImageBuilder.Load(imagePath)
-            .Resize(200, 200, LegioScaleMode.Fit)
+        LegioImageBuilder.Load(imagePath)
+            .Resize(200, 200, LegioScaleMode.Fit, LegioResizeQuality.High)
             .Save("output-scale-fit.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Fit mode: {File.ReadAllBytes("output-scale-fit.jpg").Length} bytes");
 
-        var fill = LegioImageBuilder.Load(imagePath)
-            .Resize(200, 200, LegioScaleMode.Fill)
+        LegioImageBuilder.Load(imagePath)
+            .Resize(200, 200, LegioScaleMode.Fill, LegioResizeQuality.High)
             .Save("output-scale-fill.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Fill mode: {File.ReadAllBytes("output-scale-fill.jpg").Length} bytes");
 
-        var stretch = LegioImageBuilder.Load(imagePath)
-            .Resize(200, 200, LegioScaleMode.Stretch)
+        LegioImageBuilder.Load(imagePath)
+            .Resize(200, 200, LegioScaleMode.Stretch, LegioResizeQuality.High)
             .Save("output-scale-stretch.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Stretch mode: {File.ReadAllBytes("output-scale-stretch.jpg").Length} bytes");
+        Console.WriteLine();
+    }
+
+    static void ResizeQualityExample(string imagePath)
+    {
+        Console.WriteLine("13. Resize Quality Levels");
+        Console.WriteLine(new string('-', 50));
+
+        LegioImageBuilder.Load(imagePath)
+            .Resize(400, 300, LegioScaleMode.Stretch, LegioResizeQuality.Low)
+            .Save("output-resize-quality-low.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  Low quality resize: {File.ReadAllBytes("output-resize-quality-low.jpg").Length} bytes");
+
+        LegioImageBuilder.Load(imagePath)
+            .Resize(400, 300, LegioScaleMode.Stretch, LegioResizeQuality.Medium)
+            .Save("output-resize-quality-medium.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  Medium quality resize: {File.ReadAllBytes("output-resize-quality-medium.jpg").Length} bytes");
+
+        LegioImageBuilder.Load(imagePath)
+            .Resize(400, 300, LegioScaleMode.Stretch, LegioResizeQuality.High)
+            .Save("output-resize-quality-high.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  High quality resize: {File.ReadAllBytes("output-resize-quality-high.jpg").Length} bytes");
+
+        LegioImageBuilder.Load(imagePath)
+            .Resize(400, 300, LegioScaleMode.Stretch, LegioResizeQuality.Maximum)
+            .Save("output-resize-quality-maximum.jpg", LegioImageFormat.Jpeg, 85);
+
+        Console.WriteLine($"  Maximum quality resize: {File.ReadAllBytes("output-resize-quality-maximum.jpg").Length} bytes");
         Console.WriteLine();
     }
 }

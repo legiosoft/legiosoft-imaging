@@ -1,6 +1,9 @@
+using System.Drawing;
+using System.Drawing.Imaging;
 using LegioSoft.Imaging.Core;
 using LegioSoft.Imaging.WebP;
-using System;
+using LegioSoft.Imaging.WebP.Enums;
+using LegioSoft.Imaging.WebP.Models;
 
 namespace WebPExample;
 
@@ -10,295 +13,386 @@ class Program
     {
         Console.WriteLine("=== LegioSoft.Imaging.WebP Examples ===\n");
 
-        var exampleImage = "test-image.png";
+        var exampleImage = "example.png";
 
         if (!File.Exists(exampleImage))
         {
-            Console.WriteLine($"Error: {exampleImage} not found. Please add a test image to the examples folder.");
-            Console.WriteLine("\nNote: Create a test image by running the Skia example first.");
+            Console.WriteLine($"Error: {exampleImage} not found in output directory.");
+            Console.WriteLine("Add test image to test-photos/ folder or check build configuration.");
             return;
         }
 
+        var (imageData, width, height) = LoadPngToRGBA(exampleImage);
+
         try
         {
-            InterfaceImplementationExample(exampleImage);
-            FormatSupportExample();
-            PerformanceExample(exampleImage);
+            EncodeBasicExample(imageData, width, height);
+            EncodeQualityExample(imageData, width, height);
+            EncodeLosslessExample(imageData, width, height);
+            EncodeRGBExample(imageData, width, height);
+            EncodeAdvancedExample(imageData, width, height);
+            DecodeExample(imageData, width, height);
+            DecodeWithColorSpaceExample(imageData, width, height);
+            ScaleExample(imageData, width, height);
+            CropExample(imageData, width, height);
+            FlipExample(imageData, width, height);
+            InfoExample(imageData, width, height);
+            LibraryInfoExample();
+            ValidationExample();
+            ScenariosExample(imageData, width, height);
         }
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"Error: {ex.GetType().Name}: {ex.Message}");
+            Console.WriteLine($"Stack: {ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"Inner: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
+                Console.WriteLine($"Inner Stack: {ex.InnerException.StackTrace}");
+            }
             Console.ResetColor();
         }
     }
 
-    static void InterfaceImplementationExample(string imagePath)
+    static (byte[] data, int width, int height) LoadPngToRGBA(string filePath)
     {
-        Console.WriteLine("1. Interface Implementation");
-        Console.WriteLine(new string('-', 50));
+        Console.WriteLine($"Loading {filePath}...");
+        using var bitmap = new Bitmap(filePath);
+        int width = bitmap.Width;
+        int height = bitmap.Height;
 
-        var encoder = new LegioImageWebPEncoder();
-        
-        Console.WriteLine("  LegioImageWebPEncoder implements:");
-        Console.WriteLine($"    - ILegioImageEncoder: {encoder is ILegioImageEncoder}");
-        Console.WriteLine($"    - ILegioImageDecoder: {encoder is ILegioImageDecoder}");
-        Console.WriteLine();
-    }
+        Console.WriteLine($"  Dimensions: {width}x{height}");
 
-    static void FormatSupportExample()
-    {
-        Console.WriteLine("2. Format Support");
-        Console.WriteLine(new string('-', 50));
+        var pixelData = new byte[width * height * 4];
 
-        Console.WriteLine("  LegioSoft.Imaging.WebP currently implements:");
-        Console.WriteLine("    - ILegioImageEncoder interface");
-        Console.WriteLine("    - ILegioImageDecoder interface");
-        Console.WriteLine("    - Throws NotImplementedException for decode operations");
-        Console.WriteLine("    - Throws NotSupportedException for non-WebP encoding");
-        Console.WriteLine();
-        Console.WriteLine("  Available WebP capabilities:");
-        Console.WriteLine("    ✓ WebPDecoder.DecodeWithScaling - Decode WebP with resize during decode");
-        Console.WriteLine("    ✓ WebPImage.Scale - Scale WebP images during decode");
-        Console.WriteLine("    ✓ Native libwebp scaling (fast and efficient)");
-        Console.WriteLine("    ✓ WEBP_CSP_MODE support (RGBA, BGR, etc.)");
-        Console.WriteLine();
-    }
-
-    static void PerformanceExample(string imagePath)
-    {
-        Console.WriteLine("3. WebP Package Benefits");
-        Console.WriteLine(new string('-', 50));
-
-        Console.WriteLine("  Why use LegioSoft.Imaging.WebP?");
-        Console.WriteLine("    ✓ Lightweight (~500KB vs 5MB for Skia)");
-        Console.WriteLine("    ✓ Faster for simple WebP operations");
-        Console.WriteLine("    ✓ No SkiaSharp dependency");
-        Console.WriteLine("    ✓ Cross-platform native libraries");
-        Console.WriteLine("    ✓ Lower memory footprint");
-        Console.WriteLine("    ✓ Native scaling during decode (no separate resize step)");
-        Console.WriteLine();
-        Console.WriteLine("  Use cases:");
-        Console.WriteLine("    • Web-only applications");
-        Console.WriteLine("    • Server-side image conversion (WebP with scaling)");
-        Console.WriteLine("    • Mobile apps with limited resources");
-        Console.WriteLine("    • CI/CD pipelines");
-        Console.WriteLine("    • Thumbnail generation from WebP sources");
-        Console.WriteLine();
-    }
-
-    static void ComparisonExample()
-    {
-        Console.WriteLine("4. Package Comparison");
-        Console.WriteLine(new string('-', 50));
-
-        Console.WriteLine("  LegioSoft.Imaging.WebP:");
-        Console.WriteLine("    Package: ~500KB");
-        Console.WriteLine("    Dependencies: LegioSoft.Imaging.Core + libwebp (native)");
-        Console.WriteLine("    Features: WebP decode with native scaling");
-        Console.WriteLine("    Limitations: Cannot transform non-WebP images");
-        Console.WriteLine("    Best for: WebP decoding with scaling");
-        Console.WriteLine();
-        Console.WriteLine("  LegioSoft.Imaging.Skia:");
-        Console.WriteLine("    Package: ~5MB");
-        Console.WriteLine("    Dependencies: LegioSoft.Imaging.Core + SkiaSharp");
-        Console.WriteLine("    Features: Full image processing (all formats)");
-        Console.WriteLine("    Best for: General image processing");
-        Console.WriteLine();
-    }
-
-    static void UsageExample(string imagePath)
-    {
-        Console.WriteLine("5. WebP Decode with Scaling");
-        Console.WriteLine(new string('-', 50));
-
-        Console.WriteLine("  Decode WebP and scale during decode (native speed):");
-        Console.WriteLine();
-        Console.WriteLine("  var webpData = File.ReadAllBytes(\"image.webp\");");
-        Console.WriteLine("  var scaled = WebPDecoder.DecodeWithScaling(webpData, 800, 600);");
-        Console.WriteLine("  File.WriteAllBytes(\"scaled-rgba.data\", scaled);");
-        Console.WriteLine();
-        Console.WriteLine("  Decode with specific color space:");
-        Console.WriteLine("  var bgr = WebPDecoder.DecodeWithScaling(webpData, 800, 600, WEBP_CSP_MODE.MODE_BGR);");
-        Console.WriteLine();
-        Console.WriteLine("  Scale existing WebP image:");
-        Console.WriteLine("  var scaled = WebPImage.Scale(webpData, 800, 600);");
-        Console.WriteLine("  File.WriteAllBytes(\"scaled.webp\", scaled);");
-        Console.WriteLine();
-        Console.WriteLine("  Scale WebP image from file:");
-        Console.WriteLine("  var scaled = WebPImage.Scale(\"image.webp\", 800, 600);");
-        Console.WriteLine("  File.WriteAllBytes(\"scaled.webp\", scaled);");
-        Console.WriteLine();
-        Console.WriteLine("  Scale WebP image from stream:");
-        Console.WriteLine("  using var stream = File.OpenRead(\"image.webp\");");
-        Console.WriteLine("  var scaled = WebPImage.Scale(stream, 800, 600);");
-        Console.WriteLine("  File.WriteAllBytes(\"scaled.webp\", scaled);");
-        Console.WriteLine();
-    }
-
-    static void InstallationExample()
-    {
-        Console.WriteLine("6. Installation");
-        Console.WriteLine(new string('-', 50));
-
-        Console.WriteLine("  Install WebP package:");
-        Console.WriteLine("  dotnet add package LegioSoft.Imaging.WebP");
-        Console.WriteLine();
-        Console.WriteLine("  Or add reference to project file:");
-        Console.WriteLine("  <PackageReference Include=\"LegioSoft.Imaging.WebP\" />");
-        Console.WriteLine();
-        Console.WriteLine("  Don't forget Core package (it's a dependency):");
-        Console.WriteLine("  <PackageReference Include=\"LegioSoft.Imaging.Core\" />");
-        Console.WriteLine();
-    }
-
-    static void ScenariosExample()
-    {
-        Console.WriteLine("7. Real-World Scenarios");
-        Console.WriteLine(new string('-', 50));
-
-        Console.WriteLine("  Scenario 1: Generate thumbnail from WebP");
-        Console.WriteLine("  var webpData = File.ReadAllBytes(\"large.webp\");");
-        Console.WriteLine("  var thumbnail = WebPDecoder.DecodeWithScaling(webpData, 200, 150);");
-        Console.WriteLine("  File.WriteAllBytes(\"thumbnail.rgba\", thumbnail);");
-        Console.WriteLine();
-        Console.WriteLine("  Scenario 2: Decode WebP to multiple sizes");
-        Console.WriteLine("  var webpData = File.ReadAllBytes(\"source.webp\");");
-        Console.WriteLine("  var sizes = new[] { 320, 640, 1024 };");
-        Console.WriteLine("  foreach (var size in sizes) {");
-        Console.WriteLine("    var decoded = WebPDecoder.DecodeWithScaling(webpData, size, (int)(size * 0.75));");
-        Console.WriteLine("    File.WriteAllBytes($\"{size}w.rgba\", decoded);");
-        Console.WriteLine("  }");
-        Console.WriteLine();
-        Console.WriteLine("  Scenario 3: WebP batch processing");
-        Console.WriteLine("  var webpFiles = Directory.GetFiles(\"input\", \"*.webp\");");
-        Console.WriteLine("  foreach (var file in webpFiles) {");
-        Console.WriteLine("    var data = File.ReadAllBytes(file);");
-        Console.WriteLine("    var scaled = WebPDecoder.DecodeWithScaling(data, 800, 600);");
-        Console.WriteLine("    var filename = Path.GetFileNameWithoutExtension(file);");
-        Console.WriteLine("    File.WriteAllBytes($\"output/{filename}_scaled.rgba\", scaled);");
-        Console.WriteLine("  }");
-        Console.WriteLine();
-    }
-}
-
+        var rect = new Rectangle(0, 0, width, height);
+        var bitmapData = bitmap.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
         try
         {
-            InterfaceImplementationExample(exampleImage);
-            FormatSupportExample();
-            PerformanceExample(exampleImage);
+            IntPtr ptr = bitmapData.Scan0;
+            int bytes = Math.Abs(bitmapData.Stride) * height;
+            var rgbValues = new byte[bytes];
+            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int srcIndex = (y * bitmapData.Stride) + (x * 4);
+                    int destIndex = (y * width + x) * 4;
+
+                    pixelData[destIndex + 0] = rgbValues[srcIndex + 2];
+                    pixelData[destIndex + 1] = rgbValues[srcIndex + 1];
+                    pixelData[destIndex + 2] = rgbValues[srcIndex + 0];
+                    pixelData[destIndex + 3] = rgbValues[srcIndex + 3];
+                }
+            }
+
+            Console.WriteLine($"  Decoded to RGBA: {pixelData.Length} bytes\n");
+            return (pixelData, width, height);
         }
-        catch (Exception ex)
+        finally
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Error: {ex.Message}");
-            Console.ResetColor();
+            bitmap.UnlockBits(bitmapData);
         }
     }
 
-    static void InterfaceImplementationExample(string imagePath)
+    static void EncodeBasicExample(byte[] imageData, int width, int height)
     {
-        Console.WriteLine("1. Interface Implementation");
+        Console.WriteLine("1. Basic Encode");
         Console.WriteLine(new string('-', 50));
 
-        var encoder = new LegioImageWebPEncoder();
-        
-        Console.WriteLine("  LegioImageWebPEncoder implements:");
-        Console.WriteLine($"    - ILegioImageEncoder: {encoder is ILegioImageEncoder}");
-        Console.WriteLine($"    - ILegioImageDecoder: {encoder is ILegioImageDecoder}");
+        var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+        File.WriteAllBytes("output-encoded-basic.webp", webP);
+
+        Console.WriteLine($"  Created: output-encoded-basic.webp ({webP.Length} bytes)");
+        Console.WriteLine($"  Source: {imageData.Length} bytes → WebP: {webP.Length} bytes");
+        Console.WriteLine($"  Compression ratio: {((1 - (double)webP.Length / imageData.Length) * 100):F1}%");
         Console.WriteLine();
     }
 
-    static void FormatSupportExample()
+    static void EncodeQualityExample(byte[] imageData, int width, int height)
     {
-        Console.WriteLine("2. Format Support");
+        Console.WriteLine("2. Encode Quality Levels");
         Console.WriteLine(new string('-', 50));
 
-        Console.WriteLine("  LegioSoft.Imaging.WebP currently implements:");
-        Console.WriteLine("    - ILegioImageEncoder interface");
-        Console.WriteLine("    - ILegioImageDecoder interface");
-        Console.WriteLine("    - Throws NotImplementedException for decode operations");
-        Console.WriteLine("    - Throws NotSupportedException for non-WebP encoding");
-        Console.WriteLine();
-        Console.WriteLine("  Full WebP support will be added in future versions:");
-        Console.WriteLine("    - Encoding from RGBA/BGR formats");
-        Console.WriteLine("    - Decoding WebP to RGBA");
-        Console.WriteLine("    - Image information extraction");
-        Console.WriteLine("    - Lossless and lossy encoding");
-        Console.WriteLine("    - Native library integration");
+        var low = WebPImage.Encode(imageData, width, height, 30.0f);
+        File.WriteAllBytes("output-quality-low.webp", low);
+        Console.WriteLine($"  Low quality (30): {low.Length} bytes");
+
+        var medium = WebPImage.Encode(imageData, width, height, 60.0f);
+        File.WriteAllBytes("output-quality-medium.webp", medium);
+        Console.WriteLine($"  Medium quality (60): {medium.Length} bytes");
+
+        var high = WebPImage.Encode(imageData, width, height, 85.0f);
+        File.WriteAllBytes("output-quality-high.webp", high);
+        Console.WriteLine($"  High quality (85): {high.Length} bytes");
+
+        var maximum = WebPImage.Encode(imageData, width, height, 100.0f);
+        File.WriteAllBytes("output-quality-maximum.webp", maximum);
+        Console.WriteLine($"  Maximum quality (100): {maximum.Length} bytes");
         Console.WriteLine();
     }
 
-    static void PerformanceExample(string imagePath)
+    static void EncodeLosslessExample(byte[] imageData, int width, int height)
     {
-        Console.WriteLine("3. WebP Package Benefits");
+        Console.WriteLine("3. Lossless Encoding");
         Console.WriteLine(new string('-', 50));
 
-        Console.WriteLine("  Why use LegioSoft.Imaging.WebP?");
-        Console.WriteLine("    ✓ Lightweight (~500KB vs 5MB for Skia)");
-        Console.WriteLine("    ✓ Faster for simple WebP operations");
-        Console.WriteLine("    ✓ No SkiaSharp dependency");
-        Console.WriteLine("    ✓ Cross-platform native libraries");
-        Console.WriteLine("    ✓ Lower memory footprint");
-        Console.WriteLine();
-        Console.WriteLine("  Use cases:");
-        Console.WriteLine("    • Web-only applications");
-        Console.WriteLine("    • Server-side image conversion");
-        Console.WriteLine("    • Mobile apps with limited resources");
-        Console.WriteLine("    • CI/CD pipelines");
+        var lossy = WebPImage.Encode(imageData, width, height, 75.0f);
+        File.WriteAllBytes("output-lossy.webp", lossy);
+        Console.WriteLine($"  Lossy (quality 75): {lossy.Length} bytes");
+
+        var lossless = WebPImage.EncodeLossless(imageData, width, height);
+        File.WriteAllBytes("output-lossless.webp", lossless);
+        Console.WriteLine($"  Lossless: {lossless.Length} bytes");
+
+        Console.WriteLine($"  Size difference: {((double)lossless.Length / lossy.Length):F1}x");
         Console.WriteLine();
     }
 
-    static void ComparisonExample()
+    static void EncodeRGBExample(byte[] imageData, int width, int height)
     {
-        Console.WriteLine("4. Package Comparison");
+        Console.WriteLine("4. RGB Encoding");
         Console.WriteLine(new string('-', 50));
 
-        Console.WriteLine("  LegioSoft.Imaging.WebP:");
-        Console.WriteLine("    Package: ~500KB");
-        Console.WriteLine("    Dependencies: LegioSoft.Imaging.Core + libwebp (native)");
-        Console.WriteLine("    Best for: WebP encoding/decoding only");
-        Console.WriteLine();
-        Console.WriteLine("  LegioSoft.Imaging.Skia:");
-        Console.WriteLine("    Package: ~5MB");
-        Console.WriteLine("    Dependencies: LegioSoft.Imaging.Core + SkiaSharp");
-        Console.WriteLine("    Best for: Full image processing");
+        var rgba = WebPImage.Encode(imageData, width, height, 75.0f);
+        File.WriteAllBytes("output-encoded-rgba.webp", rgba);
+        Console.WriteLine($"  RGBA encoding: {rgba.Length} bytes");
+
+        var rgbData = ConvertRGBAtoRGB(imageData);
+        var rgb = WebPImage.EncodeRGB(rgbData, width, height, 75.0f);
+        File.WriteAllBytes("output-encoded-rgb.webp", rgb);
+        Console.WriteLine($"  RGB encoding: {rgb.Length} bytes");
+
+        Console.WriteLine($"  RGB saves: {((1 - (double)rgb.Length / rgba.Length) * 100):F1}%");
         Console.WriteLine();
     }
 
-    static void UsageExample(string imagePath)
+    static byte[] ConvertRGBAtoRGB(byte[] rgbaData)
     {
-        Console.WriteLine("5. Usage Example");
+        int pixelCount = rgbaData.Length / 4;
+        var rgbData = new byte[pixelCount * 3];
+
+        for (int i = 0; i < pixelCount; i++)
+        {
+            int rgbaIndex = i * 4;
+            int rgbIndex = i * 3;
+
+            rgbData[rgbIndex + 0] = rgbaData[rgbaIndex + 0];
+            rgbData[rgbIndex + 1] = rgbaData[rgbaIndex + 1];
+            rgbData[rgbIndex + 2] = rgbaData[rgbaIndex + 2];
+        }
+
+        return rgbData;
+    }
+
+    static void EncodeAdvancedExample(byte[] imageData, int width, int height)
+    {
+        Console.WriteLine("5. Advanced Encoding");
         Console.WriteLine(new string('-', 50));
 
-        Console.WriteLine("  Current API (NotImplementedException):");
-        Console.WriteLine();
-        Console.WriteLine("  var encoder = new LegioImageWebPEncoder();");
-        Console.WriteLine("  var decoded = encoder.Decode(webpData, out var format);");
-        Console.WriteLine("  var info = encoder.GetImageInfo(webpData);");
-        Console.WriteLine();
-        Console.WriteLine("  Future API (not yet implemented):");
-        Console.WriteLine("  var encoder = new LegioImageWebPEncoder();");
-        Console.WriteLine("  var webpData = encoder.Encode(rgbaData, LegioImageFormat.WebP, quality: 85);");
-        Console.WriteLine("  var webpData = encoder.Encode(rgbaData, width, height, quality: 85);");
-        Console.WriteLine("  var webpData = encoder.EncodeLossless(rgbaData, width, height);");
+        var options = new WebPEncodeOptions
+        {
+            Quality = 80.0f,
+            Method = 6,
+            Lossless = false,
+            Pass = 6
+        };
+
+        var advanced = WebPImage.EncodeAdvanced(imageData, width, height, options);
+        File.WriteAllBytes("output-encoded-advanced.webp", advanced);
+
+        Console.WriteLine($"  Created: output-encoded-advanced.webp ({advanced.Length} bytes)");
+        Console.WriteLine($"  Method: {options.Method} (encoding complexity)");
+        Console.WriteLine($"  Pass: {options.Pass} (analysis passes)");
         Console.WriteLine();
     }
 
-    static void InstallationExample()
+    static void DecodeExample(byte[] imageData, int width, int height)
     {
-        Console.WriteLine("6. Installation");
+        Console.WriteLine("6. Decode");
         Console.WriteLine(new string('-', 50));
 
-        Console.WriteLine("  Install WebP package:");
-        Console.WriteLine("  dotnet add package LegioSoft.Imaging.WebP");
+        var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+
+        var decoded = WebPImage.Decode(webP);
+        File.WriteAllBytes("output-decoded.rgba", decoded);
+
+        Console.WriteLine($"  Created: output-decoded.rgba ({decoded.Length} bytes)");
+        Console.WriteLine($"  Original: {webP.Length} bytes → Decoded: {decoded.Length} bytes");
+        Console.WriteLine($"  Pixel count: {decoded.Length / 4} (RGBA, 4 bytes per pixel)");
         Console.WriteLine();
-        Console.WriteLine("  Or add reference to project file:");
-        Console.WriteLine("  <PackageReference Include=\"LegioSoft.Imaging.WebP\" />");
+    }
+
+    static void DecodeWithColorSpaceExample(byte[] imageData, int width, int height)
+    {
+        Console.WriteLine("7. Decode with Color Space");
+        Console.WriteLine(new string('-', 50));
+
+        var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+
+        var rgba = WebPImage.Decode(webP, WEBP_CSP_MODE.MODE_RGBA);
+        File.WriteAllBytes("output-decoded-rgba.rgba", rgba);
+        Console.WriteLine($"  RGBA (4 channels): {rgba.Length} bytes");
+
+        var rgb = WebPImage.Decode(webP, WEBP_CSP_MODE.MODE_RGB);
+        File.WriteAllBytes("output-decoded-rgb.rgb", rgb);
+        Console.WriteLine($"  RGB (3 channels): {rgb.Length} bytes");
+
+        var bgr = WebPImage.Decode(webP, WEBP_CSP_MODE.MODE_BGR);
+        File.WriteAllBytes("output-decoded-bgr.bgr", bgr);
+        Console.WriteLine($"  BGR (3 channels): {bgr.Length} bytes");
+
+        var argb = WebPImage.Decode(webP, WEBP_CSP_MODE.MODE_ARGB);
+        File.WriteAllBytes("output-decoded-argb.argb", argb);
+        Console.WriteLine($"  ARGB (4 channels): {argb.Length} bytes");
+
+        Console.WriteLine($"  RGB saves: {((1 - (double)rgb.Length / rgba.Length) * 100):F1}% vs RGBA");
         Console.WriteLine();
-        Console.WriteLine("  Don't forget Core package (it's a dependency):");
-        Console.WriteLine("  <PackageReference Include=\"LegioSoft.Imaging.Core\" />");
+    }
+
+    static void ScaleExample(byte[] imageData, int width, int height)
+    {
+        Console.WriteLine("8. Native Scaling (During Decode)");
+        Console.WriteLine(new string('-', 50));
+
+        var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+
+        var fullSize = WebPImage.Decode(webP);
+        Console.WriteLine($"  Full size ({width}x{height}): {fullSize.Length} bytes");
+
+        var scaled = WebPImage.Scale(webP, width / 2, height / 2);
+        File.WriteAllBytes("output-scaled-400x300.rgba", scaled);
+        Console.WriteLine($"  Scaled ({width / 2}x{height / 2}): {scaled.Length} bytes");
+
+        var thumbnail = WebPImage.Scale(webP, width / 4, height / 4);
+        File.WriteAllBytes("output-scaled-200x150.rgba", thumbnail);
+        Console.WriteLine($"  Thumbnail ({width / 4}x{height / 4}): {thumbnail.Length} bytes");
+
+        Console.WriteLine($"  Thumbnail saves: {((1 - (double)thumbnail.Length / fullSize.Length) * 100):F1}%");
+        Console.WriteLine();
+    }
+
+    static void CropExample(byte[] imageData, int width, int height)
+    {
+        Console.WriteLine("9. Native Cropping (During Decode)");
+        Console.WriteLine(new string('-', 50));
+
+        var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+
+        var fullSize = WebPImage.Decode(webP);
+        Console.WriteLine($"  Full size ({width}x{height}): {fullSize.Length} bytes");
+
+        var cropped = WebPImage.Crop(webP, 100, 100, width / 2, height / 2);
+        File.WriteAllBytes("output-cropped.rgba", cropped);
+        Console.WriteLine($"  Cropped (100,100, {width / 2}x{height / 2}): {cropped.Length} bytes");
+
+        Console.WriteLine($"  Crop saves: {((1 - (double)cropped.Length / fullSize.Length) * 100):F1}%");
+        Console.WriteLine();
+    }
+
+    static void FlipExample(byte[] imageData, int width, int height)
+    {
+        Console.WriteLine("10. Native Flip (During Decode)");
+        Console.WriteLine(new string('-', 50));
+
+        var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+
+        var flipped = WebPImage.Flip(webP, WEBP_CSP_MODE.MODE_RGBA);
+        File.WriteAllBytes("output-flipped.rgba", flipped);
+
+        Console.WriteLine($"  Created: output-flipped.rgba ({flipped.Length} bytes)");
+        Console.WriteLine($"  Flipped vertically (native during decode)");
+        Console.WriteLine();
+    }
+
+    static void InfoExample(byte[] imageData, int width, int height)
+    {
+        Console.WriteLine("11. Image Information");
+        Console.WriteLine(new string('-', 50));
+
+        var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+
+        var info = WebPImage.GetInfo(webP);
+        Console.WriteLine($"  Width: {info.Width}");
+        Console.WriteLine($"  Height: {info.Height}");
+        Console.WriteLine($"  Has Alpha: {info.HasAlpha}");
+        Console.WriteLine($"  Has Animation: {info.HasAnimation}");
+        Console.WriteLine($"  Format: {info.Format}");
+        Console.WriteLine($"  Total pixels: {info.Width * info.Height:N0}");
+        Console.WriteLine();
+    }
+
+    static void LibraryInfoExample()
+    {
+        Console.WriteLine("12. Library Information");
+        Console.WriteLine(new string('-', 50));
+
+        var version = WebPImage.GetVersion();
+        Console.WriteLine($"  libwebp version: {version}");
+
+        var testWebP = new byte[] { 0x52, 0x49, 0x46, 0x46 };
+        var isValid = WebPImage.IsValidWebP(testWebP);
+        Console.WriteLine($"  Test WebP validation: {isValid}");
+
+        var validWebP = File.ReadAllBytes("output-encoded-basic.webp");
+        var isReallyValid = WebPImage.IsValidWebP(validWebP);
+        Console.WriteLine($"  Encoded WebP validation: {isReallyValid}");
+        Console.WriteLine();
+    }
+
+    static void ValidationExample()
+    {
+        Console.WriteLine("13. WebP Validation");
+        Console.WriteLine(new string('-', 50));
+
+        var invalid = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+        Console.WriteLine($"  Invalid data is valid: {WebPImage.IsValidWebP(invalid)}");
+
+        if (File.Exists("output-encoded-basic.webp"))
+        {
+            var valid = File.ReadAllBytes("output-encoded-basic.webp");
+            Console.WriteLine($"  Valid WebP file is valid: {WebPImage.IsValidWebP(valid)}");
+        }
+        Console.WriteLine();
+    }
+
+    static void ScenariosExample(byte[] imageData, int width, int height)
+    {
+        Console.WriteLine("14. Real-World Scenarios");
+        Console.WriteLine(new string('-', 50));
+
+        Console.WriteLine("  Scenario 1: Generate thumbnails from different sources");
+        var sizes = new[] { 64, 128, 256, 512 };
+        foreach (var size in sizes)
+        {
+            var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+            var thumbnail = WebPImage.Scale(webP, size, size);
+            File.WriteAllBytes($"output-thumb-{size}x{size}.rgba", thumbnail);
+            Console.WriteLine($"    Generated: {size}x{size} thumbnail ({thumbnail.Length} bytes)");
+        }
+
+        Console.WriteLine("  Scenario 2: Multi-quality encoding");
+        var webPData = WebPImage.Encode(imageData, width, height, 75.0f);
+        var qualities = new[] { 30, 50, 70, 90 };
+        foreach (var q in qualities)
+        {
+            var encoded = WebPImage.Encode(imageData, width, height, (float)q);
+            File.WriteAllBytes($"output-quality-{q}.webp", encoded);
+            Console.WriteLine($"    Quality {q}: {encoded.Length} bytes");
+        }
+
+        Console.WriteLine("  Scenario 3: Color space conversion");
+        var decodedRGB = WebPImage.Decode(webPData, WEBP_CSP_MODE.MODE_RGB);
+        var decodedBGR = WebPImage.Decode(webPData, WEBP_CSP_MODE.MODE_BGR);
+        var decodedRGBA = WebPImage.Decode(webPData, WEBP_CSP_MODE.MODE_RGBA);
+        Console.WriteLine($"    RGB: {decodedRGB.Length} bytes");
+        Console.WriteLine($"    BGR: {decodedBGR.Length} bytes");
+        Console.WriteLine($"    RGBA: {decodedRGBA.Length} bytes");
+
         Console.WriteLine();
     }
 }

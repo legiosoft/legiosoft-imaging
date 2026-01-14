@@ -11,5 +11,16 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\LegioSoft.Imaging.WebP\LegioSoft.Imaging.WebP.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\test-photos\example.png">
+      <Link>example.png</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>
