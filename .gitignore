@@ -420,3 +420,4 @@ FodyWeavers.xsd
 /docker/build-webp/output
 /examples/SkiaExample/.idea
 /.idea
+/examples/WebPExample/.idea

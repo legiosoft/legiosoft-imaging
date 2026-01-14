@@ -9,8 +9,7 @@ $imageName = "webp-builder-multi"
 
 $targets = @(
     @{Name="linux-x64"; DockerTarget="builder-amd64"; Library="libwebp.so"; RuntimeDir="linux-x64"},
-    @{Name="linux-arm64"; DockerTarget="builder-arm64"; Library="libwebp.so"; RuntimeDir="linux-arm64"},
-    @{Name="win-x64"; DockerTarget="builder-win-x64"; Library="libwebp.dll"; RuntimeDir="win-x64"}
+    @{Name="linux-arm64"; DockerTarget="builder-arm64"; Library="libwebp.so"; RuntimeDir="linux-arm64"}
 )
 
 Write-Host "========================================" -ForegroundColor Cyan
