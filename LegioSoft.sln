@@ -4,13 +4,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.Core", "src\LegioSoft.Imaging.Core\LegioSoft.Imaging.Core.csproj", "{A2C31D59-D3A5-70DC-224A-F452D875009E}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.Skia", "src\LegioSoft.Imaging.Skia\LegioSoft.Imaging.Skia.csproj", "{B3C5F9E1-A8D2-4E7F-9B6C-1D3A8E7F9C5D}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.WebP", "src\LegioSoft.Imaging.WebP\LegioSoft.Imaging.WebP.csproj", "{C4D6E9E2-A8D2-4E7F-9B6C-1D3A8E7F9C6D}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging", "src\LegioSoft.Imaging\LegioSoft.Imaging.csproj", "{D4E7F9E1-A8D2-4E7F-9B6C-1D3A8E7F9C7D}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.Core.Tests", "tests\LegioSoft.Imaging.Core.Tests\LegioSoft.Imaging.Core.Tests.csproj", "{E1F2A3B7-1C8D-4E9F-8B3A-5D7E9F3A8C4E}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.Skia.Tests", "tests\LegioSoft.Imaging.Skia.Tests\LegioSoft.Imaging.Skia.Tests.csproj", "{F5G4A0F2-B9E3-5F0A-9C7B-2E4F0A4B5D5F}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.WebP.Tests", "tests\LegioSoft.Imaging.WebP.Tests\LegioSoft.Imaging.WebP.Tests.csproj", "{G6H5B1G3-C0F4-6G1B-3D5F1B6C6E7G6}"
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.Meta.Tests", "tests\LegioSoft.Imaging.Meta.Tests\LegioSoft.Imaging.Meta.Tests.csproj", "{H7I6C2H4-D1G5-7H2C-4E6G2C5F7H8I7J8K}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.Skia.Tests", "tests\LegioSoft.Imaging.Skia.Tests\LegioSoft.Imaging.Skia.Tests.csproj", "{00000000-0000-0000-0000-000000000000}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegioSoft.Imaging.WebP.Tests", "tests\LegioSoft.Imaging.WebP.Tests\LegioSoft.Imaging.WebP.Tests.csproj", "{00000000-0000-0000-0000-000000000000}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,10 +33,6 @@ Global
 		{C4D6E9E2-A8D2-4E7F-9B6C-1D3A8E7F9C6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4D6E9E2-A8D2-4E7F-9B6C-1D3A8E7F9C6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4D6E9E2-A8D2-4E7F-9B6C-1D3A8E7F9C6D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D4E7F9E1-A8D2-4E7F-9B6C-1D3A8E7F9C7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D4E7F9E1-A8D2-4E7F-9B6C-1D3A8E7F9C7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D4E7F9E1-A8D2-4E7F-9B6C-1D3A8E7F9C7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D4E7F9E1-A8D2-4E7F-9B6C-1D3A8E7F9C7D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E1F2A3B7-1C8D-4E9F-8B3A-5D7E9F3A8C4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E1F2A3B7-1C8D-4E9F-8B3A-5D7E9F3A8C4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1F2A3B7-1C8D-4E9F-8B3A-5D7E9F3A8C4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
