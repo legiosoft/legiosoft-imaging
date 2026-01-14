@@ -13,7 +13,10 @@ internal static class NativeLibraryLoader
         
         if (libraryPath == null)
         {
-            throw new PlatformNotSupportedException($"WebP is not supported on the current platform: {RuntimeInformation.OSDescription} ({RuntimeInformation.ProcessArchitecture}) or the native library was not found in the runtimes directory.");
+            throw new PlatformNotSupportedException($"WebP is not supported on the current platform: " +
+                                                    $"{RuntimeInformation.OSDescription} " +
+                                                    $"({RuntimeInformation.ProcessArchitecture}) " +
+                                                    $"or the native library was not found in the runtimes directory.");
         }
 
         return NativeLibrary.Load(libraryPath);
@@ -22,7 +25,7 @@ internal static class NativeLibraryLoader
     private static string? GetNativeLibraryPath()
     {
         var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-        var assemblyDirectory = assemblyLocation != null ? Path.GetDirectoryName(assemblyLocation) : null;
+        var assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
         
         if (string.IsNullOrEmpty(assemblyDirectory))
         {

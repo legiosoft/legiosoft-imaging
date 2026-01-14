@@ -6,25 +6,40 @@ namespace LegioSoft.Imaging.WebP.Native;
 
 internal static class NativeMethods
 {
+    #region Constants
+
+    private const string LibraryName = "libwebp";
+    private const int WEBP_DECODER_ABI_VERSION = 0x020f;
+    private const int WEBP_ENCODER_ABI_VERSION = 0x020f;
+
+    #endregion
+
+    #region Delegate
+
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int WebPWriterFunction(IntPtr data, UIntPtr data_size, ref WebPPicture picture);
+
+    #endregion
+
+    #region Constructor
 
     static NativeMethods()
     {
         NativeLibrary.SetDllImportResolver(typeof(NativeMethods).Assembly, DllImportResolver);
     }
 
+    #endregion
+
+    #region DllImport Resolver
+
     private static IntPtr DllImportResolver(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
     {
-        if (libraryName == "libwebp")
-        {
-            return NativeLibraryLoader.GetNativeLibrary();
-        }
-
-        return IntPtr.Zero;
+        return libraryName == "libwebp"
+            ? NativeLibraryLoader.GetNativeLibrary()
+            : IntPtr.Zero;
     }
 
-    private const string LibraryName = "libwebp";
+    #endregion
 
     #region Simple Decoding API
 
@@ -68,7 +83,12 @@ internal static class NativeMethods
     public static extern IntPtr WebPDecodeBGRInto(byte[] data, UIntPtr data_size, IntPtr output_buffer, UIntPtr output_buffer_size, int output_stride);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr WebPDecodeYUVInto(byte[] data, UIntPtr data_size, IntPtr luma, UIntPtr luma_size, int luma_stride, IntPtr u, UIntPtr u_size, int u_stride, IntPtr v, UIntPtr v_size, int v_stride);
+    // Returns: luma buffer pointer (Y-plane) on success, IntPtr.Zero on failure
+    public static extern IntPtr WebPDecodeYUVInto(
+        byte[] data, UIntPtr data_size,
+        IntPtr luma, UIntPtr luma_size, int luma_stride,
+        IntPtr u, UIntPtr u_size, int u_stride,
+        IntPtr v, UIntPtr v_size, int v_stride);
 
     #endregion
 
@@ -89,6 +109,8 @@ internal static class NativeMethods
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern VP8StatusCode WebPDecode(byte[] data, UIntPtr data_size, ref WebPDecoderConfig config);
 
+    #endregion
+
     #region Incremental Decoding API
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
@@ -98,10 +120,17 @@ internal static class NativeMethods
     public static extern IntPtr WebPINewRGB(WEBP_CSP_MODE csp, IntPtr output_buffer, UIntPtr output_buffer_size, int output_stride);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr WebPINewYUVA(IntPtr luma, UIntPtr luma_size, int luma_stride, IntPtr u, UIntPtr u_size, int u_stride, IntPtr v, UIntPtr v_size, int v_stride, IntPtr a, UIntPtr a_size, int a_stride);
+    public static extern IntPtr WebPINewYUVA(
+        IntPtr luma, UIntPtr luma_size, int luma_stride,
+        IntPtr u, UIntPtr u_size, int u_stride,
+        IntPtr v, UIntPtr v_size, int v_stride,
+        IntPtr a, UIntPtr a_size, int a_stride);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr WebPINewYUV(IntPtr luma, UIntPtr luma_size, int luma_stride, IntPtr u, UIntPtr u_size, int u_stride, IntPtr v, UIntPtr v_size, int v_stride);
+    public static extern IntPtr WebPINewYUV(
+        IntPtr luma, UIntPtr luma_size, int luma_stride,
+        IntPtr u, UIntPtr u_size, int u_stride,
+        IntPtr v, UIntPtr v_size, int v_stride);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern void WebPIDelete(IntPtr idec);
@@ -116,12 +145,13 @@ internal static class NativeMethods
     public static extern IntPtr WebPIDecGetRGB(IntPtr idec, out int last_y, out int width, out int height, out int stride);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr WebPIDecGetYUVA(IntPtr idec, out int last_y, out IntPtr u, out IntPtr v, out IntPtr a, out int width, out int height, out int stride, out int uv_stride, out int a_stride);
+    public static extern IntPtr WebPIDecGetYUVA(
+        IntPtr idec, out int last_y,
+        out IntPtr u, out IntPtr v, out IntPtr a,
+        out int width, out int height, out int stride, out int uv_stride, out int a_stride);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr WebPIDecodedArea(IntPtr idec, out int left, out int top, out int width, out int height);
-
-    #endregion
 
     #endregion
 
@@ -192,10 +222,7 @@ internal static class NativeMethods
     public static extern int WebPPictureImportBGRX(ref WebPPicture pic, byte[] bgrx, int stride);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int WebPPictureImportARGB(ref WebPPicture pic, byte[] argb, int stride);
-
-    [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int WebPPictureImportARGB(ref WebPPicture pic, UIntPtr argb, int stride);
+    public static extern int WebPPictureImportARGB(ref WebPPicture pic, IntPtr argb, int stride);
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int WebPPictureImportYUVA(ref WebPPicture pic, ref WebPYUVABuffer yuva);
@@ -248,6 +275,238 @@ internal static class NativeMethods
 
     [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl)]
     public static extern int WebPGetEncoderVersion();
+
+    #endregion
+
+    #region Safe Wrappers - Decode
+
+    public static T SafeDecodeRGBA<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    {
+        IntPtr decoded = WebPDecodeRGBA(data, data_size, out int width, out int height);
+        if (decoded == IntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(decoded, width, height);
+        }
+        finally
+        {
+            WebPFree(decoded);
+        }
+    }
+
+    public static T SafeDecodeARGB<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    {
+        IntPtr decoded = WebPDecodeARGB(data, data_size, out int width, out int height);
+        if (decoded == IntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(decoded, width, height);
+        }
+        finally
+        {
+            WebPFree(decoded);
+        }
+    }
+
+    public static T SafeDecodeBGRA<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    {
+        IntPtr decoded = WebPDecodeBGRA(data, data_size, out int width, out int height);
+        if (decoded == IntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(decoded, width, height);
+        }
+        finally
+        {
+            WebPFree(decoded);
+        }
+    }
+
+    public static T SafeDecodeRGB<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    {
+        IntPtr decoded = WebPDecodeRGB(data, data_size, out int width, out int height);
+        if (decoded == IntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(decoded, width, height);
+        }
+        finally
+        {
+            WebPFree(decoded);
+        }
+    }
+
+    public static T SafeDecodeBGR<T>(byte[] data, UIntPtr data_size, Func<IntPtr, int, int, T> callback)
+    {
+        IntPtr decoded = WebPDecodeBGR(data, data_size, out int width, out int height);
+        if (decoded == IntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(decoded, width, height);
+        }
+        finally
+        {
+            WebPFree(decoded);
+        }
+    }
+
+    public static T SafeDecodeYUV<T>(byte[] data, UIntPtr data_size, Func<IntPtr, IntPtr, int, int, int, int, T> callback)
+    {
+        IntPtr decoded = WebPDecodeYUV(data, data_size, out int width, out int height, out IntPtr u, out IntPtr v, out int stride, out int uv_stride);
+        if (decoded == IntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(decoded, u, width, height, stride, uv_stride);
+        }
+        finally
+        {
+            WebPFree(decoded);
+        }
+    }
+
+    #endregion
+
+    #region Safe Wrappers - Encode
+
+    public static T SafeEncodeRGB<T>(byte[] rgb, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
+    {
+        UIntPtr size = WebPEncodeRGB(rgb, width, height, stride, quality_factor, out IntPtr output);
+        if (output == IntPtr.Zero || size == UIntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(output, size);
+        }
+        finally
+        {
+            WebPFree(output);
+        }
+    }
+
+    public static T SafeEncodeBGR<T>(byte[] bgr, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
+    {
+        UIntPtr size = WebPEncodeBGR(bgr, width, height, stride, quality_factor, out IntPtr output);
+        if (output == IntPtr.Zero || size == UIntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(output, size);
+        }
+        finally
+        {
+            WebPFree(output);
+        }
+    }
+
+    public static T SafeEncodeRGBA<T>(byte[] rgba, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
+    {
+        UIntPtr size = WebPEncodeRGBA(rgba, width, height, stride, quality_factor, out IntPtr output);
+        if (output == IntPtr.Zero || size == UIntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(output, size);
+        }
+        finally
+        {
+            WebPFree(output);
+        }
+    }
+
+    public static T SafeEncodeBGRA<T>(byte[] bgra, int width, int height, int stride, float quality_factor, Func<IntPtr, UIntPtr, T> callback)
+    {
+        UIntPtr size = WebPEncodeBGRA(bgra, width, height, stride, quality_factor, out IntPtr output);
+        if (output == IntPtr.Zero || size == UIntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(output, size);
+        }
+        finally
+        {
+            WebPFree(output);
+        }
+    }
+
+    public static T SafeEncodeLosslessRGB<T>(byte[] rgb, int width, int height, int stride, Func<IntPtr, UIntPtr, T> callback)
+    {
+        UIntPtr size = WebPEncodeLosslessRGB(rgb, width, height, stride, out IntPtr output);
+        if (output == IntPtr.Zero || size == UIntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(output, size);
+        }
+        finally
+        {
+            WebPFree(output);
+        }
+    }
+
+    public static T SafeEncodeLosslessBGR<T>(byte[] bgr, int width, int height, int stride, Func<IntPtr, UIntPtr, T> callback)
+    {
+        UIntPtr size = WebPEncodeLosslessBGR(bgr, width, height, stride, out IntPtr output);
+        if (output == IntPtr.Zero || size == UIntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(output, size);
+        }
+        finally
+        {
+            WebPFree(output);
+        }
+    }
+
+    public static T SafeEncodeLosslessRGBA<T>(byte[] rgba, int width, int height, int stride, Func<IntPtr, UIntPtr, T> callback)
+    {
+        UIntPtr size = WebPEncodeLosslessRGBA(rgba, width, height, stride, out IntPtr output);
+        if (output == IntPtr.Zero || size == UIntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(output, size);
+        }
+        finally
+        {
+            WebPFree(output);
+        }
+    }
+
+    public static T SafeEncodeLosslessBGRA<T>(byte[] bgra, int width, int height, int stride, Func<IntPtr, UIntPtr, T> callback)
+    {
+        UIntPtr size = WebPEncodeLosslessBGRA(bgra, width, height, stride, out IntPtr output);
+        if (output == IntPtr.Zero || size == UIntPtr.Zero)
+            return default!;
+
+        try
+        {
+            return callback(output, size);
+        }
+        finally
+        {
+            WebPFree(output);
+        }
+    }
 
     #endregion
 }
