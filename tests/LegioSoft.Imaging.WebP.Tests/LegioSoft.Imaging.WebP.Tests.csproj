@@ -32,18 +32,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>false</Pack>
     </Content>
-    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\win-x64\libwebpdecoder.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Pack>false</Pack>
-    </Content>
-    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\win-x64\libwebpdemux.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Pack>false</Pack>
-    </Content>
-    <Content Include="..\..\src\LegioSoft.Imaging.WebP\runtimes\win-x64\libwebpmux.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Pack>false</Pack>
-    </Content>
   </ItemGroup>
 
 </Project>
