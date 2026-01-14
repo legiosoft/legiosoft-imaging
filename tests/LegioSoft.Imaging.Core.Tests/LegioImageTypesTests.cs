@@ -1,3 +1,6 @@
+using LegioSoft.Imaging.Core.Classes;
+using LegioSoft.Imaging.Core.Enums;
+
 namespace LegioSoft.Imaging.Core.Tests;
 
 public class LegioImageFormatTests

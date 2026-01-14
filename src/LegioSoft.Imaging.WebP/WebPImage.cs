@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security;
 using LegioSoft.Imaging.WebP.Decoder;
 using LegioSoft.Imaging.WebP.Encoder;
 using LegioSoft.Imaging.WebP.Enums;
@@ -9,6 +13,12 @@ namespace LegioSoft.Imaging.WebP;
 
 public static class WebPImage
 {
+    private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".webp"
+    };
+
+    private static readonly string[] AllowedDirectories = Array.Empty<string>();
     public static byte[] Encode(byte[] rgbaData, int width, int height, float quality = 75.0f)
     {
         return WebPEncoder.Encode(rgbaData, width, height, quality, false);
@@ -69,8 +79,10 @@ public static class WebPImage
 
     public static byte[] Decode(string filePath, WEBP_CSP_MODE colorspace)
     {
-        if (string.IsNullOrEmpty(filePath))
+        if (string.IsNullOrWhiteSpace(filePath))
             throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+
+        ValidateFilePath(filePath);
 
         if (!File.Exists(filePath))
             throw new FileNotFoundException("WebP file not found", filePath);
@@ -120,8 +132,10 @@ public static class WebPImage
 
     public static WebPInfo GetInfo(string filePath)
     {
-        if (string.IsNullOrEmpty(filePath))
+        if (string.IsNullOrWhiteSpace(filePath))
             throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+
+        ValidateFilePath(filePath);
 
         if (!File.Exists(filePath))
             throw new FileNotFoundException("WebP file not found", filePath);
@@ -157,6 +171,11 @@ public static class WebPImage
 
     public static byte[] Scale(string filePath, int targetWidth, int targetHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+
+        ValidateFilePath(filePath);
+
         var data = File.ReadAllBytes(filePath);
         return Scale(data, targetWidth, targetHeight, colorspace);
     }
@@ -177,6 +196,11 @@ public static class WebPImage
 
     public static byte[] Crop(string filePath, int cropX, int cropY, int cropWidth, int cropHeight, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+
+        ValidateFilePath(filePath);
+
         var data = File.ReadAllBytes(filePath);
         return Crop(data, cropX, cropY, cropWidth, cropHeight, colorspace);
     }
@@ -197,6 +221,11 @@ public static class WebPImage
 
     public static byte[] Flip(string filePath, WEBP_CSP_MODE colorspace = WEBP_CSP_MODE.MODE_RGBA)
     {
+        if (string.IsNullOrWhiteSpace(filePath))
+            throw new ArgumentException("File path cannot be null or empty", nameof(filePath));
+
+        ValidateFilePath(filePath);
+
         var data = File.ReadAllBytes(filePath);
         return Flip(data, colorspace);
     }
@@ -233,14 +262,115 @@ public static class WebPImage
 
     private static byte[] ReadStream(Stream stream)
     {
+        if (stream == null)
+            throw new ArgumentNullException(nameof(stream));
+
+        if (!stream.CanRead)
+            throw new ArgumentException("Stream must be readable", nameof(stream));
+
+        long originalPosition = 0;
+        bool canSeek = false;
+
         if (stream.CanSeek)
         {
-            stream.Position = 0;
+            try
+            {
+                originalPosition = stream.Position;
+                stream.Seek(0, SeekOrigin.Begin);
+                canSeek = true;
+            }
+            catch (IOException)
+            {
+                canSeek = false;
+            }
         }
 
-        using var memoryStream = new MemoryStream();
-        stream.CopyTo(memoryStream);
-        return memoryStream.ToArray();
+        try
+        {
+            using var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            return memoryStream.ToArray();
+        }
+        finally
+        {
+            if (canSeek && stream.CanSeek)
+            {
+                try
+                {
+                    stream.Seek(originalPosition, SeekOrigin.Begin);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+    }
+
+    private static void ValidateFilePath(string filePath)
+    {
+        var extension = Path.GetExtension(filePath);
+        if (!AllowedExtensions.Contains(extension))
+            throw new ArgumentException(
+                $"File format '{extension}' is not supported. " +
+                $"Allowed formats: {string.Join(", ", AllowedExtensions)}",
+                nameof(filePath));
+
+        if (AllowedDirectories.Length == 0)
+            return;
+
+        string fullPath;
+        try
+        {
+            fullPath = Path.GetFullPath(filePath);
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException(
+                $"Invalid file path: {ex.Message}",
+                nameof(filePath), ex);
+        }
+
+        bool isAllowed = AllowedDirectories.Any(dir =>
+        {
+            try
+            {
+                var fullDir = Path.GetFullPath(dir);
+                return fullPath.StartsWith(fullDir + Path.DirectorySeparatorChar,
+                    StringComparison.Ordinal);
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
+        if (!isAllowed)
+        {
+            throw new UnauthorizedAccessException(
+                $"File path '{fullPath}' is outside the allowed directories: " +
+                $"{string.Join(", ", AllowedDirectories)}. " +
+                $"Configure AllowedDirectories for your security policy.");
+        }
+
+        try
+        {
+            var fileInfo = new FileInfo(fullPath);
+            if (fileInfo.LinkTarget != null)
+            {
+                throw new UnauthorizedAccessException(
+                    $"Symbolic links are not allowed for security reasons. " +
+                    $"File '{fullPath}' is a symbolic link.");
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"Warning: Could not check symbolic link status: {ex.Message}");
+        }
     }
 
     private static WebPInfo GetImageDimensions(byte[] rgbaData)

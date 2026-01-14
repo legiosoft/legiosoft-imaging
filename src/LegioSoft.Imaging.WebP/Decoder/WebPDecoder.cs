@@ -1,3 +1,4 @@
+using System.IO;
 using System.Runtime.InteropServices;
 using LegioSoft.Imaging.WebP.Enums;
 using LegioSoft.Imaging.WebP.Models;
@@ -8,6 +9,10 @@ namespace LegioSoft.Imaging.WebP.Decoder;
 public class WebPDecoder
 {
     private const int WEBP_DECODER_ABI_VERSION = 0x0210;
+
+    public const int MaxImageWidth = 16384;
+    public const int MaxImageHeight = 16384;
+    public const long MaxImageMemoryBytes = 512 * 1024 * 1024;
 
     public static WebPInfo GetInfo(byte[] webpData)
     {
@@ -23,7 +28,7 @@ public class WebPDecoder
             throw new InvalidOperationException($"Failed to get WebP info: {status}");
         }
 
-        return new WebPInfo
+        var info = new WebPInfo
         {
             Width = features.width,
             Height = features.height,
@@ -36,6 +41,10 @@ public class WebPDecoder
                 _ => WebPFormat.Mixed
             }
         };
+
+        ValidateImageDimensions(info);
+
+        return info;
     }
 
     public static WebPInfo GetInfo(Stream stream)
@@ -105,6 +114,8 @@ public class WebPDecoder
                 bytesPerPixel = 4;
             }
 
+            ValidateDecodedDimensions(width, height);
+
             var size = width * height * bytesPerPixel;
             var decodedData = new byte[size];
             Marshal.Copy(result, decodedData, 0, size);
@@ -169,6 +180,8 @@ public class WebPDecoder
             throw new ArgumentException("Scaled dimensions must be positive", nameof(scaledWidth));
         }
 
+        ValidateDecodedDimensions(scaledWidth, scaledHeight);
+
         var config = new WebPDecoderConfig();
 
         if (NativeMethods.WebPInitDecoderConfigInternal(ref config, WEBP_DECODER_ABI_VERSION) == 0)
@@ -231,6 +244,8 @@ public class WebPDecoder
         {
             throw new ArgumentException("Invalid crop parameters");
         }
+
+        ValidateDecodedDimensions(cropWidth, cropHeight);
 
         var config = new WebPDecoderConfig();
 
@@ -329,13 +344,122 @@ public class WebPDecoder
 
     private static byte[] ReadStream(Stream stream)
     {
+        if (stream == null)
+            throw new ArgumentNullException(nameof(stream));
+
+        if (!stream.CanRead)
+            throw new ArgumentException("Stream must be readable", nameof(stream));
+
+        long originalPosition = 0;
+        bool canSeek = false;
+
         if (stream.CanSeek)
         {
-            stream.Position = 0;
+            try
+            {
+                originalPosition = stream.Position;
+                stream.Seek(0, SeekOrigin.Begin);
+                canSeek = true;
+            }
+            catch (IOException)
+            {
+                canSeek = false;
+            }
         }
 
-        using var memoryStream = new MemoryStream();
-        stream.CopyTo(memoryStream);
-        return memoryStream.ToArray();
+        try
+        {
+            using var memoryStream = new MemoryStream();
+            stream.CopyTo(memoryStream);
+            return memoryStream.ToArray();
+        }
+        finally
+        {
+            if (canSeek && stream.CanSeek)
+            {
+                try
+                {
+                    stream.Seek(originalPosition, SeekOrigin.Begin);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+    }
+
+    private static void ValidateDecodedDimensions(int width, int height)
+    {
+        if (width <= 0 || height <= 0)
+            throw new InvalidOperationException(
+                $"Invalid image dimensions: {width}x{height}");
+
+        if (width > MaxImageWidth || height > MaxImageHeight)
+            throw new InvalidOperationException(
+                $"Image dimensions {width}x{height} exceed maximum " +
+                $"allowed size of {MaxImageWidth}x{MaxImageHeight}. " +
+                $"This is a security limit to prevent memory exhaustion attacks.");
+
+        long estimatedBytes;
+        try
+        {
+            estimatedBytes = checked((long)width * height * 4);
+        }
+        catch (OverflowException)
+        {
+            throw new InvalidOperationException(
+                $"Image dimensions {width}x{height} would cause integer overflow");
+        }
+
+        if (estimatedBytes > MaxImageMemoryBytes)
+            throw new InvalidOperationException(
+                $"Image would require approximately {FormatBytes(estimatedBytes)}, " +
+                $"which exceeds the maximum allowed memory of {FormatBytes(MaxImageMemoryBytes)}. " +
+                $"This is a security limit to prevent denial-of-service attacks.");
+    }
+
+    private static void ValidateImageDimensions(WebPInfo info)
+    {
+        if (info.Width <= 0 || info.Height <= 0)
+            throw new InvalidOperationException(
+                $"Invalid image dimensions: {info.Width}x{info.Height}");
+
+        if (info.Width > MaxImageWidth || info.Height > MaxImageHeight)
+            throw new InvalidOperationException(
+                $"Image dimensions {info.Width}x{info.Height} exceed maximum " +
+                $"allowed size of {MaxImageWidth}x{MaxImageHeight}. " +
+                $"This is a security limit to prevent memory exhaustion attacks.");
+
+        long estimatedBytes;
+        try
+        {
+            estimatedBytes = checked((long)info.Width * info.Height * 4);
+        }
+        catch (OverflowException)
+        {
+            throw new InvalidOperationException(
+                $"Image dimensions {info.Width}x{info.Height} would cause integer overflow");
+        }
+
+        if (estimatedBytes > MaxImageMemoryBytes)
+            throw new InvalidOperationException(
+                $"Image would require approximately {FormatBytes(estimatedBytes)}, " +
+                $"which exceeds the maximum allowed memory of {FormatBytes(MaxImageMemoryBytes)}. " +
+                $"This is a security limit to prevent denial-of-service attacks.");
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        const long KB = 1024;
+        const long MB = KB * 1024;
+        const long GB = MB * 1024;
+
+        return bytes switch
+        {
+            >= GB => $"{(double)bytes / GB:F2} GB",
+            >= MB => $"{(double)bytes / MB:F2} MB",
+            >= KB => $"{(double)bytes / KB:F2} KB",
+            _ => $"{bytes} bytes"
+        };
     }
 }

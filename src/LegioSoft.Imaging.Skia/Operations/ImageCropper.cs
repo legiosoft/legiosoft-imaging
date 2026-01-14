@@ -1,4 +1,5 @@
 using LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Classes;
 using SkiaSharp;
 
 namespace LegioSoft.Imaging.Skia.Operations;

@@ -1,4 +1,7 @@
 using LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Classes;
+using LegioSoft.Imaging.Core.Enums;
+using LegioSoft.Imaging.Core.Interfaces;
 using LegioSoft.Imaging.Skia;
 using LegioSoft.Imaging.Skia.Core;
 using LegioSoft.Imaging.Skia.Operations;

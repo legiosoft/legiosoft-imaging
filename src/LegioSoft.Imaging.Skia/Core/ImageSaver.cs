@@ -1,4 +1,5 @@
 using LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Enums;
 using SkiaSharp;
 
 namespace LegioSoft.Imaging.Skia.Core;
@@ -8,14 +9,14 @@ namespace LegioSoft.Imaging.Skia.Core;
 /// </summary>
 /// <remarks>
 /// Quality parameter has different effects depending on format:
-/// - PNG/BMP/GIF: Always 100 (lossless), quality parameter is ignored
+/// - PNG: Always 100 (lossless), quality parameter is ignored
 /// - JPEG: 0-100, lower = smaller file with more compression artifacts
 /// - WebP: 0-100, balances size and quality
 /// </remarks>
 public static class ImageSaver
 {
     /// <summary>
-    /// Encodes a bitmap to the specified format and quality.
+    /// Encodes a bitmap to specified format and quality.
     /// </summary>
     /// <param name="bitmap">Bitmap to encode. Must have valid dimensions.</param>
     /// <param name="format">Target image format.</param>
@@ -42,7 +43,6 @@ public static class ImageSaver
             throw new ArgumentException("Bitmap must have valid dimensions", nameof(bitmap));
 
         ValidateQuality(format, quality);
-        ValidateFormatSupport(format);
 
         var skiaFormat = ConvertToSkiaFormat(format);
         var adjustedQuality = AdjustQualityForFormat(format, quality);
@@ -62,15 +62,6 @@ public static class ImageSaver
             throw new ArgumentOutOfRangeException(nameof(quality), "Quality must be between 0 and 100");
     }
 
-    private static void ValidateFormatSupport(LegioImageFormat format)
-    {
-        if (format == LegioImageFormat.Bmp)
-            throw new NotSupportedException("BMP encoding is not supported in Skia implementation");
-
-        if (format == LegioImageFormat.Gif)
-            throw new NotSupportedException("GIF encoding is not supported in Skia implementation");
-    }
-
     private static SKEncodedImageFormat ConvertToSkiaFormat(LegioImageFormat format)
     {
         return format switch
@@ -78,8 +69,6 @@ public static class ImageSaver
             LegioImageFormat.Jpeg => SKEncodedImageFormat.Jpeg,
             LegioImageFormat.WebP => SKEncodedImageFormat.Webp,
             LegioImageFormat.Png => SKEncodedImageFormat.Png,
-            LegioImageFormat.Bmp => SKEncodedImageFormat.Bmp,
-            LegioImageFormat.Gif => SKEncodedImageFormat.Gif,
             _ => throw new NotSupportedException($"Unsupported image format: {format}")
         };
     }
@@ -89,8 +78,6 @@ public static class ImageSaver
         return format switch
         {
             LegioImageFormat.Png => 100,
-            LegioImageFormat.Bmp => 100,
-            LegioImageFormat.Gif => 100,
             _ => quality
         };
     }

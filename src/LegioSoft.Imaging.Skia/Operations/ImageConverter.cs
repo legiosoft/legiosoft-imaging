@@ -1,4 +1,5 @@
 using LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Enums;
 
 namespace LegioSoft.Imaging.Skia.Operations;
 

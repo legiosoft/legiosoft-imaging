@@ -1,4 +1,5 @@
 using LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.Core.Enums;
 using SkiaSharp;
 using Xunit;
 
@@ -41,17 +42,6 @@ public class ImageOperationsTests
     public void LoadBitmap_ShouldLoadJpeg()
     {
         var imageData = LoadTestImage("example.jpeg");
-        var result = Core.ImageLoader.LoadBitmap(imageData);
-        
-        Assert.NotNull(result);
-        Assert.True(result.Width > 0);
-        Assert.True(result.Height > 0);
-    }
-
-    [Fact]
-    public void LoadBitmap_ShouldLoadBmp()
-    {
-        var imageData = LoadTestImage("example.bmp");
         var result = Core.ImageLoader.LoadBitmap(imageData);
         
         Assert.NotNull(result);
