@@ -27,7 +27,9 @@ dotnet add package LegioSoft.Imaging.Skia
 
 ## Skia Package
 
-### Basic Operations
+Full-featured image processing with fluent builder API.
+
+### Quick Start
 
 ```csharp
 using LegioSoft.Imaging.Skia;
@@ -43,7 +45,7 @@ LegioImageBuilder.Load("image.png")
     .Crop(100, 100, 400, 400)
     .Rotate(90)
     .Grayscale()
-    .Save("processed.jpg", 90);
+    .Save("processed.jpg", LegioImageFormat.Jpeg, 90);
 ```
 
 ### Load
@@ -62,20 +64,30 @@ var info = LegioImageBuilder.Load("image.jpg").GetInfo();
 ### Resize
 
 ```csharp
-.Resize(800, 600)                              // Exact
-.Resize(800, 600, LegioScaleMode.Fit)          // Fit within
-.Resize(800, 600, LegioScaleMode.Fill)         // Fill and crop
-.Resize(800, 600, LegioScaleMode.Stretch)      // Stretch
-.ResizeToWidth(1200)                           // Maintain aspect ratio
-.ResizeToHeight(800)                            // Maintain aspect ratio
-.Scale(0.5)                                    // Half size
+// Exact dimensions
+.Resize(800, 600)
+
+// Scale modes
+.Resize(800, 600, LegioScaleMode.Fit)      // Fit within bounds
+.Resize(800, 600, LegioScaleMode.Fill)     // Fill bounds (may crop)
+.Resize(800, 600, LegioScaleMode.Stretch)  // Stretch to exact size
+
+// Maintain aspect ratio
+.ResizeToWidth(1200)  // Scale to 1200px wide
+.ResizeToHeight(800)   // Scale to 800px tall
+.Scale(0.5)            // Half size
+
+// Resize quality
+.Resize(800, 600, quality: LegioResizeQuality.High)
 ```
+
+**Quality Levels**: Low (fast), Medium (balanced), High (default), Maximum (best quality, slower)
 
 ### Crop, Rotate, Flip
 
 ```csharp
 .Crop(100, 100, 400, 400)
-.Rotate(90)    // 0, 90, 180, or 270
+.Rotate(90)                           // 0, 90, 180, or 270
 .Flip(horizontal: true, vertical: false)
 ```
 
@@ -84,22 +96,11 @@ var info = LegioImageBuilder.Load("image.jpg").GetInfo();
 ```csharp
 .Grayscale()
 .Sepia()
-.Blur(5)          // Radius 1-20
-.Sharpen(50)      // Amount 0-100
-.Brightness(30)    // -255 to 255
-.Contrast(20)      // -100 to 100
+.Blur(5)          // Radius 1-20, default 5
+.Sharpen(50)      // Amount 0-100, default 50
+.Brightness(30)   // Range -255 to 255
+.Contrast(20)     // Range -100 to 100
 .Invert()
-```
-
-### Save
-
-```csharp
-.Save("output.jpg")                              // Auto format
-.Save("output.png", LegioImageFormat.Png)        // Specific format
-.Save("output.jpg", quality: 90)                 // With quality
-
-byte[] data = SaveAs(LegioImageFormat.Jpeg, 90); // As bytes
-using var stream = SaveAsStream(LegioImageFormat.Png); // As stream
 ```
 
 ### Quality
@@ -108,9 +109,29 @@ using var stream = SaveAsStream(LegioImageFormat.Png); // As stream
 .Quality(85)  // 0-100
 ```
 
-- JPEG: 70-85 recommended
-- WebP: 80-90 recommended
-- PNG: always lossless
+**Recommended ranges:**
+- JPEG: 70-85
+- WebP: 80-90
+- PNG: Always 100 (lossless)
+
+### Save
+
+```csharp
+// Auto-detect format from extension
+.Save("output.jpg")
+
+// Specify format
+.Save("output.png", LegioImageFormat.Png)
+
+// With quality
+.Save("output.jpg", LegioImageFormat.Jpeg, 90)
+
+// As byte array
+byte[] data = SaveAs(LegioImageFormat.Jpeg, 90);
+
+// As stream
+using var stream = SaveAsStream(LegioImageFormat.Png);
+```
 
 ## WebP Package
 
@@ -214,7 +235,7 @@ LegioImageBuilder.Load("photo.jpg")
     .Resize(500, 500, LegioScaleMode.Fill)
     .Brightness(10)
     .Contrast(15)
-    .Save("profile.jpg", 90);
+    .Save("profile.jpg", LegioImageFormat.Jpeg, 90);
 ```
 
 ### Web Optimization
