@@ -217,6 +217,8 @@ rm -rf build
 
 This is the modern standard and ensures all paths are mapped correctly.
 
+**Critical:** The `-DBUILD_SHARED_LIBS=ON` flag is essential. Without it, CMake will generate a static library (`.a`) instead of a dynamic library (`.dylib`).
+
 ```bash
 # Create a build directory
 mkdir build && cd build
@@ -229,6 +231,7 @@ cmake .. \
   -DWEBP_BUILD_DWEBP=ON \
   -DWEBP_BUILD_GIF2WEBP=ON \
   -DWEBP_BUILD_LIBWEBPMUX=ON \
+  -DBUILD_SHARED_LIBS=ON \
   -DCMAKE_BUILD_TYPE=Release
 
 # Compile
@@ -250,7 +253,7 @@ Use this if you prefer the classic Unix ./configure workflow.
 export LDFLAGS="-L$(brew --prefix)/lib"
 export CPPFLAGS="-I$(brew --prefix)/include"
 
-./configure --enable-everything
+./configure --enable-everything --enable-shared --disable-static
 
 # Build and Install
 make -j$(sysctl -n hw.ncpu)
