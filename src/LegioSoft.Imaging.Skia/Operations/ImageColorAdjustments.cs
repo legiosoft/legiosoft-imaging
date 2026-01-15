@@ -27,19 +27,26 @@ internal static class ImageColorAdjustments
         if (source == null)
             throw new ArgumentNullException(nameof(source));
 
+        if (amount < -255 || amount > 255)
+            throw new ArgumentException("Brightness amount must be between -255 and 255.", nameof(amount));
+
         if (amount == 0)
         {
             var copy = new SKBitmap(source.Info);
+            if (copy.Handle == IntPtr.Zero)
+                throw new InvalidOperationException("Failed to allocate bitmap memory.");
             source.CopyTo(copy, source.Info.ColorType);
             return copy;
         }
 
         var brightnessBitmap = new SKBitmap(source.Info);
+        if (brightnessBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(brightnessBitmap);
         using var paint = new SKPaint();
 
-        float delta = amount / 255f;
+        float delta = amount;
 
         paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
         {
@@ -71,14 +78,21 @@ internal static class ImageColorAdjustments
         if (source == null)
             throw new ArgumentNullException(nameof(source));
 
+        if (amount < -100 || amount > 100)
+            throw new ArgumentException("Contrast amount must be between -100 and 100.", nameof(amount));
+
         if (amount == 0)
         {
             var copy = new SKBitmap(source.Info);
+            if (copy.Handle == IntPtr.Zero)
+                throw new InvalidOperationException("Failed to allocate bitmap memory.");
             source.CopyTo(copy, source.Info.ColorType);
             return copy;
         }
 
         var contrastBitmap = new SKBitmap(source.Info);
+        if (contrastBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(contrastBitmap);
         using var paint = new SKPaint();
@@ -115,6 +129,8 @@ internal static class ImageColorAdjustments
             throw new ArgumentNullException(nameof(source));
 
         var invertBitmap = new SKBitmap(source.Info);
+        if (invertBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(invertBitmap);
         using var paint = new SKPaint();
