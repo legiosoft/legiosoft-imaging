@@ -148,6 +148,9 @@ internal static class ImageLoader
                 }
                 catch (IOException)
                 {
+                    // Best-effort cleanup: if restoring stream position fails, 
+                    // the stream may be left at an unexpected position, but 
+                    // we cannot safely propagate this exception from a finally block.
                 }
             }
         }
@@ -237,6 +240,9 @@ internal static class ImageLoader
             }
             catch
             {
+                // If OS path resolution fails, actualPath remains null.
+                // The logic below handles this by failing closed on Windows 
+                // (secure) or using a fallback on Linux.
             }
         }
 
@@ -254,7 +260,6 @@ internal static class ImageLoader
             }
         }
 
-        // Resume validation
         ValidatePathNotContainSymlinks(actualPath);
 
         var isApproved = ApprovedDirectories.Any(dir =>
@@ -272,6 +277,8 @@ internal static class ImageLoader
             }
             catch
             {
+                // If path validation fails (e.g., path is malformed), 
+                // conservatively treat it as not approved for security.
                 return false;
             }
         });
