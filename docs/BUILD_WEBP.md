@@ -9,8 +9,8 @@ This document explains how to build Google `libwebp` library for all supported p
 | Windows x64 | Visual Studio Build Tools | ✅ Supported (see below) |
 | Linux x64 | Docker (glibc) | ✅ Supported (see below) |
 | Linux ARM64 | Docker (glibc) | ✅ Supported (see below) |
-| macOS x64 | Download from Google | ⚠️ Not built here |
-| macOS ARM64 | Download from Google | ⚠️ Not built here |
+| macOS x64 (Intel) | CMake from source | ✅ Supported (see below) |
+| macOS ARM64 (M1/M2/M3) | CMake from source | ✅ Supported (see below) |
 
 ---
 
@@ -171,27 +171,116 @@ This ensures maximum compatibility with Linux distributions including:
 
 ---
 
-## macOS Libraries
+## Building on macOS (x64 & ARM64)
 
-macOS libraries are **not built** using this Docker setup.
+### Prerequisites
 
-For macOS builds, download pre-compiled libraries from Google's official releases:
-
-### macOS x64 (Intel)
+You need the Apple Command Line Tools and dependencies for image format support.
 
 ```bash
-curl -O https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0-mac-x86-64.tar.gz
-tar -xzf libwebp-1.6.0-mac-x86-64.tar.gz
-cp libwebp-1.6.0-mac-x86-64/lib/libwebp.dylib src/LegioSoft.Imaging.WebP/runtimes/osx-x64/
+# Install Xcode Command Line Tools
+xcode-select --install
+
+# Install dependencies via Homebrew
+brew install cmake automake libtool jpeg libpng libtiff giflib
 ```
 
-### macOS ARM64 (Apple Silicon)
+### Source Code & Version Control
+
+Clone libwebp repository from official Google source:
 
 ```bash
-curl -O https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0-mac-arm64.tar.gz
-tar -xzf libwebp-1.6.0-mac-arm64.tar.gz
-cp libwebp-1.6.0-mac-arm64/lib/libwebp.dylib src/LegioSoft.Imaging.WebP/runtimes/osx-arm64/
+git clone https://chromium.googlesource.com/webm/libwebp
+cd libwebp
 ```
+
+### Selecting a Specific Version
+
+To build a specific release version:
+
+```bash
+# List all available versions
+git tag -l
+
+# Checkout desired version (e.g., v1.6.0)
+git checkout v1.6.0
+```
+
+**Warning:** If you switch versions, delete the build folder before proceeding:
+```bash
+rm -rf build
+```
+
+### Build Methods
+
+#### Method A: Using CMake (Recommended)
+
+This is the modern standard and ensures all paths are mapped correctly.
+
+```bash
+# Create a build directory
+mkdir build && cd build
+
+# Configure the build
+# $(brew --prefix) ensures we find the JPEG/PNG libraries in /usr/local
+cmake .. \
+  -DCMAKE_PREFIX_PATH=$(brew --prefix) \
+  -DWEBP_BUILD_CWEBP=ON \
+  -DWEBP_BUILD_DWEBP=ON \
+  -DWEBP_BUILD_GIF2WEBP=ON \
+  -DWEBP_BUILD_LIBWEBPMUX=ON \
+  -DCMAKE_BUILD_TYPE=Release
+
+# Compile
+make -j$(sysctl -n hw.ncpu)
+
+# Install
+sudo make install
+```
+
+#### Method B: Using Autotools
+
+Use this if you prefer the classic Unix ./configure workflow.
+
+```bash
+# Generate build scripts
+./autogen.sh
+
+# Configure with Homebrew paths
+export LDFLAGS="-L$(brew --prefix)/lib"
+export CPPFLAGS="-I$(brew --prefix)/include"
+
+./configure --enable-everything
+
+# Build and Install
+make -j$(sysctl -n hw.ncpu)
+sudo make install
+```
+
+### Locating Output
+
+After `sudo make install`, the library is installed to `/usr/local/lib/`:
+
+```bash
+# The library
+/usr/local/lib/libwebp.dylib
+
+# Copy to project
+cp /usr/local/lib/libwebp.dylib src/LegioSoft.Imaging.WebP/runtimes/osx-x64/
+```
+
+### Verification
+
+Ensure the library was compiled for the correct architecture:
+
+```bash
+# Check the shared library
+file /usr/local/lib/libwebp.dylib
+```
+
+Expected output:
+- **Intel Mac**: `Mach-O 64-bit dynamically linked shared library x86_64`
+- **Apple Silicon**: `Mach-O 64-bit dynamically linked shared library arm64`
 
 ---
 
@@ -262,3 +351,27 @@ private const int WEBP_ENCODER_ABI_VERSION = 0x0210;
   ```bash
   chmod +x libwebp.so
   ```
+
+### macOS Build Issues
+
+**Issue**: CMake cannot find compiler or SDK
+- **Solution**: Ensure Xcode command line tools are installed:
+  ```bash
+  xcode-select --install
+  xcode-select -p
+  ```
+
+**Issue**: Homebrew paths not found
+- **Solution**: Verify Homebrew is installed and use `$(brew --prefix)`:
+  ```bash
+  brew --prefix
+  ```
+
+**Issue**: Wrong architecture built
+- **Solution**: Verify architecture with `file` command:
+  ```bash
+  file /usr/local/lib/libwebp.dylib
+  ```
+  Expected output:
+  - Intel Mac: `Mach-O 64-bit dynamically linked shared library x86_64`
+  - Apple Silicon: `Mach-O 64-bit dynamically linked shared library arm64`
