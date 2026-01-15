@@ -18,7 +18,7 @@ internal static class ImageFilters
     /// <returns>New grayscale bitmap. Caller is responsible for disposal.</returns>
     /// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
     /// <remarks>
-    /// Uses weighted RGB luminance formula for perceptually correct grayscaling.
+    /// Uses weighted RGB luminance formula for perceptually correct gray scaling.
     /// </remarks>
     public static SKBitmap ApplyGrayscale(SKBitmap source)
     {
@@ -26,6 +26,8 @@ internal static class ImageFilters
             throw new ArgumentNullException(nameof(source));
 
         var grayscaleBitmap = new SKBitmap(source.Info);
+        if (grayscaleBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(grayscaleBitmap);
         using var paint = new SKPaint();
@@ -56,6 +58,8 @@ internal static class ImageFilters
             throw new ArgumentNullException(nameof(source));
 
         var sepiaBitmap = new SKBitmap(source.Info);
+        if (sepiaBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(sepiaBitmap);
         using var paint = new SKPaint();
@@ -95,6 +99,8 @@ internal static class ImageFilters
             throw new ArgumentException("Blur radius must be between 1 and 100", nameof(radius));
 
         var blurBitmap = new SKBitmap(source.Info);
+        if (blurBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(blurBitmap);
         using var paint = new SKPaint();
@@ -116,7 +122,7 @@ internal static class ImageFilters
     /// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
     /// <exception cref="ArgumentException">Thrown when amount is outside of valid range.</exception>
     /// <remarks>
-    /// Combines dilated edge enhancement with original image for sharpening effect.
+    /// Uses hardware-accelerated 3x3 convolution matrix for fast sharpening.
     /// </remarks>
     public static SKBitmap ApplySharpen(SKBitmap source, int amount = 50)
     {
@@ -127,30 +133,28 @@ internal static class ImageFilters
             throw new ArgumentException("Sharpen amount must be between 0 and 100", nameof(amount));
 
         var factor = amount / 100f;
+        var centerValue = 1 + 4 * factor;
+        var edgeValue = -factor;
 
         var sharpenedBitmap = new SKBitmap(source.Info);
+        if (sharpenedBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(sharpenedBitmap);
         using var paint = new SKPaint();
+        using var filter = SKImageFilter.CreateMatrixConvolution(
+            new SKSizeI(3, 3),
+            new float[]
+            {
+                0, edgeValue, 0,
+                edgeValue, centerValue, edgeValue,
+                0, edgeValue, 0
+            },
+            1, 0, new SKPointI(1, 1), SKShaderTileMode.Clamp, true);
 
-        paint.ImageFilter = SKImageFilter.CreateDilate(1, 1);
+        paint.ImageFilter = filter;
         canvas.DrawBitmap(source, 0, 0, paint);
         canvas.Flush();
-
-        for (var y = 0; y < source.Height; y++)
-        {
-            for (var x = 0; x < source.Width; x++)
-            {
-                var originalPixel = source.GetPixel(x, y);
-                var sharpenedPixel = sharpenedBitmap.GetPixel(x, y);
-
-                var newR = (byte)Math.Min(255, Math.Max(0, originalPixel.Red + (sharpenedPixel.Red - originalPixel.Red) * factor));
-                var newG = (byte)Math.Min(255, Math.Max(0, originalPixel.Green + (sharpenedPixel.Green - originalPixel.Green) * factor));
-                var newB = (byte)Math.Min(255, Math.Max(0, originalPixel.Blue + (sharpenedPixel.Blue - originalPixel.Blue) * factor));
-
-                sharpenedBitmap.SetPixel(x, y, new SKColor(newR, newG, newB, originalPixel.Alpha));
-            }
-        }
 
         return sharpenedBitmap;
     }
