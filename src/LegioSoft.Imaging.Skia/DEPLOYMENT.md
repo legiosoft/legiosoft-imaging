@@ -3,7 +3,7 @@
 ```bash
 cd src/LegioSoft.Imaging.Skia
 dotnet pack -c Release
-dotnet nuget push bin/Release/LegioSoft.Imaging.Skia.1.0.0-beta2.nupkg --api-key YOUR_API_KEY --source https://api.nuget.org/v3/index.json
+dotnet nuget push bin/Release/LegioSoft.Imaging.Skia.1.0.0.nupkg --api-key YOUR_API_KEY --source https://api.nuget.org/v3/index.json
 ```
 
 ## Bump Version
