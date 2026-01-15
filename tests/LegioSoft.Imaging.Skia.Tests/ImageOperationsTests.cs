@@ -31,7 +31,7 @@ public class ImageOperationsTests
     public void LoadBitmap_ShouldLoadPng()
     {
         var imageData = LoadTestImage("example.png");
-        var result = ImageLoader.LoadBitmap(imageData);
+        var result = Core.ImageLoader.LoadBitmap(imageData);
         
         Assert.NotNull(result);
         Assert.True(result.Width > 0);
