@@ -12,7 +12,7 @@ namespace LegioSoft.Imaging.Skia.Core;
 /// Uses SKCodec to read image headers only, making it significantly faster
 /// than loading the full bitmap when you only need dimensions or format information.
 /// </remarks>
-public static class ImageMetadataReader
+internal static class ImageMetadataReader
 {
     /// <summary>
     /// Maximum allowed image width (16,384 pixels = 16K).

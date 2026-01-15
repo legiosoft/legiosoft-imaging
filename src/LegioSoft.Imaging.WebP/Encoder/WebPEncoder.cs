@@ -6,7 +6,7 @@ using LegioSoft.Imaging.WebP.Delegates;
 
 namespace LegioSoft.Imaging.WebP.Encoder;
 
-public class WebPEncoder
+internal class WebPEncoder
 {
     private const int WEBP_ENCODER_ABI_VERSION = 0x0210;
 

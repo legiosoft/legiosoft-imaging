@@ -5,7 +5,7 @@ using LegioSoft.Imaging.WebP.Native;
 
 namespace LegioSoft.Imaging.WebP.Decoder;
 
-public class WebPDecoder
+internal class WebPDecoder
 {
     private const int WEBP_DECODER_ABI_VERSION = 0x0210;
 

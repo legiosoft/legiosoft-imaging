@@ -7,7 +7,7 @@ namespace LegioSoft.Imaging.Skia.Operations;
 /// <summary>
 /// Provides image cropping functionality.
 /// </summary>
-public static class ImageCropper
+internal static class ImageCropper
 {
     /// <summary>
     /// Crops an image from byte array and saves it.

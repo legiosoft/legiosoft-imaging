@@ -3,7 +3,7 @@ using LegioSoft.Imaging.Core.Enums;
 
 namespace LegioSoft.Imaging.Skia.Operations;
 
-public static class ImageConverter
+internal static class ImageConverter
 {
     public static byte[] Convert(byte[] imageData, LegioImageFormat targetFormat, int quality = 75)
     {

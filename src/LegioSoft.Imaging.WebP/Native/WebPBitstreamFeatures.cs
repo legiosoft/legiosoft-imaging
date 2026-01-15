@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Sequential)]
-public unsafe struct WebPBitstreamFeatures
+internal unsafe struct WebPBitstreamFeatures
 {
     public int width;
     public int height;

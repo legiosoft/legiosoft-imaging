@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Sequential)]
-public unsafe struct WebPMemoryWriter
+internal unsafe struct WebPMemoryWriter
 {
     public IntPtr mem;
     public UIntPtr size;

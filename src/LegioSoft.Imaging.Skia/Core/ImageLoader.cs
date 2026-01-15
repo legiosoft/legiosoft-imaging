@@ -21,7 +21,7 @@ namespace LegioSoft.Imaging.Skia.Core;
 /// Consider using ImageMetadataReader.GetInfo() if you only need 
 /// image dimensions without full pixel data.
 /// </remarks>
-public static class ImageLoader
+internal static class ImageLoader
 {
     /// <summary>
     /// Maximum allowed image width (16,384 pixels = 16K).

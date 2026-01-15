@@ -4,7 +4,7 @@ using LegioSoft.Imaging.WebP.Enums;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Sequential)]
-public unsafe struct WebPConfig
+internal unsafe struct WebPConfig
 {
     public int lossless;
     public float quality;

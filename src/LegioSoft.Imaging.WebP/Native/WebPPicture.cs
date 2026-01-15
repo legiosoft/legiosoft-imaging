@@ -4,7 +4,7 @@ using LegioSoft.Imaging.WebP.Enums;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Sequential)]
-public unsafe struct WebPPicture
+internal unsafe struct WebPPicture
 {
     public int use_argb;
     public WebPEncCSP colorspace;

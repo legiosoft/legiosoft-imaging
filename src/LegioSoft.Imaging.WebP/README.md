@@ -157,7 +157,7 @@ Console.WriteLine($"libwebp version: {version}");
 The package includes pre-compiled libwebp libraries:
 - **Windows**: Built with Visual Studio Build Tools (see [BUILD_WEBP.md](../../docs/BUILD_WEBP.md))
 - **Linux**: Built with Docker (glibc) for x64 and ARM64 (see [BUILD_WEBP.md](../../docs/BUILD_WEBP.md))
-- **macOS**: Downloaded from official Google releases (see [BUILD_WEBP.md](../../docs/BUILD_WEBP.md))
+- **macOS**: Built from source using CMake (see [BUILD_WEBP.md](../../docs/BUILD_WEBP.md))
 
 ## License
 

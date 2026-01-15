@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Sequential)]
-public struct WebPYUVABuffer
+internal struct WebPYUVABuffer
 {
     public IntPtr y;
     public IntPtr u;

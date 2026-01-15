@@ -9,7 +9,7 @@ namespace LegioSoft.Imaging.Skia.Operations;
 /// All filter operations use SKPaint with SKColorFilter for hardware acceleration,
 /// making them significantly faster than CPU-based pixel-by-pixel operations.
 /// </remarks>
-public static class ImageFilters
+internal static class ImageFilters
 {
     /// <summary>
     /// Converts an image to grayscale.

@@ -8,7 +8,7 @@ namespace LegioSoft.Imaging.Skia.Operations;
 /// <summary>
 /// Provides image resizing functionality.
 /// </summary>
-public static class ImageResizer
+internal static class ImageResizer
 {
     /// <summary>
     /// Resizes an image from byte array and saves it.

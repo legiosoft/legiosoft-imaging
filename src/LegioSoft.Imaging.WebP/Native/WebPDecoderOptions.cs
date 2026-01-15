@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 namespace LegioSoft.Imaging.WebP.Native;
 
 [StructLayout(LayoutKind.Sequential)]
-public unsafe struct WebPDecoderOptions
+internal unsafe struct WebPDecoderOptions
 {
     public int bypass_filtering;
     public int no_fancy_upsampling;

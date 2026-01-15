@@ -160,7 +160,7 @@ namespace LegioSoft.Imaging.WebP.Tests;
                  $"{message}\n\n" +
                  "Tests require libwebp native library to be loadable.\n" +
                  "Please ensure:\n" +
-                 "1. All required DLL files (libwebp.dll, libwebpdecoder.dll, libwebpdemux.dll, libwebpmux.dll) are in the runtimes folder\n" +
+                 "1. All required DLL files (libwebp.dll) are in the runtimes folder\n" +
                  "2. DLLs are for the correct architecture (x64)\n" +
                  "3. Visual C++ runtime dependencies are installed\n" +
                  "4. DLLs are not corrupted", NativeLibraryLoadException);

@@ -13,7 +13,7 @@ namespace LegioSoft.Imaging.Skia.Core;
 /// - JPEG: 0-100, lower = smaller file with more compression artifacts
 /// - WebP: 0-100, balances size and quality
 /// </remarks>
-public static class ImageSaver
+internal static class ImageSaver
 {
     /// <summary>
     /// Encodes a bitmap to specified format and quality.

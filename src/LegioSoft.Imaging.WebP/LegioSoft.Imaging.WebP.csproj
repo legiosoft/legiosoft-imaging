@@ -37,6 +37,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="LegioSoft.Imaging.WebP.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LegioSoft.Imaging.Core\LegioSoft.Imaging.Core.csproj" />
   </ItemGroup>
 

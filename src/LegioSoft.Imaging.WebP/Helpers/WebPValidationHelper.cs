@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Helpers;
 
-public static class WebPValidationHelper
+internal static class WebPValidationHelper
 {
     public static bool IsWebP(byte[] imageData)
     {

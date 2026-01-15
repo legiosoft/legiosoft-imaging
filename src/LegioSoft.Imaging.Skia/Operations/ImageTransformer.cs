@@ -5,7 +5,7 @@ namespace LegioSoft.Imaging.Skia.Operations;
 /// <summary>
 /// Provides image transformation functionality (rotate, flip).
 /// </summary>
-public static class ImageTransformer
+internal static class ImageTransformer
 {
     /// <summary>
     /// Rotates a bitmap by 90, 180, or 270 degrees.

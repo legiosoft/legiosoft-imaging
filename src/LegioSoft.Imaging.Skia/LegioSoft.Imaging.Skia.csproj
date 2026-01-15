@@ -33,6 +33,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="LegioSoft.Imaging.Skia.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LegioSoft.Imaging.Core\LegioSoft.Imaging.Core.csproj" />
   </ItemGroup>
 

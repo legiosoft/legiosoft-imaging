@@ -9,7 +9,7 @@ namespace LegioSoft.Imaging.Skia.Operations;
 /// All adjustment operations use SKPaint with SKColorFilter for hardware acceleration,
 /// making them significantly faster than CPU-based pixel-by-pixel operations.
 /// </remarks>
-public static class ImageColorAdjustments
+internal static class ImageColorAdjustments
 {
     /// <summary>
     /// Adjusts the brightness of an image.
