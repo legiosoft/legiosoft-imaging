@@ -26,7 +26,6 @@ internal static class ImageTransformer
         if (degrees != 90 && degrees != 180 && degrees != 270)
             throw new ArgumentException("Rotation must be 90, 180, or 270 degrees", nameof(degrees));
 
-        var radians = degrees * Math.PI / 180;
         SKImageInfo rotatedInfo;
 
         if (degrees is 90 or 270)
@@ -47,14 +46,28 @@ internal static class ImageTransformer
         }
 
         var rotatedBitmap = new SKBitmap(rotatedInfo);
+        if (rotatedBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(rotatedBitmap);
         using var paint = new SKPaint();
-        var matrix = SKMatrix.CreateRotation((float)radians);
-        var center = new SKPoint(rotatedBitmap.Width / 2f, rotatedBitmap.Height / 2f);
-        canvas.Translate(center.X, center.Y);
-        canvas.Concat(ref matrix);
-        canvas.DrawBitmap(source, -source.Width / 2f, -source.Height / 2f, paint);
+
+        if (degrees == 90)
+        {
+            canvas.Translate(rotatedBitmap.Width, 0);
+        }
+        else if (degrees == 180)
+        {
+            canvas.Translate(rotatedBitmap.Width, rotatedBitmap.Height);
+        }
+        else if (degrees == 270)
+        {
+            canvas.Translate(0, rotatedBitmap.Height);
+        }
+
+        canvas.RotateDegrees(degrees);
+
+        canvas.DrawBitmap(source, 0, 0, paint);
         canvas.Flush();
 
         return rotatedBitmap;
@@ -74,6 +87,8 @@ internal static class ImageTransformer
             throw new ArgumentNullException(nameof(source));
 
         var flippedBitmap = new SKBitmap(source.Info);
+        if (flippedBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(flippedBitmap);
         using var paint = new SKPaint();
