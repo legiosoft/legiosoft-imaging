@@ -97,8 +97,8 @@ internal static class ImageColorAdjustments
         using var canvas = new SKCanvas(contrastBitmap);
         using var paint = new SKPaint();
 
-        float factor = (259 * (amount + 255)) / (255 * (259 - amount));
-        float intercept = 128 * (1 - factor) / 255f;
+        float factor = (259f * (amount + 255f)) / (255f * (259f - amount));
+        float intercept = 0.5f * (1f - factor);
 
         paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
         {

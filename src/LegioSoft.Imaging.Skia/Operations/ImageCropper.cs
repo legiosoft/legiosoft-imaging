@@ -21,7 +21,7 @@ internal static class ImageCropper
     public static byte[] Crop(byte[] imageData, int x, int y, int width, int height)
     {
         using var bitmap = ImageLoader.LoadBitmap(imageData);
-        var cropped = CropBitmap(bitmap, x, y, width, height);
+        using var cropped = CropBitmap(bitmap, x, y, width, height);
         var format = FormatDetector.DetectFormat(imageData);
         return ImageSaver.SaveBitmap(cropped, format);
     }
@@ -49,10 +49,17 @@ internal static class ImageCropper
         if (x + width > source.Width || y + height > source.Height)
             throw new ArgumentException("Crop area extends beyond image bounds");
 
-        var croppedBitmap = new SKBitmap(width, height);
+        var croppedBitmap = new SKBitmap(width, height, source.ColorType, source.AlphaType);
+
+        if (croppedBitmap.Handle == IntPtr.Zero)
+            throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
         using var canvas = new SKCanvas(croppedBitmap);
-        canvas.DrawBitmap(source, new SKRect(x, y, x + width, y + height), new SKPaint());
+
+        var sourceRect = new SKRect(x, y, x + width, y + height);
+        var destRect = new SKRect(0, 0, width, height);
+
+        canvas.DrawBitmap(source, sourceRect, destRect, null);
         canvas.Flush();
 
         return croppedBitmap;
