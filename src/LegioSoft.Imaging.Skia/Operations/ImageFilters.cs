@@ -64,13 +64,12 @@ internal static class ImageFilters
         using var canvas = new SKCanvas(sepiaBitmap);
         using var paint = new SKPaint();
 
-        paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
-        {
+        paint.ColorFilter = SKColorFilter.CreateColorMatrix([
             0.393f, 0.769f, 0.189f, 0, 0,
             0.349f, 0.686f, 0.168f, 0, 0,
             0.272f, 0.534f, 0.131f, 0, 0,
             0,      0,      0,      1, 0
-        });
+        ]);
 
         canvas.DrawBitmap(source, 0, 0, paint);
         canvas.Flush();
@@ -104,7 +103,7 @@ internal static class ImageFilters
 
         using var canvas = new SKCanvas(blurBitmap);
         using var paint = new SKPaint();
-        using var filter = SKImageFilter.CreateBlur((float)radius, (float)radius);
+        using var filter = SKImageFilter.CreateBlur(radius, radius);
 
         paint.ImageFilter = filter;
         canvas.DrawBitmap(source, 0, 0, paint);
@@ -144,12 +143,11 @@ internal static class ImageFilters
         using var paint = new SKPaint();
         using var filter = SKImageFilter.CreateMatrixConvolution(
             new SKSizeI(3, 3),
-            new float[]
-            {
+            [
                 0, edgeValue, 0,
                 edgeValue, centerValue, edgeValue,
                 0, edgeValue, 0
-            },
+            ],
             1, 0, new SKPointI(1, 1), SKShaderTileMode.Clamp, true);
 
         paint.ImageFilter = filter;
