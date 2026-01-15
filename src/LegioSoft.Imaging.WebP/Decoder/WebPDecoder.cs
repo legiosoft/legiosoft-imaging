@@ -9,9 +9,9 @@ internal class WebPDecoder
 {
     private const int WEBP_DECODER_ABI_VERSION = 0x0210;
 
-    public const int MaxImageWidth = 16384;
-    public const int MaxImageHeight = 16384;
-    public const long MaxImageMemoryBytes = 512 * 1024 * 1024;
+    private const int MaxImageWidth = 16384;
+    private const int MaxImageHeight = 16384;
+    private const long MaxImageMemoryBytes = 512 * 1024 * 1024;
 
     public static WebPInfo GetInfo(byte[] webpData)
     {
