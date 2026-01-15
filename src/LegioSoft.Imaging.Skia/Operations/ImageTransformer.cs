@@ -76,22 +76,24 @@ internal static class ImageTransformer
         var flippedBitmap = new SKBitmap(source.Info);
 
         using var canvas = new SKCanvas(flippedBitmap);
-        if (horizontal && vertical)
+        using var paint = new SKPaint();
+
+        float scaleX = horizontal ? -1 : 1;
+        float scaleY = vertical ? -1 : 1;
+
+        if (horizontal)
         {
-            canvas.DrawBitmap(source, -source.Width, -source.Height);
+            canvas.Translate(flippedBitmap.Width, 0);
+            canvas.Scale(scaleX, 1);
         }
-        else if (horizontal)
+
+        if (vertical)
         {
-            canvas.DrawBitmap(source, -source.Width, 0);
+            canvas.Translate(0, flippedBitmap.Height);
+            canvas.Scale(1, scaleY);
         }
-        else if (vertical)
-        {
-            canvas.DrawBitmap(source, 0, -source.Height);
-        }
-        else
-        {
-            canvas.DrawBitmap(source, 0, 0);
-        }
+
+        canvas.DrawBitmap(source, 0, 0, paint);
         canvas.Flush();
 
         return flippedBitmap;

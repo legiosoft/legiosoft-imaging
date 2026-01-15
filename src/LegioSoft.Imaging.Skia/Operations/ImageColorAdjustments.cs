@@ -46,7 +46,7 @@ internal static class ImageColorAdjustments
         using var canvas = new SKCanvas(brightnessBitmap);
         using var paint = new SKPaint();
 
-        float delta = amount;
+        float delta = amount / 255f;
 
         paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
         {
@@ -98,14 +98,14 @@ internal static class ImageColorAdjustments
         using var paint = new SKPaint();
 
         float factor = (259 * (amount + 255)) / (255 * (259 - amount));
-        float intercept = 128 * (1 - factor);
+        float intercept = 128 * (1 - factor) / 255f;
 
         paint.ColorFilter = SKColorFilter.CreateColorMatrix(new float[]
         {
-            factor, 0,      0,      0, intercept,
-            0,      factor, 0,      0, intercept,
-            0,      0,      factor, 0, intercept,
-            0,      0,      0,      1, 0
+            factor, 0, 0, 0, intercept,
+            0, factor, 0, 0, intercept,
+            0, 0, factor, 0, intercept,
+            0, 0, 0, 1, 0
         });
 
         canvas.DrawBitmap(source, 0, 0, paint);

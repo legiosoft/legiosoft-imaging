@@ -37,7 +37,7 @@ internal static class ImageFilters
             0.299f, 0.587f, 0.114f, 0, 0,
             0.299f, 0.587f, 0.114f, 0, 0,
             0.299f, 0.587f, 0.114f, 0, 0,
-            0,      0,      0,      1, 0
+            0, 0, 0, 1, 0
         });
 
         canvas.DrawBitmap(source, 0, 0, paint);
@@ -68,7 +68,7 @@ internal static class ImageFilters
             0.393f, 0.769f, 0.189f, 0, 0,
             0.349f, 0.686f, 0.168f, 0, 0,
             0.272f, 0.534f, 0.131f, 0, 0,
-            0,      0,      0,      1, 0
+            0, 0, 0, 1, 0
         ]);
 
         canvas.DrawBitmap(source, 0, 0, paint);
