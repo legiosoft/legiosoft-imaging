@@ -1,5 +1,4 @@
 using SkiaSharp;
-using LegioSoft.Imaging.Core;
 using LegioSoft.Imaging.Core.Classes;
 using LegioSoft.Imaging.Core.Enums;
 

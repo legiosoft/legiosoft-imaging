@@ -96,7 +96,7 @@ internal static class ImageLoader
 
         // Save original position for streams that support seeking
         long originalPosition = 0;
-        bool canSeek = false;
+        var canSeek = false;
         
         if (stream.CanSeek)
         {
