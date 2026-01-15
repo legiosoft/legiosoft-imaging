@@ -1,4 +1,5 @@
 using LegioSoft.Imaging.Core.Classes;
+using LegioSoft.Imaging.Skia.Core;
 using SkiaSharp;
 
 namespace LegioSoft.Imaging.Skia.Operations;
@@ -19,10 +20,10 @@ internal static class ImageCropper
     /// <returns>Cropped image data in the original format.</returns>
     public static byte[] Crop(byte[] imageData, int x, int y, int width, int height)
     {
-        using var bitmap = Core.ImageLoader.LoadBitmap(imageData);
+        using var bitmap = ImageLoader.LoadBitmap(imageData);
         var cropped = CropBitmap(bitmap, x, y, width, height);
         var format = FormatDetector.DetectFormat(imageData);
-        return Core.ImageSaver.SaveBitmap(cropped, format);
+        return ImageSaver.SaveBitmap(cropped, format);
     }
 
     /// <summary>
