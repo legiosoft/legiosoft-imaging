@@ -1,6 +1,7 @@
 using LegioSoft.Imaging.Core;
 using LegioSoft.Imaging.Skia;
 using System;
+using LegioSoft.Imaging.Core.Enums;
 
 namespace SkiaExample;
 
@@ -234,10 +235,7 @@ class Program
         var webp = builder.SaveAs(LegioImageFormat.WebP, 85);
 
         Console.WriteLine($"  Created: output-converted-webp.webp ({webp.Length} bytes)");
-
-        var bmp = builder.SaveAs(LegioImageFormat.Bmp);
-
-        Console.WriteLine($"  Created: output-converted-bmp.bmp ({bmp.Length} bytes)");
+        
         Console.WriteLine();
     }
 

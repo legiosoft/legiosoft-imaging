@@ -52,6 +52,7 @@ internal static class ImageCropper
 
         using var canvas = new SKCanvas(croppedBitmap);
         canvas.DrawBitmap(source, new SKRect(x, y, x + width, y + height), new SKPaint());
+        canvas.Flush();
 
         return croppedBitmap;
     }

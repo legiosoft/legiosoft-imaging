@@ -46,14 +46,15 @@ public class LegioImageBuilderTests
     }
 
     [Fact]
-    public void Resize_ShouldSetResizeParameters()
+    public void Resize_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Resize(50, 50);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Resize(50, 50)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -61,43 +62,46 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Resize(0, 50));
         Assert.Throws<ArgumentException>(() => builder.Resize(50, 0));
         Assert.Throws<ArgumentException>(() => builder.Resize(-50, 50));
     }
 
     [Fact]
-    public void ResizeToWidth_ShouldSetWidth()
+    public void ResizeToWidth_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.ResizeToWidth(50);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .ResizeToWidth(50)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
-    public void ResizeToHeight_ShouldSetHeight()
+    public void ResizeToHeight_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.ResizeToHeight(50);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .ResizeToHeight(50)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
-    public void Scale_ShouldScaleImage()
+    public void Scale_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Scale(0.5);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Scale(0.5)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -105,20 +109,21 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Scale(0));
         Assert.Throws<ArgumentException>(() => builder.Scale(-0.5));
     }
 
     [Fact]
-    public void Crop_ShouldSetCropParameters()
+    public void Crop_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Crop(10, 10, 50, 50);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Crop(10, 10, 50, 50)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -126,21 +131,22 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Crop(10, 10, 0, 50));
         Assert.Throws<ArgumentException>(() => builder.Crop(10, 10, 50, 0));
         Assert.Throws<ArgumentException>(() => builder.Crop(10, 10, -50, 50));
     }
 
     [Fact]
-    public void Rotate_ShouldSetRotation()
+    public void Rotate_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Rotate(90);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Rotate(90)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -148,51 +154,56 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Rotate(45));
     }
 
     [Fact]
-    public void Flip_ShouldSetFlipDirection()
+    public void Flip_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Flip(horizontal: true, vertical: false);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Flip(horizontal: true, vertical: false)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
-    public void Grayscale_ShouldApplyFilter()
+    public void Grayscale_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Grayscale();
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Grayscale()
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
-    public void Sepia_ShouldApplyFilter()
+    public void Sepia_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Sepia();
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Sepia()
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
-    public void Blur_ShouldApplyFilter()
+    public void Blur_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        var result = builder.Blur(5);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Blur(5)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -200,20 +211,21 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Blur(0));
         Assert.Throws<ArgumentException>(() => builder.Blur(21));
     }
 
     [Fact]
-    public void Sharpen_ShouldApplyFilter()
+    public void Sharpen_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Sharpen(60);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Sharpen(60)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -221,20 +233,21 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Sharpen(-1));
         Assert.Throws<ArgumentException>(() => builder.Sharpen(101));
     }
 
     [Fact]
-    public void Brightness_ShouldAdjustBrightness()
+    public void Brightness_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Brightness(30);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Brightness(30)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -242,20 +255,33 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Brightness(-256));
         Assert.Throws<ArgumentException>(() => builder.Brightness(256));
     }
 
     [Fact]
-    public void Contrast_ShouldAdjustContrast()
+    public void Contrast_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Contrast(20);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Contrast(20)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
+    }
+
+    [Fact]
+    public void Contrast_LowValue_ShouldExecuteSuccessfully()
+    {
+        var imageData = LoadTestImage("example.png");
+        var result = LegioImageBuilder.Load(imageData)
+            .Contrast(-30)
+            .SaveAs(LegioImageFormat.Png);
+
+        Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -263,31 +289,33 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Contrast(-101));
         Assert.Throws<ArgumentException>(() => builder.Contrast(101));
     }
 
     [Fact]
-    public void Invert_ShouldInvertColors()
+    public void Invert_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Invert();
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Invert()
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
-    public void Quality_ShouldSetQuality()
+    public void Quality_ShouldExecuteSuccessfully()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        var result = builder.Quality(85);
-        
+        var result = LegioImageBuilder.Load(imageData)
+            .Quality(85)
+            .SaveAs(LegioImageFormat.Png);
+
         Assert.NotNull(result);
+        Assert.True(result.Length > 0);
     }
 
     [Fact]
@@ -295,7 +323,7 @@ public class LegioImageBuilderTests
     {
         var imageData = LoadTestImage("example.png");
         var builder = LegioImageBuilder.Load(imageData);
-        
+
         Assert.Throws<ArgumentException>(() => builder.Quality(-1));
         Assert.Throws<ArgumentException>(() => builder.Quality(101));
     }
@@ -304,11 +332,9 @@ public class LegioImageBuilderTests
     public void Save_ShouldWriteToFile()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
         var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "output.jpg");
-        builder.Save(outputPath, LegioImageFormat.Jpeg, 90);
-        
+        LegioImageBuilder.Load(imageData).Save(outputPath, LegioImageFormat.Jpeg, 90);
+
         Assert.True(File.Exists(outputPath));
         File.Delete(outputPath);
     }
@@ -317,9 +343,8 @@ public class LegioImageBuilderTests
     public void Save_ShouldConvertFormat()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        var jpegData = builder.SaveAs(LegioImageFormat.Jpeg, 85);
-        
+        var jpegData = LegioImageBuilder.Load(imageData).SaveAs(LegioImageFormat.Jpeg, 85);
+
         Assert.NotNull(jpegData);
         Assert.True(jpegData.Length > 0);
     }
@@ -328,10 +353,8 @@ public class LegioImageBuilderTests
     public void SaveAsStream_ShouldReturnMemoryStream()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        
-        using var stream = builder.SaveAsStream(LegioImageFormat.Png);
-        
+        using var stream = LegioImageBuilder.Load(imageData).SaveAsStream(LegioImageFormat.Png);
+
         Assert.NotNull(stream);
         Assert.True(stream.Length > 0);
     }
@@ -340,25 +363,22 @@ public class LegioImageBuilderTests
     public void Save_WithQuality_ShouldRespectQuality()
     {
         var imageData = LoadTestImage("example.png");
-        var builder1 = LegioImageBuilder.Load(imageData);
-        var builder2 = LegioImageBuilder.Load(imageData);
-        
-        var lowQuality = builder1.Quality(50).SaveAs(LegioImageFormat.Jpeg);
-        var highQuality = builder2.Quality(95).SaveAs(LegioImageFormat.Jpeg);
-        
+        var lowQuality = LegioImageBuilder.Load(imageData).Quality(50).SaveAs(LegioImageFormat.Jpeg);
+        var highQuality = LegioImageBuilder.Load(imageData).Quality(95).SaveAs(LegioImageFormat.Jpeg);
+
         Assert.NotNull(lowQuality);
         Assert.NotNull(highQuality);
         Assert.True(lowQuality.Length > 0);
         Assert.True(highQuality.Length > 0);
+        Assert.True(highQuality.Length > lowQuality.Length);
     }
 
     [Fact]
     public void SaveAs_ShouldReturnBytes()
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        var result = builder.SaveAs(LegioImageFormat.Jpeg, 80);
-        
+        var result = LegioImageBuilder.Load(imageData).SaveAs(LegioImageFormat.Jpeg, 80);
+
         Assert.NotNull(result);
         Assert.True(result.Length > 0);
     }
@@ -370,9 +390,8 @@ public class LegioImageBuilderTests
     public void SaveAsFormat_ShouldSupportFormats(LegioImageFormat format)
     {
         var imageData = LoadTestImage("example.png");
-        var builder = LegioImageBuilder.Load(imageData);
-        var result = builder.SaveAs(format, 80);
-        
+        var result = LegioImageBuilder.Load(imageData).SaveAs(format, 80);
+
         Assert.NotNull(result);
         Assert.True(result.Length > 0);
     }

@@ -3,36 +3,8 @@ using SkiaSharp;
 
 namespace LegioSoft.Imaging.Skia.Core;
 
-/// <summary>
-/// Provides image encoding and saving functionality.
-/// </summary>
-/// <remarks>
-/// Quality parameter has different effects depending on format:
-/// - PNG: Always 100 (lossless), quality parameter is ignored
-/// - JPEG: 0-100, lower = smaller file with more compression artifacts
-/// - WebP: 0-100, balances size and quality
-/// </remarks>
 internal static class ImageSaver
 {
-    /// <summary>
-    /// Encodes a bitmap to specified format and quality.
-    /// </summary>
-    /// <param name="bitmap">Bitmap to encode. Must have valid dimensions.</param>
-    /// <param name="format">Target image format.</param>
-    /// <param name="quality">Encoding quality 0-100. Defaults to 90.</param>
-    /// <returns>Encoded image data as byte array.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when bitmap is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when bitmap has invalid dimensions.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when quality is outside 0-100 range.</exception>
-    /// <exception cref="NotSupportedException">Thrown when format is not supported for encoding.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when encoding fails.</exception>
-    /// <example>
-    /// <code>
-    /// using var bitmap = ImageLoader.LoadBitmap("photo.jpg");
-    /// var pngData = ImageSaver.SaveBitmap(bitmap, LegioImageFormat.Png);
-    /// File.WriteAllBytes("output.png", pngData);
-    /// </code>
-    /// </example>
     public static byte[] SaveBitmap(SKBitmap bitmap, LegioImageFormat format, int quality = 90)
     {
         if (bitmap == null)
@@ -41,9 +13,7 @@ internal static class ImageSaver
         if (bitmap.Width <= 0 || bitmap.Height <= 0)
             throw new ArgumentException("Bitmap must have valid dimensions", nameof(bitmap));
 
-        ValidateQuality(format, quality);
-
-        var skiaFormat = ConvertToSkiaFormat(format);
+        var skiaFormat = ConvertToSkiaFormat(format, quality);
         var adjustedQuality = AdjustQualityForFormat(format, quality);
 
         using var ms = new MemoryStream();
@@ -55,13 +25,27 @@ internal static class ImageSaver
         return ms.ToArray();
     }
 
-    private static void ValidateQuality(LegioImageFormat format, int quality)
+    public static void SaveBitmap(SKBitmap bitmap, Stream outputStream, LegioImageFormat format, int quality = 90)
     {
-        if (quality is < 0 or > 100)
-            throw new ArgumentOutOfRangeException(nameof(quality), "Quality must be between 0 and 100");
+        if (bitmap == null)
+            throw new ArgumentNullException(nameof(bitmap));
+
+        if (outputStream == null)
+            throw new ArgumentNullException(nameof(outputStream));
+
+        if (bitmap.Width <= 0 || bitmap.Height <= 0)
+            throw new ArgumentException("Bitmap must have valid dimensions", nameof(bitmap));
+
+        var skiaFormat = ConvertToSkiaFormat(format, quality);
+        var adjustedQuality = AdjustQualityForFormat(format, quality);
+
+        var success = bitmap.Encode(outputStream, skiaFormat, adjustedQuality);
+
+        if (!success)
+            throw new InvalidOperationException($"Failed to encode image as {format}");
     }
 
-    private static SKEncodedImageFormat ConvertToSkiaFormat(LegioImageFormat format)
+    private static SKEncodedImageFormat ConvertToSkiaFormat(LegioImageFormat format, int quality)
     {
         return format switch
         {
@@ -77,7 +61,8 @@ internal static class ImageSaver
         return format switch
         {
             LegioImageFormat.Png => 100,
-            _ => quality
+            LegioImageFormat.WebP when quality == 100 => 100,
+            _ => Math.Clamp(quality, 0, 100)
         };
     }
 }

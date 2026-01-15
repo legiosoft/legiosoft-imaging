@@ -50,6 +50,7 @@ internal static class ImageColorAdjustments
         });
 
         canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
 
         return brightnessBitmap;
     }
@@ -94,6 +95,7 @@ internal static class ImageColorAdjustments
         });
 
         canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
 
         return contrastBitmap;
     }
@@ -126,6 +128,7 @@ internal static class ImageColorAdjustments
         });
 
         canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
 
         return invertBitmap;
     }

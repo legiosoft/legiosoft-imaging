@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using SkiaSharp;
 using LegioSoft.Imaging.Core.Classes;
 using LegioSoft.Imaging.Core.Enums;
@@ -172,28 +171,35 @@ internal static class ImageMetadataReader
                 $"Allowed formats: {string.Join(", ", AllowedExtensions)}",
                 nameof(filePath));
 
-        if (ApprovedDirectories.Length > 0)
-        {
-            ValidateFilePath(filePath);
-        }
-
-        if (!File.Exists(filePath))
-            throw new FileNotFoundException($"File not found: {filePath}", filePath);
-
+        FileStream fileStream;
         try
         {
-            using var fs = File.OpenRead(filePath);
-            return GetInfo(fs, (int)fs.Length);
+            fileStream = File.OpenRead(filePath);
         }
         catch (UnauthorizedAccessException)
         {
             throw new UnauthorizedAccessException(
                 $"Access denied: Cannot read image file at '{filePath}'");
         }
+        catch (FileNotFoundException)
+        {
+            throw new FileNotFoundException(
+                $"File not found: {filePath}", filePath);
+        }
         catch (IOException ex)
         {
             throw new InvalidOperationException(
-                $"Error reading image file: {ex.Message}", ex);
+                $"Error opening image file: {ex.Message}", ex);
+        }
+
+        try
+        {
+            ImageSecurity.ValidateOpenedFile(fileStream, filePath, ApprovedDirectories, AllowedExtensions);
+            return GetInfo(fileStream, (int)fileStream.Length);
+        }
+        finally
+        {
+            fileStream.Dispose();
         }
     }
 
@@ -230,67 +236,5 @@ internal static class ImageMetadataReader
                 $"Image dimensions {width}x{height} exceed maximum " +
                 $"allowed size of {MaxImageWidth}x{MaxImageHeight}. " +
                 $"This is a security limit to prevent memory exhaustion attacks.");
-    }
-
-    /// <summary>
-    /// Validates that a file path is within approved directories and is not a symbolic link.
-    /// Prevents path traversal and symlink attacks.
-    /// </summary>
-    /// <exception cref="UnauthorizedAccessException">Thrown when path is not authorized.</exception>
-    private static void ValidateFilePath(string filePath)
-    {
-        string fullPath;
-        try
-        {
-            fullPath = Path.GetFullPath(filePath);
-        }
-        catch (Exception ex)
-        {
-            throw new ArgumentException(
-                $"Invalid file path: {ex.Message}",
-                nameof(filePath), ex);
-        }
-
-        var isAllowed = ApprovedDirectories.Any(dir =>
-        {
-            try
-            {
-                var fullDir = Path.GetFullPath(dir);
-                return fullPath.StartsWith(fullDir + Path.DirectorySeparatorChar,
-                    StringComparison.Ordinal);
-            }
-            catch
-            {
-                return false;
-            }
-        });
-
-        if (!isAllowed)
-        {
-            throw new UnauthorizedAccessException(
-                $"File path '{fullPath}' is outside the approved image directories: " +
-                $"{string.Join(", ", ApprovedDirectories)}. " +
-                $"Configure ApprovedDirectories for your security policy.");
-        }
-
-        try
-        {
-            var fileInfo = new FileInfo(fullPath);
-            if (fileInfo.LinkTarget != null)
-            {
-                throw new UnauthorizedAccessException(
-                    $"Symbolic links are not allowed for security reasons. " +
-                    $"File '{fullPath}' is a symbolic link.");
-            }
-        }
-        catch (UnauthorizedAccessException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(
-                $"Warning: Could not check symbolic link status: {ex.Message}");
-        }
     }
 }

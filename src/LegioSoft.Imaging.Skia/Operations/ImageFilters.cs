@@ -39,6 +39,7 @@ internal static class ImageFilters
         });
 
         canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
 
         return grayscaleBitmap;
     }
@@ -68,6 +69,7 @@ internal static class ImageFilters
         });
 
         canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
 
         return sepiaBitmap;
     }
@@ -79,7 +81,7 @@ internal static class ImageFilters
     /// <param name="radius">Blur radius in pixels. Range 1-100.</param>
     /// <returns>New blurred bitmap. Caller is responsible for disposal.</returns>
     /// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when radius is outside the valid range.</exception>
+    /// <exception cref="ArgumentException">Thrown when radius is outside of valid range.</exception>
     /// <remarks>
     /// Uses hardware-accelerated blur filter. Larger values create softer blur
     /// but increase processing time significantly.
@@ -100,6 +102,7 @@ internal static class ImageFilters
 
         paint.ImageFilter = filter;
         canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
 
         return blurBitmap;
     }
@@ -111,7 +114,7 @@ internal static class ImageFilters
     /// <param name="amount">Sharpening intensity. Range 0-100, default 50.</param>
     /// <returns>New sharpened bitmap. Caller is responsible for disposal.</returns>
     /// <exception cref="ArgumentNullException">Thrown when source is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when amount is outside the valid range.</exception>
+    /// <exception cref="ArgumentException">Thrown when amount is outside of valid range.</exception>
     /// <remarks>
     /// Combines dilated edge enhancement with original image for sharpening effect.
     /// </remarks>
@@ -132,6 +135,7 @@ internal static class ImageFilters
 
         paint.ImageFilter = SKImageFilter.CreateDilate(1, 1);
         canvas.DrawBitmap(source, 0, 0, paint);
+        canvas.Flush();
 
         for (var y = 0; y < source.Height; y++)
         {

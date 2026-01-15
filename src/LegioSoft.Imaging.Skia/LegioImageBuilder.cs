@@ -34,16 +34,11 @@ public class LegioImageBuilder
     private readonly List<Func<SKBitmap, SKBitmap>> _operations;
     private int _saveQuality = 75;
 
-    private readonly int _virtualWidth;
-    private readonly int _virtualHeight;
-
     private LegioImageBuilder(byte[] imageData)
     {
         _imageData = imageData ?? throw new ArgumentNullException(nameof(imageData));
         _format = FormatDetector.DetectFormat(imageData);
         _operations = new List<Func<SKBitmap, SKBitmap>>();
-        _virtualWidth = 0;
-        _virtualHeight = 0;
     }
 
     /// <summary>
@@ -116,17 +111,15 @@ public class LegioImageBuilder
     /// <param name="quality">Resize quality level. Defaults to High.</param>
     /// <returns>This builder for method chaining.</returns>
     /// <exception cref="ArgumentException">Thrown when width is not positive.</exception>
-    /// <remarks>
-    /// Uses virtual dimensions (updated by previous operations) for calculations instead of GetInfo().
-    /// </remarks>
     public LegioImageBuilder ResizeToWidth(int width, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (width <= 0)
             throw new ArgumentException("Width must be positive", nameof(width));
-        
-        var ratio = (double)width / _virtualWidth;
-        var newHeight = (int)(_virtualHeight * ratio);
-        
+
+        var info = GetInfo();
+        var ratio = (double)width / info.Width;
+        var newHeight = (int)(info.Height * ratio);
+
         _operations.Add(source => ImageResizer.ResizeBitmap(source, width, newHeight, quality));
         return this;
     }
@@ -138,17 +131,15 @@ public class LegioImageBuilder
     /// <param name="quality">Resize quality level. Defaults to High.</param>
     /// <returns>This builder for method chaining.</returns>
     /// <exception cref="ArgumentException">Thrown when height is not positive.</exception>
-    /// <remarks>
-    /// Uses virtual dimensions (updated by previous operations) for calculations instead of GetInfo().
-    /// </remarks>
     public LegioImageBuilder ResizeToHeight(int height, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (height <= 0)
             throw new ArgumentException("Height must be positive", nameof(height));
-        
-        var ratio = (double)height / _virtualHeight;
-        var newWidth = (int)(_virtualWidth * ratio);
-        
+
+        var info = GetInfo();
+        var ratio = (double)height / info.Height;
+        var newWidth = (int)(info.Width * ratio);
+
         _operations.Add(source => ImageResizer.ResizeBitmap(source, newWidth, height, quality));
         return this;
     }
@@ -160,17 +151,15 @@ public class LegioImageBuilder
     /// <param name="quality">Resize quality level. Defaults to High.</param>
     /// <returns>This builder for method chaining.</returns>
     /// <exception cref="ArgumentException">Thrown when factor is not positive.</exception>
-    /// <remarks>
-    /// Uses virtual dimensions (updated by previous operations) for calculations instead of GetInfo().
-    /// </remarks>
     public LegioImageBuilder Scale(double factor, LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (factor <= 0)
             throw new ArgumentException("Scale factor must be positive", nameof(factor));
-        
-        var newWidth = (int)(_virtualWidth * factor);
-        var newHeight = (int)(_virtualHeight * factor);
-        
+
+        var info = GetInfo();
+        var newWidth = (int)(info.Width * factor);
+        var newHeight = (int)(info.Height * factor);
+
         _operations.Add(source => ImageResizer.ResizeBitmap(source, newWidth, newHeight, quality));
         return this;
     }

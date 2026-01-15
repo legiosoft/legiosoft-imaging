@@ -55,6 +55,7 @@ internal static class ImageTransformer
         canvas.Translate(center.X, center.Y);
         canvas.Concat(ref matrix);
         canvas.DrawBitmap(source, -source.Width / 2f, -source.Height / 2f, paint);
+        canvas.Flush();
 
         return rotatedBitmap;
     }
@@ -91,6 +92,7 @@ internal static class ImageTransformer
         {
             canvas.DrawBitmap(source, 0, 0);
         }
+        canvas.Flush();
 
         return flippedBitmap;
     }
