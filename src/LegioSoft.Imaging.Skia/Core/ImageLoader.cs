@@ -1,25 +1,18 @@
+using System.Diagnostics;
+using System.Text;
 using SkiaSharp;
 
 namespace LegioSoft.Imaging.Skia.Core;
 
 /// <summary>
-/// Provides secure image loading functionality with automatic codec management,
-/// input validation, and resource protection.
+/// Loads and decodes images with automatic validation and resource protection.
 /// </summary>
 /// <remarks>
 /// ImageLoader creates SKBitmap instances that wrap unmanaged memory.
-/// Always dispose returned bitmaps or use them within a using statement
-/// to prevent memory leaks.
-/// 
-/// SECURITY FEATURES:
-/// - Path traversal prevention
-/// - Image dimension limits
-/// - Memory allocation limits
-/// - Format whitelist
-/// - Symbolic link detection
+/// Always dispose returned bitmaps or use them within a using statement.
 /// 
 /// Consider using ImageMetadataReader.GetInfo() if you only need 
-/// image dimensions without full pixel data.
+/// image dimensions without loading full pixel data.
 /// </remarks>
 internal static class ImageLoader
 {
@@ -35,7 +28,6 @@ internal static class ImageLoader
 
     /// <summary>
     /// Maximum allowed memory per image (512 MB).
-    /// Prevents DoS attacks via oversized images.
     /// </summary>
     private const long MaxImageMemoryBytes = 512 * 1024 * 1024;
 
@@ -78,7 +70,7 @@ internal static class ImageLoader
     }
 
     /// <summary>
-    /// Loads an image from a stream with full validation.
+    /// Loads an image from a stream.
     /// </summary>
     /// <param name="stream">Readable stream containing image data.</param>
     /// <returns>Decoded SKBitmap. Caller is responsible for disposal.</returns>
@@ -94,7 +86,6 @@ internal static class ImageLoader
         if (!stream.CanRead)
             throw new ArgumentException("Stream must be readable", nameof(stream));
 
-        // Save original position for streams that support seeking
         long originalPosition = 0;
         var canSeek = false;
         
@@ -108,43 +99,47 @@ internal static class ImageLoader
             }
             catch (IOException)
             {
-                // Some streams claim to be seekable but fail - continue anyway
                 canSeek = false;
             }
         }
 
         try
         {
-            // Use SKBitmap.Decode() instead of manual SKCodec usage
-            // This handles all memory management correctly
-            SKBitmap bitmap;
-            try
-            {
-                bitmap = SKBitmap.Decode(stream);
-            }
-            catch (OutOfMemoryException)
-            {
-                throw new OutOfMemoryException(
-                    "Image is too large or system is low on memory");
-            }
-            catch (Exception ex) when (!(ex is ArgumentException) && !(ex is InvalidOperationException))
-            {
-                throw new InvalidOperationException(
-                    $"Failed to decode image: {ex.Message}", ex);
-            }
-
-            if (bitmap == null)
+            using var codec = SKCodec.Create(stream);
+            if (codec == null)
                 throw new InvalidOperationException(
                     "Unable to decode image data. Unsupported format or corrupted file.");
 
-            // Validate dimensions and memory requirements
-            ValidateImageDimensions(bitmap.Info);
+            ValidateImageDimensions(codec.Info);
+
+            var bitmap = new SKBitmap(codec.Info);
+            
+            if (bitmap.Handle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException(
+                    "Failed to allocate memory for image bitmap.");
+            }
+
+            try
+            {
+                var result = codec.GetPixels(codec.Info, bitmap.GetPixels());
+                
+                if (result != SKCodecResult.Success)
+                {
+                    throw new InvalidOperationException(
+                        $"Failed to decode image: Codec returned {result}");
+                }
+            }
+            catch
+            {
+                bitmap.Dispose();
+                throw;
+            }
 
             return bitmap;
         }
         finally
         {
-            // Restore stream position if it was seekable
             if (canSeek && stream.CanSeek)
             {
                 try
@@ -153,14 +148,13 @@ internal static class ImageLoader
                 }
                 catch (IOException)
                 {
-                    // Ignore seek errors on cleanup
                 }
             }
         }
     }
 
     /// <summary>
-    /// Loads an image from a file path with full validation and security checks.
+    /// Loads an image from a file path.
     /// </summary>
     /// <param name="filePath">Path to the image file.</param>
     /// <returns>Decoded SKBitmap. Caller is responsible for disposal.</returns>
@@ -175,7 +169,6 @@ internal static class ImageLoader
             throw new ArgumentException(
                 "File path cannot be null or empty", nameof(filePath));
 
-        // Validate file extension
         var extension = Path.GetExtension(filePath);
         if (!AllowedExtensions.Contains(extension))
             throw new ArgumentException(
@@ -183,28 +176,189 @@ internal static class ImageLoader
                 $"Allowed formats: {string.Join(", ", AllowedExtensions)}", 
                 nameof(filePath));
 
-        // SECURITY: Validate path to prevent traversal attacks
-        ValidateFilePath(filePath);
-
-        if (!File.Exists(filePath))
-            throw new FileNotFoundException(
-                $"File not found: {filePath}", filePath);
-
+        FileStream fileStream;
         try
         {
-            using var fs = File.OpenRead(filePath);
-            return LoadBitmap(fs);
+            fileStream = File.OpenRead(filePath);
         }
         catch (UnauthorizedAccessException)
         {
             throw new UnauthorizedAccessException(
                 $"Access denied: Cannot read image file at '{filePath}'");
         }
+        catch (FileNotFoundException)
+        {
+            throw new FileNotFoundException(
+                $"File not found: {filePath}", filePath);
+        }
         catch (IOException ex)
         {
             throw new InvalidOperationException(
-                $"Error reading image file: {ex.Message}", ex);
+                $"Error opening image file: {ex.Message}", ex);
         }
+
+        try
+        {
+            ValidateOpenedFile(fileStream, filePath);
+            return LoadBitmap(fileStream);
+        }
+        finally
+        {
+            fileStream.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Validates that an opened file is within approved directories and not a symlink.
+    /// </summary>
+    private static void ValidateOpenedFile(FileStream fileStream, string originalPath)
+    {
+        string? actualPath = null;
+
+        // Attempt to resolve path via OS Handle (Secure)
+        if (OperatingSystem.IsWindows())
+        {
+            try
+            {
+                var handle = fileStream.SafeFileHandle.DangerousGetHandle();
+                var pathBuilder = new StringBuilder(512);
+                var result = Windows.GetFinalPathNameByHandle(
+                    handle,
+                    pathBuilder,
+                    (uint)pathBuilder.Capacity,
+                    Windows.FILE_NAME_NORMALIZED);
+
+                if (result != 0)
+                {
+                    actualPath = pathBuilder.ToString();
+                    if (actualPath.StartsWith(@"\\?\"))
+                        actualPath = actualPath.Substring(4);
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        // Decision Logic: Fail Closed on Windows, Fail Open (Fallback) on Linux
+        if (actualPath == null)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                throw new UnauthorizedAccessException(
+                    "Security Check Failed: Unable to verify file path via OS handle.");
+            }
+            else
+            {
+                actualPath = Path.GetFullPath(originalPath);
+            }
+        }
+
+        // Resume validation
+        ValidatePathNotContainSymlinks(actualPath);
+
+        var isApproved = ApprovedDirectories.Any(dir =>
+        {
+            try
+            {
+                var fullDir = Path.GetFullPath(dir);
+                var searchPath = fullDir + Path.DirectorySeparatorChar;
+                var comparison = OperatingSystem.IsWindows() 
+                    ? StringComparison.OrdinalIgnoreCase 
+                    : StringComparison.Ordinal;
+
+                return actualPath.StartsWith(searchPath, comparison) ||
+                       actualPath.Equals(fullDir, comparison);
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
+        if (!isApproved)
+        {
+            throw new UnauthorizedAccessException(
+                $"File path '{actualPath}' is outside the approved image directories: " +
+                $"{string.Join(", ", ApprovedDirectories)}.");
+        }
+
+        var extension = Path.GetExtension(actualPath);
+        if (!AllowedExtensions.Contains(extension))
+        {
+            throw new UnauthorizedAccessException(
+                $"File '{actualPath}' has extension '{extension}' which is not allowed.");
+        }
+    }
+
+    /// <summary>
+    /// Validates that no component of the path is a symbolic link.
+    /// </summary>
+    private static void ValidatePathNotContainSymlinks(string fullPath)
+    {
+        var directory = Path.GetDirectoryName(fullPath);
+        if (string.IsNullOrEmpty(directory))
+            return;
+
+        var currentDir = directory;
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var rootPath = Path.GetPathRoot(fullPath);
+
+        while (!string.IsNullOrEmpty(currentDir) && 
+               currentDir != rootPath && 
+               !visited.Contains(currentDir))
+        {
+            visited.Add(currentDir);
+
+            try
+            {
+                var dirInfo = new DirectoryInfo(currentDir);
+                
+                if (OperatingSystem.IsWindows())
+                {
+                    var attributes = dirInfo.Attributes;
+                    if ((attributes & FileAttributes.ReparsePoint) != 0)
+                    {
+                        throw new UnauthorizedAccessException(
+                            $"Directory '{currentDir}' is a symbolic link or junction.");
+                    }
+                }
+                else
+                {
+                    if (dirInfo.LinkTarget != null)
+                    {
+                        throw new UnauthorizedAccessException(
+                            $"Directory '{currentDir}' is a symbolic link.");
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(
+                    $"Warning: Could not check symlink status for directory '{currentDir}': {ex.Message}");
+            }
+
+            currentDir = Path.GetDirectoryName(currentDir);
+        }
+    }
+
+    /// <summary>
+    /// Windows API interop for resolving file paths.
+    /// </summary>
+    private static class Windows
+    {
+        internal const uint FILE_NAME_NORMALIZED = 0x0;
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        internal static extern uint GetFinalPathNameByHandle(
+            IntPtr hFile,
+            StringBuilder lpszFilePath,
+            uint cchFilePath,
+            uint dwFlags);
     }
 
     /// <summary>
@@ -213,20 +367,15 @@ internal static class ImageLoader
     /// <exception cref="InvalidOperationException">Thrown when dimensions exceed limits.</exception>
     private static void ValidateImageDimensions(SKImageInfo info)
     {
-        // Check for invalid dimensions
         if (info.Width <= 0 || info.Height <= 0)
             throw new InvalidOperationException(
                 $"Invalid image dimensions: {info.Width}x{info.Height}");
 
-        // Check width/height limits
         if (info.Width > MaxImageWidth || info.Height > MaxImageHeight)
             throw new InvalidOperationException(
                 $"Image dimensions {info.Width}x{info.Height} exceed maximum " +
-                $"allowed size of {MaxImageWidth}x{MaxImageHeight}. " +
-                $"This is a security limit to prevent memory exhaustion attacks.");
+                $"allowed size of {MaxImageWidth}x{MaxImageHeight}.");
 
-        // Estimate memory usage (assume 4 bytes per pixel for RGBA)
-        // Note: Some formats use different bytes per pixel, but this is conservative estimate
         long estimatedBytes;
         try
         {
@@ -241,77 +390,7 @@ internal static class ImageLoader
         if (estimatedBytes > MaxImageMemoryBytes)
             throw new InvalidOperationException(
                 $"Image would require approximately {FormatBytes(estimatedBytes)}, " +
-                $"which exceeds the maximum allowed memory of {FormatBytes(MaxImageMemoryBytes)}. " +
-                $"This is a security limit to prevent denial-of-service attacks.");
-    }
-
-    /// <summary>
-    /// Validates that a file path is within approved directories and is not a symbolic link.
-    /// Prevents path traversal and symlink attacks.
-    /// </summary>
-    /// <exception cref="UnauthorizedAccessException">Thrown when path is not authorized.</exception>
-    private static void ValidateFilePath(string filePath)
-    {
-        // Get absolute path to prevent bypass attempts
-        string fullPath;
-        try
-        {
-            fullPath = Path.GetFullPath(filePath);
-        }
-        catch (Exception ex)
-        {
-            throw new ArgumentException(
-                $"Invalid file path: {ex.Message}", 
-                nameof(filePath), ex);
-        }
-
-        // Check if path is within any approved directory
-        bool isApproved = ApprovedDirectories.Any(dir =>
-        {
-            try
-            {
-                var fullDir = Path.GetFullPath(dir);
-                // Use ordinal comparison for consistency across platforms
-                return fullPath.StartsWith(fullDir + Path.DirectorySeparatorChar, 
-                    StringComparison.Ordinal);
-            }
-            catch
-            {
-                return false;
-            }
-        });
-
-        if (!isApproved)
-        {
-            throw new UnauthorizedAccessException(
-                $"File path '{fullPath}' is outside the approved image directories: " +
-                $"{string.Join(", ", ApprovedDirectories)}. " +
-                $"Configure ApprovedDirectories for your security policy.");
-        }
-
-        // SECURITY: Detect symbolic links (requires .NET 6+)
-        // This prevents attacks where symlinks point to system files
-        try
-        {
-            var fileInfo = new FileInfo(fullPath);
-            // LinkTarget is non-null only if the file is a symbolic link
-            if (fileInfo.LinkTarget != null)
-            {
-                throw new UnauthorizedAccessException(
-                    $"Symbolic links are not allowed for security reasons. " +
-                    $"File '{fullPath}' is a symbolic link.");
-            }
-        }
-        catch (UnauthorizedAccessException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            // Log but don't fail on link detection errors - continue loading
-            System.Diagnostics.Debug.WriteLine(
-                $"Warning: Could not check symbolic link status: {ex.Message}");
-        }
+                $"which exceeds the maximum allowed memory of {FormatBytes(MaxImageMemoryBytes)}.");
     }
 
     /// <summary>

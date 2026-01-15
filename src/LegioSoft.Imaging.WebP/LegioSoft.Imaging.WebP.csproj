@@ -60,6 +60,16 @@
       <Pack>true</Pack>
       <PackagePath>runtimes\linux-arm64\</PackagePath>
     </None>
+    <None Include="runtimes\osx-x64\*.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>runtimes\osx-x64\</PackagePath>
+    </None>
+    <None Include="runtimes\osx-arm64\*.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>runtimes\osx-arm64\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

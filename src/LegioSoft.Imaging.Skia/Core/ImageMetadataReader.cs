@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using SkiaSharp;
 using LegioSoft.Imaging.Core.Classes;
 using LegioSoft.Imaging.Core.Enums;
@@ -77,7 +78,7 @@ internal static class ImageMetadataReader
         if (stream == null)
             throw new ArgumentNullException(nameof(stream));
 
-        int byteSize = stream.CanSeek
+        var byteSize = stream.CanSeek
             ? (int)Math.Min(stream.Length, int.MaxValue)
             : 0;
 
@@ -250,7 +251,7 @@ internal static class ImageMetadataReader
                 nameof(filePath), ex);
         }
 
-        bool isAllowed = ApprovedDirectories.Any(dir =>
+        var isAllowed = ApprovedDirectories.Any(dir =>
         {
             try
             {
@@ -288,7 +289,7 @@ internal static class ImageMetadataReader
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine(
+            Debug.WriteLine(
                 $"Warning: Could not check symbolic link status: {ex.Message}");
         }
     }

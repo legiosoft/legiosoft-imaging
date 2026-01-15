@@ -12,6 +12,8 @@ This document explains how to build Google `libwebp` library for all supported p
 | macOS x64 (Intel) | CMake from source | ✅ Supported (see below) |
 | macOS ARM64 (M1/M2/M3) | CMake from source | ✅ Supported (see below) |
 
+**Note:** The library loading code (`NativeLibraryLoader.cs`) already includes full support for all platforms including macOS. The `.csproj` file includes entries for `osx-x64` and `osx-arm64` to ensure the native libraries are properly packaged and loaded at runtime.
+
 ---
 
 ## Building on Windows (x64)
