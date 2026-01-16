@@ -4,28 +4,40 @@ using LegioSoft.Imaging.Core.Interfaces;
 using LegioSoft.Imaging.Skia.Core;
 using LegioSoft.Imaging.Skia.Operations;
 
+// ReSharper disable RedundantArgumentDefaultValue
+
 namespace LegioSoft.Imaging.Skia.Processors;
 
-public class LegioImageSkiaProcessor : ILegioImageResizer, ILegioImageCropper, ILegioImageTransformer, ILegioImageFilter
+internal class LegioImageSkiaProcessor : ILegioImageResizer, ILegioImageCropper, ILegioImageTransformer,
+    ILegioImageFilter
 {
-    public byte[] Resize(byte[] imageData, int width, int height, LegioScaleMode mode, LegioResizeQuality quality = LegioResizeQuality.High)
+    public byte[] Resize(byte[] imageData, int width, int height, LegioScaleMode mode,
+        LegioResizeQuality quality = LegioResizeQuality.High)
     {
         return ImageResizer.Resize(imageData, width, height, mode, quality);
     }
 
-    public Stream Resize(Stream inputStream, int width, int height, LegioScaleMode mode, LegioResizeQuality quality = LegioResizeQuality.High, Stream? outputStream = null)
+    public Stream Resize(Stream inputStream, int width, int height, LegioScaleMode mode,
+        LegioResizeQuality quality = LegioResizeQuality.High, Stream? outputStream = null)
     {
-        var imageData = ReadStream(inputStream);
-        var result = Resize(imageData, width, height, mode, quality);
-        
+        var format = FormatDetector.DetectFormat(inputStream);
+        if (inputStream.CanSeek)
+            inputStream.Position = 0;
+
+        using var bitmap = ImageLoader.LoadBitmap(inputStream);
+        var (targetWidth, targetHeight) =
+            ImageResizer.CalculateTargetDimensions(bitmap.Width, bitmap.Height, width, height, mode);
+        using var resized = ImageResizer.ResizeBitmap(bitmap, targetWidth, targetHeight, quality);
+
         if (outputStream != null)
         {
-            outputStream.Write(result, 0, result.Length);
-            outputStream.Position = 0;
+            ImageSaver.SaveBitmap(resized, outputStream, format, 90);
+            if (outputStream.CanSeek)
+                outputStream.Position = 0;
             return outputStream;
         }
-        
-        return new MemoryStream(result);
+
+        return new MemoryStream(ImageSaver.SaveBitmap(resized, format, 90));
     }
 
     public byte[] Crop(byte[] imageData, int x, int y, int width, int height)
@@ -35,161 +47,189 @@ public class LegioImageSkiaProcessor : ILegioImageResizer, ILegioImageCropper, I
 
     public Stream Crop(Stream inputStream, int x, int y, int width, int height, Stream? outputStream = null)
     {
-        var imageData = ReadStream(inputStream);
-        var result = Crop(imageData, x, y, width, height);
-        
+        var format = FormatDetector.DetectFormat(inputStream);
+        if (inputStream.CanSeek)
+            inputStream.Position = 0;
+
+        using var bitmap = ImageLoader.LoadBitmap(inputStream);
+        using var cropped = ImageCropper.CropBitmap(bitmap, x, y, width, height);
+
         if (outputStream != null)
         {
-            outputStream.Write(result, 0, result.Length);
-            outputStream.Position = 0;
+            ImageSaver.SaveBitmap(cropped, outputStream, format, 90);
+            if (outputStream.CanSeek)
+                outputStream.Position = 0;
             return outputStream;
         }
-        
-        return new MemoryStream(result);
+
+        return new MemoryStream(ImageSaver.SaveBitmap(cropped, format, 90));
     }
 
     public byte[] Rotate(byte[] imageData, int degrees)
     {
-        var bitmap = ImageLoader.LoadBitmap(imageData);
-        var rotated = ImageTransformer.Rotate(bitmap, degrees);
+        using var bitmap = ImageLoader.LoadBitmap(imageData);
+        using var rotated = ImageTransformer.Rotate(bitmap, degrees);
         var format = FormatDetector.DetectFormat(imageData);
-        return ImageSaver.SaveBitmap(rotated, format, 75);
+        return ImageSaver.SaveBitmap(rotated, format, 90);
     }
 
     public Stream Rotate(Stream inputStream, int degrees, Stream? outputStream = null)
     {
-        var imageData = ReadStream(inputStream);
-        var result = Rotate(imageData, degrees);
-        
+        var format = FormatDetector.DetectFormat(inputStream);
+        if (inputStream.CanSeek)
+            inputStream.Position = 0;
+
+        using var bitmap = ImageLoader.LoadBitmap(inputStream);
+        using var rotated = ImageTransformer.Rotate(bitmap, degrees);
+
         if (outputStream != null)
         {
-            outputStream.Write(result, 0, result.Length);
-            outputStream.Position = 0;
+            ImageSaver.SaveBitmap(rotated, outputStream, format, 90);
+            if (outputStream.CanSeek)
+                outputStream.Position = 0;
             return outputStream;
         }
-        
-        return new MemoryStream(result);
+
+        return new MemoryStream(ImageSaver.SaveBitmap(rotated, format, 90));
     }
 
     public byte[] Flip(byte[] imageData, bool horizontal, bool vertical)
     {
-        var bitmap = ImageLoader.LoadBitmap(imageData);
-        var flipped = ImageTransformer.Flip(bitmap, horizontal, vertical);
+        using var bitmap = ImageLoader.LoadBitmap(imageData);
+        using var flipped = ImageTransformer.Flip(bitmap, horizontal, vertical);
         var format = FormatDetector.DetectFormat(imageData);
-        return ImageSaver.SaveBitmap(flipped, format, 75);
+        return ImageSaver.SaveBitmap(flipped, format, 90);
     }
 
     public Stream Flip(Stream inputStream, bool horizontal, bool vertical, Stream? outputStream = null)
     {
-        var imageData = ReadStream(inputStream);
-        var result = Flip(imageData, horizontal, vertical);
-        
+        var format = FormatDetector.DetectFormat(inputStream);
+        if (inputStream.CanSeek)
+            inputStream.Position = 0;
+
+        using var bitmap = ImageLoader.LoadBitmap(inputStream);
+        using var flipped = ImageTransformer.Flip(bitmap, horizontal, vertical);
+
         if (outputStream != null)
         {
-            outputStream.Write(result, 0, result.Length);
-            outputStream.Position = 0;
+            ImageSaver.SaveBitmap(flipped, outputStream, format, 90);
+            if (outputStream.CanSeek)
+                outputStream.Position = 0;
             return outputStream;
         }
-        
-        return new MemoryStream(result);
+
+        return new MemoryStream(ImageSaver.SaveBitmap(flipped, format, 90));
     }
 
     public byte[] ApplyGrayscale(byte[] imageData)
     {
-        var bitmap = ImageLoader.LoadBitmap(imageData);
-        var gray = ImageFilters.ApplyGrayscale(bitmap);
+        using var bitmap = ImageLoader.LoadBitmap(imageData);
+        using var gray = ImageFilters.ApplyGrayscale(bitmap);
         var format = FormatDetector.DetectFormat(imageData);
-        return ImageSaver.SaveBitmap(gray, format, 75);
+        return ImageSaver.SaveBitmap(gray, format, 90);
     }
 
     public Stream ApplyGrayscale(Stream inputStream, Stream? outputStream = null)
     {
-        var imageData = ReadStream(inputStream);
-        var result = ApplyGrayscale(imageData);
-        
+        var format = FormatDetector.DetectFormat(inputStream);
+        if (inputStream.CanSeek)
+            inputStream.Position = 0;
+
+        using var bitmap = ImageLoader.LoadBitmap(inputStream);
+        using var gray = ImageFilters.ApplyGrayscale(bitmap);
+
         if (outputStream != null)
         {
-            outputStream.Write(result, 0, result.Length);
-            outputStream.Position = 0;
+            ImageSaver.SaveBitmap(gray, outputStream, format, 90);
+            if (outputStream.CanSeek)
+                outputStream.Position = 0;
             return outputStream;
         }
-        
-        return new MemoryStream(result);
+
+        return new MemoryStream(ImageSaver.SaveBitmap(gray, format, 90));
     }
 
     public byte[] ApplySepia(byte[] imageData)
     {
-        var bitmap = ImageLoader.LoadBitmap(imageData);
-        var sepia = ImageFilters.ApplySepia(bitmap);
+        using var bitmap = ImageLoader.LoadBitmap(imageData);
+        using var sepia = ImageFilters.ApplySepia(bitmap);
         var format = FormatDetector.DetectFormat(imageData);
-        return ImageSaver.SaveBitmap(sepia, format, 75);
+        return ImageSaver.SaveBitmap(sepia, format, 90);
     }
 
     public Stream ApplySepia(Stream inputStream, Stream? outputStream = null)
     {
-        var imageData = ReadStream(inputStream);
-        var result = ApplySepia(imageData);
-        
+        var format = FormatDetector.DetectFormat(inputStream);
+        if (inputStream.CanSeek)
+            inputStream.Position = 0;
+
+        using var bitmap = ImageLoader.LoadBitmap(inputStream);
+        using var sepia = ImageFilters.ApplySepia(bitmap);
+
         if (outputStream != null)
         {
-            outputStream.Write(result, 0, result.Length);
-            outputStream.Position = 0;
+            ImageSaver.SaveBitmap(sepia, outputStream, format, 90);
+            if (outputStream.CanSeek)
+                outputStream.Position = 0;
             return outputStream;
         }
-        
-        return new MemoryStream(result);
+
+        return new MemoryStream(ImageSaver.SaveBitmap(sepia, format, 90));
     }
 
     public byte[] ApplyBlur(byte[] imageData, int radius = 3)
     {
-        var bitmap = ImageLoader.LoadBitmap(imageData);
-        var blurred = ImageFilters.ApplyBlur(bitmap, radius);
+        using var bitmap = ImageLoader.LoadBitmap(imageData);
+        using var blurred = ImageFilters.ApplyBlur(bitmap, radius);
         var format = FormatDetector.DetectFormat(imageData);
-        return ImageSaver.SaveBitmap(blurred, format, 75);
+        return ImageSaver.SaveBitmap(blurred, format, 90);
     }
 
     public Stream ApplyBlur(Stream inputStream, int radius = 3, Stream? outputStream = null)
     {
-        var imageData = ReadStream(inputStream);
-        var result = ApplyBlur(imageData, radius);
-        
+        var format = FormatDetector.DetectFormat(inputStream);
+        if (inputStream.CanSeek)
+            inputStream.Position = 0;
+
+        using var bitmap = ImageLoader.LoadBitmap(inputStream);
+        using var blurred = ImageFilters.ApplyBlur(bitmap, radius);
+
         if (outputStream != null)
         {
-            outputStream.Write(result, 0, result.Length);
-            outputStream.Position = 0;
+            ImageSaver.SaveBitmap(blurred, outputStream, format, 90);
+            if (outputStream.CanSeek)
+                outputStream.Position = 0;
             return outputStream;
         }
-        
-        return new MemoryStream(result);
+
+        return new MemoryStream(ImageSaver.SaveBitmap(blurred, format, 90));
     }
 
     public byte[] ApplySharpen(byte[] imageData, int amount = 50)
     {
-        var bitmap = ImageLoader.LoadBitmap(imageData);
-        var sharpened = ImageFilters.ApplySharpen(bitmap, amount);
+        using var bitmap = ImageLoader.LoadBitmap(imageData);
+        using var sharpened = ImageFilters.ApplySharpen(bitmap, amount);
         var format = FormatDetector.DetectFormat(imageData);
-        return ImageSaver.SaveBitmap(sharpened, format, 75);
+        return ImageSaver.SaveBitmap(sharpened, format, 90);
     }
 
     public Stream ApplySharpen(Stream inputStream, int amount = 50, Stream? outputStream = null)
     {
-        var imageData = ReadStream(inputStream);
-        var result = ApplySharpen(imageData, amount);
-        
+        var format = FormatDetector.DetectFormat(inputStream);
+        if (inputStream.CanSeek)
+            inputStream.Position = 0;
+
+        using var bitmap = ImageLoader.LoadBitmap(inputStream);
+        using var sharpened = ImageFilters.ApplySharpen(bitmap, amount);
+
         if (outputStream != null)
         {
-            outputStream.Write(result, 0, result.Length);
-            outputStream.Position = 0;
+            ImageSaver.SaveBitmap(sharpened, outputStream, format, 90);
+            if (outputStream.CanSeek)
+                outputStream.Position = 0;
             return outputStream;
         }
-        
-        return new MemoryStream(result);
-    }
 
-    private static byte[] ReadStream(Stream stream)
-    {
-        using var ms = new MemoryStream();
-        stream.CopyTo(ms);
-        return ms.ToArray();
+        return new MemoryStream(ImageSaver.SaveBitmap(sharpened, format, 90));
     }
 }

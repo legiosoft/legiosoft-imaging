@@ -23,7 +23,7 @@ public class ImageMetadataReaderTests
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(color == default ? SKColors.Blue : color);
         canvas.Flush();
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
@@ -35,7 +35,7 @@ public class ImageMetadataReaderTests
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Red);
         canvas.Flush();
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Jpeg, 85);
         return data.ToArray();
@@ -47,7 +47,7 @@ public class ImageMetadataReaderTests
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Green);
         canvas.Flush();
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Webp, 80);
         return data.ToArray();
@@ -59,7 +59,7 @@ public class ImageMetadataReaderTests
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(new SKColor(255, 0, 0, 128));
         canvas.Flush();
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
@@ -71,9 +71,9 @@ public class ImageMetadataReaderTests
     public void GetInfo_FromByteArray_Png_ReturnsCorrectMetadata()
     {
         var imageData = CreateTestPng(150, 200);
-        
+
         var info = ImageMetadataReader.GetInfo(imageData);
-        
+
         Assert.NotNull(info);
         Assert.Equal(150, info.Width);
         Assert.Equal(200, info.Height);
@@ -85,9 +85,9 @@ public class ImageMetadataReaderTests
     public void GetInfo_FromByteArray_Jpeg_ReturnsCorrectMetadata()
     {
         var imageData = CreateTestJpeg(100, 150);
-        
+
         var info = ImageMetadataReader.GetInfo(imageData);
-        
+
         Assert.NotNull(info);
         Assert.Equal(100, info.Width);
         Assert.Equal(150, info.Height);
@@ -99,9 +99,9 @@ public class ImageMetadataReaderTests
     public void GetInfo_FromByteArray_WebP_ReturnsCorrectMetadata()
     {
         var imageData = CreateTestWebP(120, 180);
-        
+
         var info = ImageMetadataReader.GetInfo(imageData);
-        
+
         Assert.NotNull(info);
         Assert.Equal(120, info.Width);
         Assert.Equal(180, info.Height);
@@ -113,9 +113,9 @@ public class ImageMetadataReaderTests
     public void GetInfo_FromByteArray_WithAlpha_DetectsAlpha()
     {
         var imageData = CreateTestPngWithAlpha(100, 100);
-        
+
         var info = ImageMetadataReader.GetInfo(imageData);
-        
+
         Assert.NotNull(info);
         Assert.True(info.HasAlpha);
     }
@@ -124,9 +124,9 @@ public class ImageMetadataReaderTests
     public void GetInfo_FromByteArray_WithoutAlpha_NoAlphaFlag()
     {
         var imageData = CreateTestPng(100, 100);
-        
+
         var info = ImageMetadataReader.GetInfo(imageData);
-        
+
         Assert.NotNull(info);
     }
 
@@ -141,7 +141,7 @@ public class ImageMetadataReaderTests
     {
         using var stream = new MemoryStream();
         stream.Dispose();
-        
+
         Assert.Throws<ArgumentException>(() => ImageMetadataReader.GetInfo((Stream)stream));
     }
 
@@ -150,9 +150,9 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(50, 50);
         using var stream = new MemoryStream(imageData);
-        
+
         var info = ImageMetadataReader.GetInfo((Stream)stream);
-        
+
         Assert.NotNull(info);
     }
 
@@ -172,7 +172,7 @@ public class ImageMetadataReaderTests
     public void GetInfo_FromByteArray_InvalidData_ThrowsInvalidOperationException()
     {
         byte[] invalidData = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-        
+
         Assert.Throws<InvalidOperationException>(() => ImageMetadataReader.GetInfo((byte[])invalidData));
     }
 
@@ -181,9 +181,9 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(75, 100);
         using var stream = new MemoryStream(imageData);
-        
+
         var info = ImageMetadataReader.GetInfo((Stream)stream);
-        
+
         Assert.NotNull(info);
         Assert.Equal(75, info.Width);
         Assert.Equal(100, info.Height);
@@ -196,9 +196,9 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(75, 100);
         var nonSeekableStream = new NonSeekableMemoryStream(imageData);
-        
+
         var info = ImageMetadataReader.GetInfo((Stream)nonSeekableStream);
-        
+
         Assert.NotNull(info);
         Assert.Equal(75, info.Width);
         Assert.Equal(100, info.Height);
@@ -213,11 +213,11 @@ public class ImageMetadataReaderTests
         Directory.CreateDirectory(tempDir);
         var imagePath = Path.Combine(tempDir, "test.png");
         File.WriteAllBytes(imagePath, CreateTestPng(100, 100));
-        
+
         try
         {
             var info = ImageMetadataReader.GetInfo(imagePath);
-            
+
             Assert.NotNull(info);
             Assert.Equal(100, info.Width);
             Assert.Equal(100, info.Height);
@@ -236,7 +236,7 @@ public class ImageMetadataReaderTests
         Directory.CreateDirectory(tempDir);
         var imagePath = Path.Combine(tempDir, "test.bmp");
         File.WriteAllBytes(imagePath, new byte[] { 0x42, 0x4D });
-        
+
         try
         {
             Assert.Throws<ArgumentException>(() => ImageMetadataReader.GetInfo(imagePath));
@@ -252,7 +252,7 @@ public class ImageMetadataReaderTests
     public void GetInfo_FromFilePath_NotExists_ThrowsFileNotFoundException()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "nonexistent.png");
-        
+
         Assert.Throws<FileNotFoundException>(() => ImageMetadataReader.GetInfo(path));
     }
 
@@ -261,7 +261,7 @@ public class ImageMetadataReaderTests
     {
         var imagePath = Path.Combine(AppContext.BaseDirectory, "test.png");
         File.WriteAllBytes(imagePath, CreateTestPng(100, 100));
-        
+
         try
         {
             Assert.Throws<UnauthorizedAccessException>(() => ImageMetadataReader.GetInfo(imagePath));
@@ -278,11 +278,11 @@ public class ImageMetadataReaderTests
         var pngData = CreateTestPng(100, 100);
         var jpegData = CreateTestJpeg(100, 100);
         var webpData = CreateTestWebP(100, 100);
-        
+
         var pngInfo = ImageMetadataReader.GetInfo(pngData);
         var jpegInfo = ImageMetadataReader.GetInfo(jpegData);
         var webPInfo = ImageMetadataReader.GetInfo(webpData);
-        
+
         Assert.Equal(LegioImageFormat.Png, pngInfo.Format);
         Assert.Equal(LegioImageFormat.Jpeg, jpegInfo.Format);
         Assert.Equal(LegioImageFormat.WebP, webPInfo.Format);
@@ -297,7 +297,7 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockCodec = new MockCodec(0, 100);
-        
+
         Assert.Throws<InvalidOperationException>(() => mockCodec.GetInfo(imageData));
     }
 
@@ -306,7 +306,7 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockCodec = new MockCodec(100, 0);
-        
+
         Assert.Throws<InvalidOperationException>(() => mockCodec.GetInfo(imageData));
     }
 
@@ -315,7 +315,7 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockCodec = new MockCodec(-100, 100);
-        
+
         Assert.Throws<InvalidOperationException>(() => mockCodec.GetInfo(imageData));
     }
 
@@ -324,7 +324,7 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockCodec = new MockCodec(20000, 100);
-        
+
         Assert.Throws<InvalidOperationException>(() => mockCodec.GetInfo(imageData));
     }
 
@@ -333,7 +333,7 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockCodec = new MockCodec(100, 20000);
-        
+
         Assert.Throws<InvalidOperationException>(() => mockCodec.GetInfo(imageData));
     }
 
@@ -342,9 +342,9 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(16384, 16384);
         var mockCodec = new MockCodec(16384, 16384);
-        
+
         var info = mockCodec.GetInfo(imageData);
-        
+
         Assert.NotNull(info);
         Assert.Equal(16384, info.Width);
         Assert.Equal(16384, info.Height);
@@ -355,7 +355,7 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockCodec = new MockCodec(100, 100, SKEncodedImageFormat.Bmp);
-        
+
         Assert.Throws<InvalidOperationException>(() => mockCodec.GetInfo(imageData));
     }
 
@@ -366,7 +366,7 @@ public class ImageMetadataReaderTests
         Directory.CreateDirectory(tempDir);
         var maliciousPath = Path.Combine(tempDir, "..", "..", "test.png");
         File.WriteAllBytes(Path.Combine(AppContext.BaseDirectory, "test.png"), CreateTestPng(100, 100));
-        
+
         try
         {
             Assert.ThrowsAny<Exception>(() => ImageMetadataReader.GetInfo(maliciousPath));
@@ -385,11 +385,11 @@ public class ImageMetadataReaderTests
         Directory.CreateDirectory(tempDir);
         var imagePath = Path.Combine(tempDir, "test.PNG");
         File.WriteAllBytes(imagePath, CreateTestPng(100, 100));
-        
+
         try
         {
             var info = ImageMetadataReader.GetInfo(imagePath);
-            
+
             Assert.NotNull(info);
         }
         finally
@@ -404,7 +404,7 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockCodec = new MockLargeImageCodec(20000, 20000);
-        
+
         Assert.Throws<OutOfMemoryException>(() => mockCodec.GetInfo(imageData));
     }
 
@@ -417,19 +417,19 @@ public class ImageMetadataReaderTests
     {
         var largeImageData = CreateTestPng(5000, 5000);
         var initialMemory = GC.GetTotalMemory(true);
-        
+
         for (var i = 0; i < 10; i++)
         {
             var info = ImageMetadataReader.GetInfo(largeImageData);
         }
-        
+
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         var finalMemory = GC.GetTotalMemory(true);
-        
+
         var memoryIncrease = finalMemory - initialMemory;
-        Assert.True(memoryIncrease < 50 * 1024 * 1024, 
+        Assert.True(memoryIncrease < 50 * 1024 * 1024,
             "Metadata reading should not consume excessive memory");
     }
 
@@ -440,25 +440,25 @@ public class ImageMetadataReaderTests
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        
+
         var initialMemory = GC.GetTotalMemory(true);
         var infos = new List<LegioImageInfo>();
-        
+
         for (var i = 0; i < 100; i++)
         {
             infos.Add(ImageMetadataReader.GetInfo(imageData));
         }
-        
+
         var memoryAfterReads = GC.GetTotalMemory(false);
         var memoryIncrease = memoryAfterReads - initialMemory;
-        
+
         infos.Clear();
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         var finalMemory = GC.GetTotalMemory(true);
-        
-        Assert.True(memoryIncrease < 10 * 1024 * 1024, 
+
+        Assert.True(memoryIncrease < 10 * 1024 * 1024,
             "Multiple metadata reads should not accumulate significant memory");
     }
 
@@ -467,9 +467,9 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         using var stream = new MemoryStream(imageData);
-        
+
         var info = ImageMetadataReader.GetInfo((Stream)stream);
-        
+
         Assert.NotNull(info);
     }
 
@@ -477,17 +477,17 @@ public class ImageMetadataReaderTests
     public void GetInfo_DisposeOfInternalResources_NoLeaks()
     {
         var imageData = CreateTestPng(1000, 1000);
-        
+
         for (var i = 0; i < 50; i++)
         {
             using var stream = new MemoryStream(imageData);
             var info = ImageMetadataReader.GetInfo(stream);
         }
-        
+
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        
+
         Assert.True(true, "No exception thrown, resources properly disposed");
     }
 
@@ -500,16 +500,16 @@ public class ImageMetadataReaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var stopwatch = Stopwatch.StartNew();
-        
+
         for (var i = 0; i < 1000; i++)
         {
             var info = ImageMetadataReader.GetInfo(imageData);
         }
-        
+
         stopwatch.Stop();
-        
+
         _output.WriteLine($"1000 small image metadata reads in {stopwatch.ElapsedMilliseconds}ms");
-        Assert.True(stopwatch.ElapsedMilliseconds < 5000, 
+        Assert.True(stopwatch.ElapsedMilliseconds < 5000,
             "Reading metadata from small images should be very fast");
     }
 
@@ -518,13 +518,13 @@ public class ImageMetadataReaderTests
     {
         var largeImageData = CreateTestPng(4000, 4000);
         var stopwatch = Stopwatch.StartNew();
-        
+
         var info = ImageMetadataReader.GetInfo(largeImageData);
-        
+
         stopwatch.Stop();
-        
+
         _output.WriteLine($"Large image metadata read in {stopwatch.ElapsedMilliseconds}ms");
-        Assert.True(stopwatch.ElapsedMilliseconds < 1000, 
+        Assert.True(stopwatch.ElapsedMilliseconds < 1000,
             "Reading metadata from large images should be fast (header only)");
     }
 
@@ -532,25 +532,28 @@ public class ImageMetadataReaderTests
     public void GetInfo_FromByteArrayVsStream_PerformanceComparison()
     {
         var imageData = CreateTestPng(1000, 1000);
-        
+
         var streamStopwatch = Stopwatch.StartNew();
         for (var i = 0; i < 100; i++)
         {
             using var stream = new MemoryStream(imageData);
             var info = ImageMetadataReader.GetInfo((Stream)stream);
         }
+
         streamStopwatch.Stop();
-        
+
         var arrayStopwatch = Stopwatch.StartNew();
         for (var i = 0; i < 100; i++)
         {
             var info = ImageMetadataReader.GetInfo((byte[])imageData);
         }
+
         arrayStopwatch.Stop();
-        
-        _output.WriteLine($"Stream: {streamStopwatch.ElapsedMilliseconds}ms, Array: {arrayStopwatch.ElapsedMilliseconds}ms");
+
+        _output.WriteLine(
+            $"Stream: {streamStopwatch.ElapsedMilliseconds}ms, Array: {arrayStopwatch.ElapsedMilliseconds}ms");
         var streamTime = streamStopwatch.ElapsedMilliseconds == 0 ? 1 : streamStopwatch.ElapsedMilliseconds;
-        Assert.True(arrayStopwatch.ElapsedMilliseconds < streamTime * 2, 
+        Assert.True(arrayStopwatch.ElapsedMilliseconds < streamTime * 2,
             "ByteArray method should not be significantly slower than stream");
     }
 
@@ -558,23 +561,26 @@ public class ImageMetadataReaderTests
     public void GetInfo_FasterThanLoadingFullImage_PerformanceComparison()
     {
         var imageData = CreateTestPng(1000, 1000);
-        
+
         var infoStopwatch = Stopwatch.StartNew();
         for (var i = 0; i < 50; i++)
         {
             var info = ImageMetadataReader.GetInfo(imageData);
         }
+
         infoStopwatch.Stop();
-        
+
         var loadStopwatch = Stopwatch.StartNew();
         for (var i = 0; i < 50; i++)
         {
             using var bitmap = ImageLoader.LoadBitmap(imageData);
         }
+
         loadStopwatch.Stop();
-        
-        _output.WriteLine($"GetInfo: {infoStopwatch.ElapsedMilliseconds}ms, Load: {loadStopwatch.ElapsedMilliseconds}ms");
-        Assert.True(infoStopwatch.ElapsedMilliseconds < loadStopwatch.ElapsedMilliseconds, 
+
+        _output.WriteLine(
+            $"GetInfo: {infoStopwatch.ElapsedMilliseconds}ms, Load: {loadStopwatch.ElapsedMilliseconds}ms");
+        Assert.True(infoStopwatch.ElapsedMilliseconds < loadStopwatch.ElapsedMilliseconds,
             "GetInfo should be faster than loading full image");
     }
 
@@ -584,7 +590,9 @@ public class ImageMetadataReaderTests
 
     private class NonSeekableMemoryStream : MemoryStream
     {
-        public NonSeekableMemoryStream(byte[] buffer) : base(buffer) { }
+        public NonSeekableMemoryStream(byte[] buffer) : base(buffer)
+        {
+        }
 
         public override bool CanSeek => false;
 
@@ -617,19 +625,20 @@ public class ImageMetadataReaderTests
         {
             using var ms = new MemoryStream(imageData);
             using var codec = SKCodec.Create(ms);
-            
+
             if (codec == null)
                 throw new InvalidOperationException("Cannot create codec");
 
             var info = new SKImageInfo(_width, _height, SKColorType.Bgra8888, SKAlphaType.Opaque);
-            
+
             if (_width <= 0 || _height <= 0)
                 throw new InvalidOperationException($"Invalid image dimensions: {_width}x{_height}");
 
             if (_width > 16384 || _height > 16384)
                 throw new InvalidOperationException($"Image dimensions {_width}x{_height} exceed maximum");
 
-            if (_format != SKEncodedImageFormat.Png && _format != SKEncodedImageFormat.Jpeg && _format != SKEncodedImageFormat.Webp)
+            if (_format != SKEncodedImageFormat.Png && _format != SKEncodedImageFormat.Jpeg &&
+                _format != SKEncodedImageFormat.Webp)
                 throw new InvalidOperationException($"Unsupported format: {_format}");
 
             var format = _format switch
@@ -666,7 +675,7 @@ public class ImageMetadataReaderTests
         {
             if (_width > 16384 || _height > 16384)
                 throw new OutOfMemoryException("Image too large");
-            
+
             return new LegioImageInfo
             {
                 Width = _width,

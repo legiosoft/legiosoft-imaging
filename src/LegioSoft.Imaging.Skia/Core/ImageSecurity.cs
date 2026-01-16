@@ -5,7 +5,11 @@ namespace LegioSoft.Imaging.Skia.Core;
 
 internal static class ImageSecurity
 {
-    internal static void ValidateOpenedFile(FileStream fileStream, string originalPath, string[] approvedDirectories, HashSet<string> allowedExtensions)
+    internal static void ValidateOpenedFile(
+        FileStream fileStream,
+        string originalPath,
+        string[] approvedDirectories,
+        HashSet<string> allowedExtensions)
     {
         string? actualPath = null;
 
@@ -59,8 +63,8 @@ internal static class ImageSecurity
             {
                 var fullDir = Path.GetFullPath(dir);
                 var searchPath = fullDir + Path.DirectorySeparatorChar;
-                var comparison = OperatingSystem.IsWindows() 
-                    ? StringComparison.OrdinalIgnoreCase 
+                var comparison = OperatingSystem.IsWindows()
+                    ? StringComparison.OrdinalIgnoreCase
                     : StringComparison.Ordinal;
 
                 return actualPath.StartsWith(searchPath, comparison) ||
@@ -99,8 +103,8 @@ internal static class ImageSecurity
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var rootPath = Path.GetPathRoot(fullPath);
 
-        while (!string.IsNullOrEmpty(currentDir) && 
-               currentDir != rootPath && 
+        while (!string.IsNullOrEmpty(currentDir) &&
+               currentDir != rootPath &&
                !visited.Contains(currentDir))
         {
             visited.Add(currentDir);
@@ -108,7 +112,7 @@ internal static class ImageSecurity
             try
             {
                 var dirInfo = new DirectoryInfo(currentDir);
-                
+
                 if (OperatingSystem.IsWindows())
                 {
                     var attributes = dirInfo.Attributes;

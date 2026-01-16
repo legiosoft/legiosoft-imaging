@@ -86,7 +86,7 @@ internal static class ImageLoader
 
         long originalPosition = 0;
         var canSeek = false;
-        
+
         if (stream.CanSeek)
         {
             try
@@ -111,7 +111,7 @@ internal static class ImageLoader
             ValidateImageDimensions(codec.Info);
 
             var bitmap = new SKBitmap(codec.Info);
-            
+
             if (bitmap.Handle == IntPtr.Zero)
             {
                 throw new InvalidOperationException(
@@ -121,7 +121,7 @@ internal static class ImageLoader
             try
             {
                 var result = codec.GetPixels(codec.Info, bitmap.GetPixels());
-                
+
                 if (result != SKCodecResult.Success)
                 {
                     throw new InvalidOperationException(
@@ -174,7 +174,7 @@ internal static class ImageLoader
         if (!AllowedExtensions.Contains(extension))
             throw new ArgumentException(
                 $"File format '{extension}' is not supported. " +
-                $"Allowed formats: {string.Join(", ", AllowedExtensions)}", 
+                $"Allowed formats: {string.Join(", ", AllowedExtensions)}",
                 nameof(filePath));
 
         FileStream fileStream;

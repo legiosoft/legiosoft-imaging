@@ -49,19 +49,20 @@ internal static class ImageCropper
         if (x + width > source.Width || y + height > source.Height)
             throw new ArgumentException("Crop area extends beyond image bounds");
 
-        var croppedBitmap = new SKBitmap(width, height, source.ColorType, source.AlphaType);
-
-        if (croppedBitmap.Handle == IntPtr.Zero)
+        // Create destination bitmap
+        var cropInfo = new SKImageInfo(width, height, source.ColorType, source.AlphaType);
+        var finalBitmap = new SKBitmap(cropInfo);
+        if (finalBitmap.Handle == IntPtr.Zero)
             throw new InvalidOperationException("Failed to allocate bitmap memory.");
 
-        using var canvas = new SKCanvas(croppedBitmap);
+        // Draw source bitmap with negative offset to position crop region at (0,0)
+        // This is the most reliable approach - creates independent pixels via canvas
+        using var canvas = new SKCanvas(finalBitmap);
+        using var paint = new SKPaint();
 
-        var sourceRect = new SKRect(x, y, x + width, y + height);
-        var destRect = new SKRect(0, 0, width, height);
-
-        canvas.DrawBitmap(source, sourceRect, destRect, null);
+        canvas.DrawBitmap(source, -x, -y, paint);
         canvas.Flush();
 
-        return croppedBitmap;
+        return finalBitmap;
     }
 }

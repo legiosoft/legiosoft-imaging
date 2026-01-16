@@ -22,7 +22,7 @@ public class ImageLoaderTests
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(color == default ? SKColors.Blue : color);
         canvas.Flush();
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Png, 100);
         return data.ToArray();
@@ -34,7 +34,7 @@ public class ImageLoaderTests
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Red);
         canvas.Flush();
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Jpeg, 85);
         return data.ToArray();
@@ -46,7 +46,7 @@ public class ImageLoaderTests
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.Green);
         canvas.Flush();
-        
+
         using var image = SKImage.FromBitmap(bitmap);
         using var data = image.Encode(SKEncodedImageFormat.Webp, 80);
         return data.ToArray();
@@ -58,9 +58,9 @@ public class ImageLoaderTests
     public void LoadBitmap_FromByteArray_Png_ValidatesAndLoads()
     {
         byte[] imageData = CreateTestPng(100, 100);
-        
+
         using var result = ImageLoader.LoadBitmap(imageData);
-        
+
         Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
@@ -70,9 +70,9 @@ public class ImageLoaderTests
     public void LoadBitmap_FromByteArray_Jpeg_ValidatesAndLoads()
     {
         byte[] imageData = CreateTestJpeg(100, 100);
-        
+
         using var result = ImageLoader.LoadBitmap(imageData);
-        
+
         Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
@@ -82,9 +82,9 @@ public class ImageLoaderTests
     public void LoadBitmap_FromByteArray_WebP_ValidatesAndLoads()
     {
         byte[] imageData = CreateTestWebP(100, 100);
-        
+
         using var result = ImageLoader.LoadBitmap(imageData);
-        
+
         Assert.NotNull(result);
         Assert.Equal(100, result.Width);
         Assert.Equal(100, result.Height);
@@ -106,7 +106,7 @@ public class ImageLoaderTests
     public void LoadBitmap_FromByteArray_InvalidData_ThrowsInvalidOperationException()
     {
         byte[] invalidData = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-        
+
         Assert.Throws<InvalidOperationException>(() => ImageLoader.LoadBitmap(invalidData));
     }
 
@@ -114,9 +114,9 @@ public class ImageLoaderTests
     public void LoadBitmap_FromByteArray_ValidatesAndLoads()
     {
         var imageData = CreateTestPng(50, 50);
-        
+
         using var result = ImageLoader.LoadBitmap(imageData);
-        
+
         Assert.NotNull(result);
         Assert.Equal(50, result.Width);
         Assert.Equal(50, result.Height);
@@ -129,11 +129,11 @@ public class ImageLoaderTests
         Directory.CreateDirectory(tempDir);
         var imagePath = Path.Combine(tempDir, "test.png");
         File.WriteAllBytes(imagePath, CreateTestPng(100, 100));
-        
+
         try
         {
             using var result = ImageLoader.LoadBitmap(imagePath);
-            
+
             Assert.NotNull(result);
             Assert.Equal(100, result.Width);
         }
@@ -151,7 +151,7 @@ public class ImageLoaderTests
         Directory.CreateDirectory(tempDir);
         var imagePath = Path.Combine(tempDir, "test.bmp");
         File.WriteAllBytes(imagePath, new byte[] { 0x42, 0x4D });
-        
+
         try
         {
             Assert.Throws<ArgumentException>(() => ImageLoader.LoadBitmap(imagePath));
@@ -167,7 +167,7 @@ public class ImageLoaderTests
     public void LoadBitmap_FromFilePath_NotExists_ThrowsFileNotFoundException()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "nonexistent.png");
-        
+
         Assert.Throws<FileNotFoundException>(() => ImageLoader.LoadBitmap(path));
     }
 
@@ -176,7 +176,7 @@ public class ImageLoaderTests
     {
         var imagePath = Path.Combine(AppContext.BaseDirectory, "test.png");
         File.WriteAllBytes(imagePath, CreateTestPng(100, 100));
-        
+
         try
         {
             Assert.Throws<UnauthorizedAccessException>(() => ImageLoader.LoadBitmap(imagePath));
@@ -196,7 +196,7 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockBitmap = new MockBitmap(0, 100, imageData);
-        
+
         Assert.ThrowsAny<Exception>(() => mockBitmap.Load());
     }
 
@@ -205,7 +205,7 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockBitmap = new MockBitmap(100, 0, imageData);
-        
+
         Assert.ThrowsAny<Exception>(() => mockBitmap.Load());
     }
 
@@ -214,7 +214,7 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockBitmap = new MockBitmap(-100, 100, imageData);
-        
+
         Assert.ThrowsAny<Exception>(() => mockBitmap.Load());
     }
 
@@ -223,7 +223,7 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockBitmap = new MockBitmap(20000, 100, imageData);
-        
+
         Assert.ThrowsAny<Exception>(() => mockBitmap.Load());
     }
 
@@ -232,7 +232,7 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockBitmap = new MockBitmap(100, 20000, imageData);
-        
+
         Assert.ThrowsAny<Exception>(() => mockBitmap.Load());
     }
 
@@ -241,9 +241,9 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(16384, 16384);
         var mockBitmap = new MockBitmap(16384, 16384, imageData);
-        
+
         var result = mockBitmap.Load();
-        
+
         Assert.NotNull(result);
         result.Dispose();
     }
@@ -253,7 +253,7 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockBitmap = new MockBitmap(1000000, 1000000, imageData);
-        
+
         Assert.ThrowsAny<Exception>(() => mockBitmap.Load());
     }
 
@@ -262,7 +262,7 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var mockBitmap = new MockBitmap(12000, 12000, imageData);
-        
+
         Assert.ThrowsAny<Exception>(() => mockBitmap.Load());
     }
 
@@ -273,7 +273,7 @@ public class ImageLoaderTests
         Directory.CreateDirectory(tempDir);
         var maliciousPath = Path.Combine(tempDir, "..", "..", "test.png");
         File.WriteAllBytes(Path.Combine(AppContext.BaseDirectory, "test.png"), CreateTestPng(100, 100));
-        
+
         try
         {
             Assert.ThrowsAny<Exception>(() => ImageLoader.LoadBitmap(maliciousPath));
@@ -292,11 +292,11 @@ public class ImageLoaderTests
         Directory.CreateDirectory(tempDir);
         var imagePath = Path.Combine(tempDir, "test.PNG");
         File.WriteAllBytes(imagePath, CreateTestPng(100, 100));
-        
+
         try
         {
             using var result = ImageLoader.LoadBitmap(imagePath);
-            
+
             Assert.NotNull(result);
         }
         finally
@@ -315,17 +315,17 @@ public class ImageLoaderTests
     {
         var initialMemory = GC.GetTotalMemory(true);
         var imageData = CreateTestPng(2000, 2000);
-        
+
         var bitmap = ImageLoader.LoadBitmap(imageData);
         var bitmapHandle = bitmap.Handle;
         var allocatedMemory = GC.GetTotalMemory(false);
-        
+
         bitmap.Dispose();
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
         var finalMemory = GC.GetTotalMemory(true);
-        
+
         Assert.NotEqual(IntPtr.Zero, bitmapHandle);
         Assert.True(finalMemory < initialMemory + 50 * 1024 * 1024, "Memory should be freed after disposal");
     }
@@ -338,23 +338,23 @@ public class ImageLoaderTests
         GC.Collect();
         var initialMemory = GC.GetTotalMemory(true);
         var imageData = CreateTestPng(500, 500);
-        
+
         var bitmaps = new List<SKBitmap>();
         for (var i = 0; i < 10; i++)
         {
             bitmaps.Add(ImageLoader.LoadBitmap(imageData));
         }
-        
+
         var memoryAfterLoads = GC.GetTotalMemory(false);
         var memoryIncrease = memoryAfterLoads - initialMemory;
-        
+
         foreach (var bitmap in bitmaps)
         {
             bitmap.Dispose();
         }
-        
+
         var expectedMinMemory = 500 * 500 * 4 * 5;
-        Assert.True(memoryIncrease > 0 || memoryIncrease > expectedMinMemory, 
+        Assert.True(memoryIncrease > 0 || memoryIncrease > expectedMinMemory,
             "Memory should increase with multiple loads");
     }
 
@@ -362,9 +362,9 @@ public class ImageLoaderTests
     public void LoadBitmap_LargeImage_MemoryManaged()
     {
         var imageData = CreateTestPng(3000, 3000);
-        
+
         using var bitmap = ImageLoader.LoadBitmap(imageData);
-        
+
         Assert.NotNull(bitmap);
         Assert.Equal(3000, bitmap.Width);
         Assert.Equal(3000, bitmap.Height);
@@ -376,14 +376,14 @@ public class ImageLoaderTests
         byte[] imageData = CreateTestPng(100, 100);
         SKBitmap? bitmap;
         IntPtr bitmapHandle;
-        
+
         using (bitmap = ImageLoader.LoadBitmap(imageData))
         {
             Assert.NotNull(bitmap);
             bitmapHandle = bitmap.Handle;
             Assert.NotEqual(IntPtr.Zero, bitmapHandle);
         }
-        
+
         Assert.True(bitmap == null || bitmap.Handle == IntPtr.Zero);
     }
 
@@ -396,14 +396,14 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(100, 100);
         var stopwatch = Stopwatch.StartNew();
-        
+
         for (var i = 0; i < 100; i++)
         {
             using var bitmap = ImageLoader.LoadBitmap(imageData);
         }
-        
+
         stopwatch.Stop();
-        
+
         _output.WriteLine($"100 small images loaded in {stopwatch.ElapsedMilliseconds}ms");
         Assert.True(stopwatch.ElapsedMilliseconds < 10000, "Loading 100 small images should be fast");
     }
@@ -413,11 +413,11 @@ public class ImageLoaderTests
     {
         var imageData = CreateTestPng(2000, 2000);
         var stopwatch = Stopwatch.StartNew();
-        
+
         using var bitmap = ImageLoader.LoadBitmap(imageData);
-        
+
         stopwatch.Stop();
-        
+
         _output.WriteLine($"Large image loaded in {stopwatch.ElapsedMilliseconds}ms");
         Assert.True(stopwatch.ElapsedMilliseconds < 5000, "Loading large image should be reasonably fast");
     }
@@ -427,14 +427,14 @@ public class ImageLoaderTests
     {
         byte[] imageData = CreateTestPng(1000, 1000);
         var stopwatch = Stopwatch.StartNew();
-        
+
         for (var i = 0; i < 50; i++)
         {
             using var bitmap = ImageLoader.LoadBitmap(imageData);
         }
-        
+
         stopwatch.Stop();
-        
+
         _output.WriteLine($"50 images loaded in {stopwatch.ElapsedMilliseconds}ms");
         Assert.True(stopwatch.ElapsedMilliseconds < 5000, "Multiple loads should be reasonably fast");
     }
@@ -465,7 +465,7 @@ public class ImageLoaderTests
 
             var info = new SKImageInfo(_width, _height, SKColorType.Bgra8888, SKAlphaType.Premul);
             var bitmap = new SKBitmap(info);
-            
+
             if (bitmap.Handle == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to allocate memory");
 

@@ -32,7 +32,7 @@ public class LegioImageBuilder
     private readonly byte[] _imageData;
     private readonly LegioImageFormat _format;
     private readonly List<Func<SKBitmap, SKBitmap>> _operations;
-    private int _saveQuality = 75;
+    private int _saveQuality = 90;
 
     private LegioImageBuilder(byte[] imageData)
     {
@@ -95,11 +95,12 @@ public class LegioImageBuilder
     /// <remarks>
     /// Use ResizeToWidth or ResizeToHeight to automatically maintain aspect ratio.
     /// </remarks>
-    public LegioImageBuilder Resize(int width, int height, LegioScaleMode mode = LegioScaleMode.Fit, LegioResizeQuality quality = LegioResizeQuality.High)
+    public LegioImageBuilder Resize(int width, int height, LegioScaleMode mode = LegioScaleMode.Fit,
+        LegioResizeQuality quality = LegioResizeQuality.High)
     {
         if (width <= 0 || height <= 0)
             throw new ArgumentException("Width and height must be positive", nameof(width));
-        
+
         _operations.Add(source => ImageResizer.ResizeBitmap(source, width, height, quality));
         return this;
     }
@@ -116,11 +117,12 @@ public class LegioImageBuilder
         if (width <= 0)
             throw new ArgumentException("Width must be positive", nameof(width));
 
-        var info = GetInfo();
-        var ratio = (double)width / info.Width;
-        var newHeight = (int)(info.Height * ratio);
-
-        _operations.Add(source => ImageResizer.ResizeBitmap(source, width, newHeight, quality));
+        _operations.Add(source =>
+        {
+            var ratio = (double)width / source.Width;
+            var newHeight = (int)(source.Height * ratio);
+            return ImageResizer.ResizeBitmap(source, width, newHeight, quality);
+        });
         return this;
     }
 
@@ -136,11 +138,12 @@ public class LegioImageBuilder
         if (height <= 0)
             throw new ArgumentException("Height must be positive", nameof(height));
 
-        var info = GetInfo();
-        var ratio = (double)height / info.Height;
-        var newWidth = (int)(info.Width * ratio);
-
-        _operations.Add(source => ImageResizer.ResizeBitmap(source, newWidth, height, quality));
+        _operations.Add(source =>
+        {
+            var ratio = (double)height / source.Height;
+            var newWidth = (int)(source.Width * ratio);
+            return ImageResizer.ResizeBitmap(source, newWidth, height, quality);
+        });
         return this;
     }
 
@@ -156,11 +159,12 @@ public class LegioImageBuilder
         if (factor <= 0)
             throw new ArgumentException("Scale factor must be positive", nameof(factor));
 
-        var info = GetInfo();
-        var newWidth = (int)(info.Width * factor);
-        var newHeight = (int)(info.Height * factor);
-
-        _operations.Add(source => ImageResizer.ResizeBitmap(source, newWidth, newHeight, quality));
+        _operations.Add(source =>
+        {
+            var newWidth = (int)(source.Width * factor);
+            var newHeight = (int)(source.Height * factor);
+            return ImageResizer.ResizeBitmap(source, newWidth, newHeight, quality);
+        });
         return this;
     }
 
@@ -177,7 +181,7 @@ public class LegioImageBuilder
     {
         if (width <= 0 || height <= 0)
             throw new ArgumentException("Width and height must be positive", nameof(width));
-        
+
         _operations.Add(source => ImageCropper.CropBitmap(source, x, y, width, height));
         return this;
     }
@@ -197,7 +201,7 @@ public class LegioImageBuilder
         {
             _operations.Add(source => ImageTransformer.Rotate(source, degrees));
         }
-        
+
         return this;
     }
 
@@ -213,7 +217,7 @@ public class LegioImageBuilder
         {
             _operations.Add(source => ImageTransformer.Flip(source, horizontal, vertical));
         }
-        
+
         return this;
     }
 
@@ -332,9 +336,9 @@ public class LegioImageBuilder
     /// <summary>
     /// Sets the quality level for subsequent save operations.
     /// </summary>
-    /// <param name="quality">Encoding quality. Range 0-100, default 75.</param>
+    /// <param name="quality">Encoding quality. Range 0-100, default 90.</param>
     /// <returns>This builder for method chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when quality is outside the valid range.</exception>
+    /// <exception cref="ArgumentException">Thrown when quality is outside of valid range.</exception>
     /// <remarks>
     /// Quality effects vary by format:
     /// - JPEG/WebP: Lower = smaller files with more artifacts
@@ -375,8 +379,11 @@ public class LegioImageBuilder
     public void Save(string filePath, LegioImageFormat? format = null, int? quality = null)
     {
         var targetFormat = format ?? _format;
-        var data = SaveAs(targetFormat, quality);
-        File.WriteAllBytes(filePath, data);
+        var finalQuality = quality ?? _saveQuality;
+
+        using var result = ApplyOperations();
+        using var fileStream = File.Create(filePath);
+        ImageSaver.SaveBitmap(result, fileStream, targetFormat, finalQuality);
     }
 
     /// <summary>
@@ -416,8 +423,9 @@ public class LegioImageBuilder
 
             foreach (var operation in _operations)
             {
-                using var previousBitmap = currentBitmap;
-                currentBitmap = operation(currentBitmap);
+                var previousBitmap = currentBitmap;
+                currentBitmap = operation(previousBitmap);
+                previousBitmap.Dispose();
             }
 
             return currentBitmap;
