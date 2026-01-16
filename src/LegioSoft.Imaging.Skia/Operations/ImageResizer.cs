@@ -13,7 +13,7 @@ internal static class ImageResizer
     /// <summary>
     /// Calculates target dimensions based on scale mode.
     /// </summary>
-    private static (int width, int height) CalculateTargetDimensions(int sourceWidth, int sourceHeight, int targetWidth,
+    public static (int width, int height) CalculateTargetDimensions(int sourceWidth, int sourceHeight, int targetWidth,
         int targetHeight, LegioScaleMode mode)
     {
         return mode switch
