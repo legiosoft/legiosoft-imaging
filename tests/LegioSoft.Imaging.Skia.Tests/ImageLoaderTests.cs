@@ -9,7 +9,6 @@ namespace LegioSoft.Imaging.Skia.Tests;
 public class ImageLoaderTests
 {
     private readonly ITestOutputHelper _output;
-    private static readonly string TestAssetsPath = Path.Combine(AppContext.BaseDirectory, "TestAssets");
 
     public ImageLoaderTests(ITestOutputHelper output)
     {
