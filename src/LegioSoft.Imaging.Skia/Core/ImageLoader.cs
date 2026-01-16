@@ -76,7 +76,7 @@ internal static class ImageLoader
     /// <exception cref="ArgumentException">Thrown when stream is not readable.</exception>
     /// <exception cref="InvalidOperationException">Thrown when image format is not supported or dimensions exceed limits.</exception>
     /// <exception cref="OutOfMemoryException">Thrown when image would require excessive memory.</exception>
-    private static SKBitmap LoadBitmap(Stream stream)
+    public static SKBitmap LoadBitmap(Stream stream)
     {
         if (stream == null)
             throw new ArgumentNullException(nameof(stream));
