@@ -16,7 +16,7 @@ dotnet add package LegioSoft.Imaging.Skia
 - **Transform** - Rotate (90/180/270 degrees) and flip (horizontal/vertical)
 - **Filters** - Grayscale, sepia, blur (configurable radius), sharpen (configurable amount)
 - **Color Adjustments** - Brightness (-255 to 255), contrast (-100 to 100), invert colors
-- **Format Conversion** - PNG, JPEG, WebP
+- **Format Support** - Input: PNG, JPEG, WebP, BMP, GIF | Output: PNG, JPEG, WebP
 - **Quality Control** - 0-100 quality levels for lossy formats
 - **Memory Efficient** - Automatic disposal of intermediate bitmaps
 - **Secure** - Input validation and bounds checking
@@ -236,10 +236,13 @@ LegioImageBuilder.Load("image.jpg").Grayscale().Save("2.jpg");
 
 **Input**: PNG, JPEG, WebP
 
-**Output**:
-- PNG - Lossless, supports transparency
-- JPEG - Lossy, best for photos
-- WebP - Modern format, good compression
+**Output**: PNG, JPEG, WebP
+
+| Format | Type | Best For |
+|--------|------|----------|
+| PNG | Lossless | Graphics, screenshots, images with transparency |
+| JPEG | Lossy | Photographs, photos |
+| WebP | Lossy/Lossless | Modern web images, better compression than JPEG |
 
 ## Parameter Ranges
 

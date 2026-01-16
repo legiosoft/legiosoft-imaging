@@ -32,7 +32,7 @@ dotnet add package LegioSoft.Imaging.Core
 
 ### Enums
 
-- `LegioImageFormat` - PNG, JPEG, WebP, BMP, GIF
+- `LegioImageFormat` - PNG, JPEG, WebP
 - `LegioScaleMode` - Fit, Fill, Stretch
 - `LegioResizeQuality` - Low, Medium, High, Maximum
 - `LegioEncodingQuality` - Quality levels for encoding
@@ -71,12 +71,11 @@ var quality = LegioResizeQuality.High;
 `FormatDetector.DetectFormat()` securely identifies image formats:
 
 - Validates input data (null, empty, too short)
-- Checks file signatures (magic bytes) for: PNG, JPEG, WebP, BMP, GIF
-- Validates file structure (JPEG end markers, PNG IEND chunk, BMP header size)
+- Checks file signatures (magic bytes) for: PNG, JPEG, WebP
 - Throws `NotSupportedException` for unknown formats
 - Throws `ArgumentException` for corrupted/invalid files
 
-**Supported formats**: PNG, JPEG, WebP, BMP, GIF
+**Supported formats**: PNG, JPEG, WebP
 
 ## Platform Support
 

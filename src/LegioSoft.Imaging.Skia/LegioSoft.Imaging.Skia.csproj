@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <PackageId>LegioSoft.Imaging.Skia</PackageId>
     <Description>
-      Full-featured image processing library built on SkiaSharp. Implements ILegioImageResizer, ILegioImageCropper, ILegioImageTransformer, and ILegioImageFilter interfaces. Provides fluent builder API for easy image manipulation. Supports resize, crop, rotate, flip, and filters (grayscale, sepia, blur, sharpen, brightness, contrast, invert). Format conversion for PNG, JPEG, WebP, BMP, and GIF. Cross-platform support for Windows, macOS, and Linux. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
+      Full-featured image processing library built on SkiaSharp. Implements ILegioImageResizer, ILegioImageCropper, ILegioImageTransformer, and ILegioImageFilter interfaces. Provides fluent builder API for easy image manipulation. Supports resize, crop, rotate, flip, and filters (grayscale, sepia, blur, sharpen, brightness, contrast, invert). Format conversion for PNG, JPEG, and WebP. Cross-platform support for Windows, macOS, and Linux. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
     </Description>
     <PackageTags>image;processing;SkiaSharp;resize;crop;transform;rotate;flip;grayscale;sepia;blur;sharpen;brightness;contrast;invert;format-conversion;builder-pattern;filters;color-adjustments;cross-platform;bitmap;security;validation;modular-operations</PackageTags>
     <PackageReleaseNotes>
@@ -20,7 +20,7 @@
       - Crop, rotate (90/180/270 degrees), flip (horizontal/vertical)
       - Filter operations: grayscale, sepia, blur (configurable radius), sharpen
       - Color adjustments: brightness, contrast, invert
-      - Format conversion: PNG, JPEG, WebP, BMP, GIF
+      - Format conversion: PNG, JPEG, WebP
       - Secure image saving with validation and quality adjustment
       - Automatic format detection (moved to Core package)
       - Quality control (0-100) for lossy formats

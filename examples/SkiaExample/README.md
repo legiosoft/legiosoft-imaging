@@ -173,6 +173,7 @@ var result = LegioImageBuilder.Load("image.jpg")
 ```csharp
 var builder = LegioImageBuilder.Load("image.jpg");
 
+// Supported output formats: PNG, JPEG, WebP
 var png = builder.SaveAs(LegioImageFormat.Png, 100);
 var jpeg = builder.SaveAs(LegioImageFormat.Jpeg, 85);
 var webp = builder.SaveAs(LegioImageFormat.WebP, 85);

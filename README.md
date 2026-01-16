@@ -212,7 +212,7 @@ string version = WebPImage.GetVersion(); // "1.6.0"
 ```csharp
 using LegioSoft.Imaging.Core;
 
-// Detect format
+// Detect format (supports: PNG, JPEG, WebP)
 var imageData = File.ReadAllBytes("image.jpg");
 var format = FormatDetector.DetectFormat(imageData);
 ```
@@ -273,10 +273,13 @@ foreach (var file in Directory.GetFiles("input", "*.jpg"))
 
 **Input**: PNG, JPEG, WebP
 
-**Output**:
-- PNG - Lossless, transparency
-- JPEG - Lossy, photos
-- WebP - Modern, compressed
+**Output**: PNG, JPEG, WebP
+
+| Format | Type | Best For |
+|--------|------|----------|
+| PNG | Lossless | Graphics, screenshots, images with transparency |
+| JPEG | Lossy | Photographs, photos |
+| WebP | Lossy/Lossless | Modern web images, better compression than JPEG |
 
 ## Platforms
 

@@ -127,9 +127,15 @@ using var stream = SaveAsStream(LegioImageFormat.Png);
 
 ## Formats
 
-- PNG - Lossless, supports transparency
-- JPEG - Lossy, best for photos
-- WebP - Modern, good compression
+**Input**: PNG, JPEG, WebP
+
+**Output**: PNG, JPEG, WebP
+
+| Format | Type | Best For |
+|--------|------|----------|
+| PNG | Lossless | Graphics, screenshots, images with transparency |
+| JPEG | Lossy | Photographs, photos |
+| WebP | Lossy/Lossless | Modern web images, better compression than JPEG |
 
 ## Examples
 
