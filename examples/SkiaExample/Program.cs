@@ -91,7 +91,7 @@ class Program
         Console.WriteLine(new string('-', 50));
 
         LegioImageBuilder.Load(imagePath)
-            .Crop(10, 10, 100, 100)
+            .Crop(10, 10, 2000, 2000)
             .Save("output-cropped.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-cropped.jpg ({File.ReadAllBytes("output-cropped.jpg").Length} bytes)");

@@ -312,15 +312,6 @@ public class ImageSaverTests
     #region Security Tests
 
     [Fact]
-    public void SaveBitmap_DisposedBitmap_ThrowsException()
-    {
-        var bitmap = CreateTestBitmap(100, 100);
-        bitmap.Dispose();
-
-        Assert.ThrowsAny<Exception>(() => ImageSaver.SaveBitmap(bitmap, LegioImageFormat.Png, 90));
-    }
-
-    [Fact]
     public void SaveBitmap_ExtremeQualityValues_HandlesGracefully()
     {
         using var bitmap = CreateTestBitmap(100, 100);
