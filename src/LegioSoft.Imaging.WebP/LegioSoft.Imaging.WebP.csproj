@@ -15,7 +15,7 @@
       imaging;graphics;multimedia
     </PackageTags>
     <PackageReleaseNotes>
-      1.0.0-beta* - Initial beta release of LegioSoft.Imaging.WebP.
+      Initial beta release of LegioSoft.Imaging.WebP.
 
       Features:
       - WebP encoding (RGBA, RGB, BGRA, BGR formats) with proper memory management
@@ -28,8 +28,6 @@
       - ILegioImageEncoder and ILegioImageDecoder interface implementation
       - Support for .NET 6.0, 7.0, 8.0, 9.0, and 10.0
       - Updated to libwebp 1.6.0 ABI version (0x0210)
-      - Fixed memory leaks with proper WebPMemoryWriterClear calls
-      - Refactored to 1 class = 1 file structure
     </PackageReleaseNotes>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DllImportLoadContextAttribute>true</DllImportLoadContextAttribute>
