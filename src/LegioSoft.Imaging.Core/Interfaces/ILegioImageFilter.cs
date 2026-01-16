@@ -19,7 +19,7 @@ public interface ILegioImageFilter
     /// <param name="outputStream">Optional output stream. If null, a new stream is created.</param>
     /// <returns>Stream containing the grayscale image.</returns>
     Stream ApplyGrayscale(Stream inputStream, Stream? outputStream = null);
-    
+
     /// <summary>
     /// Applies a sepia tone filter to the image.
     /// </summary>
@@ -34,7 +34,7 @@ public interface ILegioImageFilter
     /// <param name="outputStream">Optional output stream. If null, a new stream is created.</param>
     /// <returns>Stream containing the sepia-toned image.</returns>
     Stream ApplySepia(Stream inputStream, Stream? outputStream = null);
-    
+
     /// <summary>
     /// Applies a blur filter to the image.
     /// </summary>
@@ -51,7 +51,7 @@ public interface ILegioImageFilter
     /// <param name="outputStream">Optional output stream. If null, a new stream is created.</param>
     /// <returns>Stream containing the blurred image.</returns>
     Stream ApplyBlur(Stream inputStream, int radius = 3, Stream? outputStream = null);
-    
+
     /// <summary>
     /// Applies a sharpening filter to the image.
     /// </summary>

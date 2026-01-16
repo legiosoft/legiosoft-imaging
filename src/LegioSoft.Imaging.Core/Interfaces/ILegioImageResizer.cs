@@ -16,7 +16,8 @@ public interface ILegioImageResizer
     /// <param name="mode">Scale mode (Fit, Fill, or Stretch).</param>
     /// <param name="quality">Resize quality (default: High).</param>
     /// <returns>Resized image data.</returns>
-    byte[] Resize(byte[] imageData, int width, int height, LegioScaleMode mode, LegioResizeQuality quality = LegioResizeQuality.High);
+    byte[] Resize(byte[] imageData, int width, int height, LegioScaleMode mode,
+        LegioResizeQuality quality = LegioResizeQuality.High);
 
     /// <summary>
     /// Resizes an image stream to the specified dimensions.
@@ -28,5 +29,6 @@ public interface ILegioImageResizer
     /// <param name="quality">Resize quality (default: High).</param>
     /// <param name="outputStream">Optional output stream. If null, a new stream is created.</param>
     /// <returns>Stream containing the resized image.</returns>
-    Stream Resize(Stream inputStream, int width, int height, LegioScaleMode mode, LegioResizeQuality quality = LegioResizeQuality.High, Stream? outputStream = null);
+    Stream Resize(Stream inputStream, int width, int height, LegioScaleMode mode,
+        LegioResizeQuality quality = LegioResizeQuality.High, Stream? outputStream = null);
 }

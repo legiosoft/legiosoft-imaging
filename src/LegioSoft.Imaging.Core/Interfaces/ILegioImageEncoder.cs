@@ -24,5 +24,6 @@ public interface ILegioImageEncoder
     /// <param name="quality">The encoding quality (default: High).</param>
     /// <param name="outputStream">Optional output stream. If null, a new stream is created.</param>
     /// <returns>Stream containing the encoded image.</returns>
-    Stream Encode(Stream inputStream, LegioImageFormat format, LegioEncodingQuality quality = LegioEncodingQuality.High, Stream? outputStream = null);
+    Stream Encode(Stream inputStream, LegioImageFormat format, LegioEncodingQuality quality = LegioEncodingQuality.High,
+        Stream? outputStream = null);
 }

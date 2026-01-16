@@ -21,7 +21,7 @@ public interface ILegioImageTransformer
     /// <param name="outputStream">Optional output stream. If null, a new stream is created.</param>
     /// <returns>Stream containing the rotated image.</returns>
     Stream Rotate(Stream inputStream, int degrees, Stream? outputStream = null);
-    
+
     /// <summary>
     /// Flips the image horizontally and/or vertically.
     /// </summary>

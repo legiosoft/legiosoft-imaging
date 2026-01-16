@@ -10,14 +10,17 @@ public enum LegioEncodingQuality
     /// Minimum quality (0%).
     /// </summary>
     Low = 0,
+
     /// <summary>
     /// Medium quality (50%).
     /// </summary>
     Medium = 50,
+
     /// <summary>
     /// High quality (75%).
     /// </summary>
     High = 75,
+
     /// <summary>
     /// Maximum quality (100%).
     /// </summary>
