@@ -11,7 +11,7 @@
     </Description>
     <PackageTags>image;processing;core;interfaces;enums;base-types;shared-types;contracts;abstractions;types;metadata;format-detection;security;validation</PackageTags>
     <PackageReleaseNotes>
-      1.0.0-beta3 - Initial beta release of LegioSoft.Imaging.Core.
+      Initial release of LegioSoft.Imaging.Core.
 
       Features:
       - FormatDetector for secure image format detection with validation
