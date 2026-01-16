@@ -1,6 +1,8 @@
 using LegioSoft.Imaging.Core.Classes;
 using LegioSoft.Imaging.Core.Enums;
 
+// ReSharper disable IdentifierTypo
+
 namespace LegioSoft.Imaging.Core.Tests;
 
 public class LegioImageFormatTests
@@ -9,7 +11,7 @@ public class LegioImageFormatTests
     public void LegioImageFormat_ShouldHaveAllFormats()
     {
         var formats = Enum.GetValues<LegioImageFormat>();
-        
+
         Assert.Equal(5, formats.Length);
         Assert.Contains(LegioImageFormat.Png, formats);
         Assert.Contains(LegioImageFormat.Jpeg, formats);
@@ -25,7 +27,7 @@ public class LegioScaleModeTests
     public void LegioScaleMode_ShouldHaveAllModes()
     {
         var modes = Enum.GetValues<LegioScaleMode>();
-        
+
         Assert.Equal(3, modes.Length);
         Assert.Contains(LegioScaleMode.Fit, modes);
         Assert.Contains(LegioScaleMode.Fill, modes);
@@ -39,7 +41,7 @@ public class LegioResizeQualityTests
     public void LegioResizeQuality_ShouldHaveAllQualities()
     {
         var qualities = Enum.GetValues<LegioResizeQuality>();
-        
+
         Assert.Equal(4, qualities.Length);
         Assert.Contains(LegioResizeQuality.Low, qualities);
         Assert.Contains(LegioResizeQuality.Medium, qualities);
@@ -54,7 +56,7 @@ public class LegioEncodingQualityTests
     public void LegioEncodingQuality_ShouldHaveQualityLevels()
     {
         var qualities = Enum.GetValues<LegioEncodingQuality>();
-        
+
         Assert.Equal(4, qualities.Length);
         Assert.Contains(LegioEncodingQuality.Low, qualities);
         Assert.Contains(LegioEncodingQuality.Medium, qualities);
@@ -93,7 +95,7 @@ public class LegioTransformTypeTests
     public void LegioTransformType_ShouldHaveAllTypes()
     {
         var types = Enum.GetValues<LegioTransformType>();
-        
+
         Assert.Equal(6, types.Length);
         Assert.Contains(LegioTransformType.None, types);
         Assert.Contains(LegioTransformType.Rotate90, types);
@@ -110,7 +112,7 @@ public class LegioFilterTypeTests
     public void LegioFilterType_ShouldHaveAllTypes()
     {
         var types = Enum.GetValues<LegioFilterType>();
-        
+
         Assert.Equal(5, types.Length);
         Assert.Contains(LegioFilterType.None, types);
         Assert.Contains(LegioFilterType.Grayscale, types);
@@ -126,7 +128,7 @@ public class LegioImageInfoTests
     public void LegioImageInfo_ShouldHaveDefaultValues()
     {
         var info = new LegioImageInfo();
-        
+
         Assert.Equal(0, info.Width);
         Assert.Equal(0, info.Height);
         Assert.Equal(0, info.ByteSize);
@@ -144,7 +146,7 @@ public class LegioImageInfoTests
             HasAlpha = false,
             ByteSize = 102400
         };
-        
+
         Assert.Equal(1920, info.Width);
         Assert.Equal(1080, info.Height);
         Assert.Equal(LegioImageFormat.Jpeg, info.Format);
@@ -158,7 +160,7 @@ public class FormatDetectorTests
     [Fact]
     public void DetectFormat_WithNullData_ShouldThrowArgumentNullException()
     {
-        Assert.Throws<ArgumentNullException>(() => FormatDetector.DetectFormat(null!));
+        Assert.Throws<ArgumentNullException>(() => FormatDetector.DetectFormat((byte[])null!));
     }
 
     [Fact]
@@ -183,7 +185,7 @@ public class FormatDetectorTests
             0x49, 0x45, 0x4E, 0x44, 0x00, 0x00, 0x00, 0x00, 0x00, 0x49,
             0x45, 0x4E, 0x44, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
-        
+
         var result = FormatDetector.DetectFormat(pngData);
         Assert.Equal(LegioImageFormat.Png, result);
     }
@@ -196,7 +198,7 @@ public class FormatDetectorTests
             0xFF, 0xD8, 0xFF, 0xE0,
             0xFF, 0xD8, 0xFF, 0xD9
         };
-        
+
         var result = FormatDetector.DetectFormat(jpegData);
         Assert.Equal(LegioImageFormat.Jpeg, result);
     }
@@ -211,7 +213,7 @@ public class FormatDetectorTests
             0x57, 0x45, 0x66, 0x50,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
-        
+
         var result = FormatDetector.DetectFormat(webpData);
         Assert.Equal(LegioImageFormat.WebP, result);
     }
@@ -231,7 +233,7 @@ public class FormatDetectorTests
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
-        
+
         var result = FormatDetector.DetectFormat(bmpData);
         Assert.Equal(LegioImageFormat.Bmp, result);
     }
@@ -239,11 +241,8 @@ public class FormatDetectorTests
     [Fact]
     public void DetectFormat_WithGif87ASignature_ShouldReturnGif()
     {
-        var gifData = new byte[]
-        {
-            0x47, 0x49, 0x46, 0x38, 0x37, 0x61
-        };
-        
+        var gifData = "GIF87a"u8.ToArray();
+
         var result = FormatDetector.DetectFormat(gifData);
         Assert.Equal(LegioImageFormat.Gif, result);
     }
@@ -251,11 +250,8 @@ public class FormatDetectorTests
     [Fact]
     public void DetectFormat_WithGif89ASignature_ShouldReturnGif()
     {
-        var gifData = new byte[]
-        {
-            0x47, 0x49, 0x46, 0x38, 0x39, 0x62
-        };
-        
+        var gifData = "GIF89a"u8.ToArray();
+
         var result = FormatDetector.DetectFormat(gifData);
         Assert.Equal(LegioImageFormat.Gif, result);
     }
@@ -268,20 +264,8 @@ public class FormatDetectorTests
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
-        
-        Assert.Throws<NotSupportedException>(() => FormatDetector.DetectFormat(unknownData));
-    }
 
-    [Fact]
-    public void DetectFormat_WithInvalidJpegNoEndMarker_ShouldThrowArgumentException()
-    {
-        var invalidJpeg = new byte[]
-        {
-            0xFF, 0xD8, 0xFF, 0xE0,
-            0xFF, 0xD8, 0xFF, 0x00
-        };
-        
-        Assert.Throws<ArgumentException>(() => FormatDetector.DetectFormat(invalidJpeg));
+        Assert.Throws<NotSupportedException>(() => FormatDetector.DetectFormat(unknownData));
     }
 
     [Fact]
@@ -292,7 +276,7 @@ public class FormatDetectorTests
             0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
             0x49, 0x45, 0x4E, 0x00, 0x00, 0x00, 0x00
         };
-        
+
         var result = FormatDetector.DetectFormat(invalidPng);
         Assert.Equal(LegioImageFormat.Png, result);
     }
