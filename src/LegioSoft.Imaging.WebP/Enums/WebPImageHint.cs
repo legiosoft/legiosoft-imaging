@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Enums;
 
-public enum WebPImageHint
+internal enum WebPImageHint
 {
     DEFAULT,
     PICTURE,

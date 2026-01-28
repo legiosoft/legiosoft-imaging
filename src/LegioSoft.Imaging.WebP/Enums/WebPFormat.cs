@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Enums;
 
-public enum WebPFormat
+internal enum WebPFormat
 {
     Mixed,
     Lossy,

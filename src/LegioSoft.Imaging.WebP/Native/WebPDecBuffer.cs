@@ -14,7 +14,7 @@ internal struct WebPDecBufferUnion
 }
 
 [StructLayout(LayoutKind.Sequential)]
-internal unsafe struct WebPDecBuffer
+internal struct WebPDecBuffer
 {
     public WEBP_CSP_MODE colorspace;
     public int width;

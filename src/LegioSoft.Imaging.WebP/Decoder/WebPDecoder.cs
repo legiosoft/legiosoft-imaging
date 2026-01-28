@@ -20,25 +20,21 @@ internal class WebPDecoder
             throw new ArgumentException("WebP data cannot be null or empty", nameof(webpData));
         }
 
-        var status = NativeMethods.WebPGetFeatures(webpData, (UIntPtr)webpData.Length, out var features);
+        int width, height;
+        var status = NativeMethods.WebPGetInfo(webpData, (UIntPtr)webpData.Length, out width, out height);
 
-        if (status != VP8StatusCode.OK)
+        if (status != 1)
         {
-            throw new InvalidOperationException($"Failed to get WebP info: {status}");
+            throw new InvalidOperationException($"Failed to get WebP info: status={status}");
         }
 
         var info = new WebPInfo
         {
-            Width = features.width,
-            Height = features.height,
-            HasAlpha = features.has_alpha != 0,
-            HasAnimation = features.has_animation != 0,
-            Format = features.format switch
-            {
-                1 => WebPFormat.Lossy,
-                2 => WebPFormat.Lossless,
-                _ => WebPFormat.Mixed
-            }
+            Width = width,
+            Height = height,
+            HasAlpha = false,
+            HasAnimation = false,
+            Format = WebPFormat.Mixed
         };
 
         ValidateImageDimensions(info);

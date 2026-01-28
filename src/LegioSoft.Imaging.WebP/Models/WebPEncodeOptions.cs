@@ -2,7 +2,7 @@ using LegioSoft.Imaging.WebP.Enums;
 
 namespace LegioSoft.Imaging.WebP.Models;
 
-public class WebPEncodeOptions
+internal class WebPEncodeOptions
 {
     public WebPPreset Preset { get; set; } = WebPPreset.DEFAULT;
     public float Quality { get; set; } = 75.0f;

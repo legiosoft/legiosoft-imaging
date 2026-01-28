@@ -7,7 +7,7 @@ using LegioSoft.Imaging.WebP.Native;
 
 namespace LegioSoft.Imaging.WebP;
 
-public static class WebPImage
+internal static class WebPImage
 {
     private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {

@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Enums;
 
-public enum WebPPreset
+internal enum WebPPreset
 {
     DEFAULT,
     PICTURE,

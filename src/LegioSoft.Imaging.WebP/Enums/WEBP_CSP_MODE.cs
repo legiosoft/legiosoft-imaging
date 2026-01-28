@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Enums;
 
-public enum WEBP_CSP_MODE
+internal enum WEBP_CSP_MODE
 {
     MODE_RGB = 0,
     MODE_RGBA = 1,

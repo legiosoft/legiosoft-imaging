@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Enums;
 
-public enum WebPEncodingError
+internal enum WebPEncodingError
 {
     VP8_ENC_OK = 0,
     VP8_ENC_ERROR_OUT_OF_MEMORY = 1,

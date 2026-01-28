@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Enums;
 
-public enum VP8StatusCode
+internal enum VP8StatusCode
 {
     OK = 0,
     OUT_OF_MEMORY = 1,

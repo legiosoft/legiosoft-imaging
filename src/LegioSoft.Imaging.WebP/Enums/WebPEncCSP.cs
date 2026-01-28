@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Enums;
 
-public enum WebPEncCSP
+internal enum WebPEncCSP
 {
     WEBP_YUV420 = 0,
     WEBP_YUV420A = 4,

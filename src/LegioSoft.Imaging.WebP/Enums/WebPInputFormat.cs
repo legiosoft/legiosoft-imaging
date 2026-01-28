@@ -1,6 +1,6 @@
 namespace LegioSoft.Imaging.WebP.Enums;
 
-public enum WebPInputFormat
+internal enum WebPInputFormat
 {
     RGBA,
     BGRA,
