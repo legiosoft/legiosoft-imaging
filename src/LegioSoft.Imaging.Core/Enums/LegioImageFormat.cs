@@ -9,5 +9,6 @@ public enum LegioImageFormat
     Jpeg,
     WebP,
     Bmp,
-    Gif
+    Gif,
+    Svg
 }

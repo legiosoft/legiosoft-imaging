@@ -1,5 +1,6 @@
 using LegioSoft.Imaging.Core.Classes;
 using LegioSoft.Imaging.Core.Enums;
+using System.IO;
 
 // ReSharper disable IdentifierTypo
 
@@ -12,12 +13,13 @@ public class LegioImageFormatTests
     {
         var formats = Enum.GetValues<LegioImageFormat>();
 
-        Assert.Equal(5, formats.Length);
+        Assert.Equal(6, formats.Length);
         Assert.Contains(LegioImageFormat.Png, formats);
         Assert.Contains(LegioImageFormat.Jpeg, formats);
         Assert.Contains(LegioImageFormat.WebP, formats);
         Assert.Contains(LegioImageFormat.Bmp, formats);
         Assert.Contains(LegioImageFormat.Gif, formats);
+        Assert.Contains(LegioImageFormat.Svg, formats);
     }
 }
 
@@ -279,5 +281,114 @@ public class FormatDetectorTests
 
         var result = FormatDetector.DetectFormat(invalidPng);
         Assert.Equal(LegioImageFormat.Png, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithXmlDeclaration_ShouldReturnSvg()
+    {
+        var svgData = "<?xml version=\"1.0\"?><svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"u8.ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithoutXmlDeclaration_ShouldReturnSvg()
+    {
+        var svgData = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"u8.ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithLeadingWhitespace_ShouldReturnSvg()
+    {
+        var svgData = "  \n  <svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"u8.ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithXmlDeclarationCaseInsensitive_ShouldReturnSvg()
+    {
+        var svgData = "<?XML VERSION=\"1.0\"?><svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"u8.ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithSvgTagCaseInsensitive_ShouldReturnSvg()
+    {
+        var svgData = "<SVG xmlns=\"http://www.w3.org/2000/svg\"></SVG>"u8.ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithUtf8Bom_ShouldReturnSvg()
+    {
+        var svgContent = "<?xml version=\"1.0\"?><svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"u8.ToArray();
+        var bom = new byte[] { 0xEF, 0xBB, 0xBF };
+        var svgData = bom.Concat(svgContent).ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithXmlFileNotSvg_ShouldThrowNotSupportedException()
+    {
+        var xmlData = "<?xml version=\"1.0\"?><configuration><appSettings/></configuration>"u8.ToArray();
+
+        Assert.Throws<NotSupportedException>(() => FormatDetector.DetectFormat(xmlData));
+    }
+
+    [Fact]
+    public void DetectFormat_WithTextStartingWithBm_ShouldThrowNotSupportedException()
+    {
+        var textData = "BMW is a car manufacturer. This is not a BMP file."u8.ToArray();
+
+        Assert.Throws<NotSupportedException>(() => FormatDetector.DetectFormat(textData));
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithDoctype_ShouldReturnSvg()
+    {
+        var svgData = "<?xml version=\"1.0\"?><!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\"><svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"u8.ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithComments_ShouldReturnSvg()
+    {
+        var svgData = "<!-- This is a comment --><svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"u8.ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithSvgWithDoctypeSimple_ShouldReturnSvg()
+    {
+        var svgData = "<!DOCTYPE svg><svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"u8.ToArray();
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
+    }
+
+    [Fact]
+    public void DetectFormat_WithRealLogoSvg_ShouldReturnSvg()
+    {
+        var svgPath = Path.Combine("..", "..", "..", "..", "..", "test-photos", "logo.svg");
+        var svgData = File.ReadAllBytes(svgPath);
+
+        var result = FormatDetector.DetectFormat(svgData);
+        Assert.Equal(LegioImageFormat.Svg, result);
     }
 }
