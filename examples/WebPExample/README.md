@@ -1,10 +1,11 @@
 # WebP Image Processing Example
 
-Lightweight WebP encoding/decoding with native scaling.
+Demonstrates both Core interface API and static convenience API for WebP encoding/decoding.
 
 ## Installation
 
 ```bash
+dotnet add package LegioSoft.Imaging.Core
 dotnet add package LegioSoft.Imaging.WebP
 dotnet add package System.Drawing.Common
 ```
@@ -29,74 +30,196 @@ dotnet run
 
 This example uses **System.Drawing.Common** to decode PNG files to raw RGBA bytes, which are then encoded to WebP.
 
-### Alternative Decoding Libraries
+## API Options
 
-You can use any image library to decode to RGBA bytes:
+The WebP package provides two APIs:
 
-**Using SkiaSharp:**
+### 1. Core Interface API (Recommended for Framework Integration)
+
+Use `LegioImageWebPProcessor` which implements all Core interfaces:
+
 ```csharp
-using SkiaSharp;
+using LegioSoft.Imaging.Core;
+using LegioSoft.Imaging.WebP;
 
-using var bitmap = SKBitmap.Decode("image.png");
-var rgbaData = new byte[bitmap.Width * bitmap.Height * 4];
-bitmap.GetPixels().CopyTo(rgbaData);
+var processor = new LegioImageWebPProcessor();
+
+// Encode
+byte[] webP = processor.Encode(
+    rgbaData,
+    LegioImageFormat.WebP,
+    LegioEncodingQuality.High
+);
+
+// Decode
+byte[] rgba = processor.Decode(webP, out var format);
+LegioImageInfo info = processor.GetImageInfo(webP);
+
+// Resize
+byte[] resized = processor.Resize(
+    webP,
+    640,
+    480,
+    LegioScaleMode.Fit,
+    LegioResizeQuality.High
+);
+
+// Crop
+byte[] cropped = processor.Crop(webP, 100, 100, 400, 400);
+
+// Transform
+byte[] rotated = processor.Rotate(webP, 90);
+byte[] flipped = processor.Flip(webP, false, true);
 ```
 
-**Using SixLabors.ImageSharp:**
-```csharp
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+**Benefits:**
+- Standardized interfaces across all image format packages
+- Consistent API for encoding, decoding, resizing, cropping, transforming
+- Framework and library integration friendly
+- Quality and scale mode enums from Core package
 
-using var image = Image.Load<Rgba32>("image.png");
-var rgbaData = new byte[image.Width * image.Height * 4];
-image.CopyPixelDataTo(rgbaData);
+### 2. Static Convenience API (Quick Operations)
+
+Use `WebPImage` for quick operations:
+
+```csharp
+using LegioSoft.Imaging.WebP;
+
+// Encode
+byte[] webP = WebPImage.Encode(rgbaData, width, height, 75);
+
+// Decode
+byte[] rgba = WebPImage.Decode(webP);
+
+// Transform
+byte[] scaled = WebPImage.Scale(webP, 400, 300);
+byte[] cropped = WebPImage.Crop(webP, 100, 100, 400, 400);
+byte[] flipped = WebPImage.Flip(webP);
 ```
 
-## What It Does
+**Benefits:**
+- Simpler API for quick operations
+- No need to instantiate processor class
+- Direct access to WebP-specific features
 
-The example demonstrates:
-1. **Basic encoding** - Convert RGBA data to WebP with quality control
-2. **Quality levels** - Compare file sizes at different quality settings
-3. **Lossless vs lossy** - Encoding methods comparison
-4. **Color formats** - RGB vs RGBA encoding
-5. **Advanced encoding** - Fine-tuned compression options
-6. **Decoding** - Convert WebP back to RGBA/RGB with colorspace selection
-7. **Transformations** - Scale, crop, and flip during decode
-8. **Metadata** - Extract image info and validate WebP format
+## Core Interface API Examples
 
-Output files are written to the output directory with descriptive names (e.g., `output-encoded-basic.webp`, `output-quality-low.webp`).
+### Encoding
 
-## API Examples
+```csharp
+var processor = new LegioImageWebPProcessor();
+
+// Encode RGBA data to WebP
+byte[] webP = processor.Encode(
+    rgbaData,
+    LegioImageFormat.WebP,
+    LegioEncodingQuality.High
+);
+
+// Quality levels:
+// LegioEncodingQuality.Low = 0%
+// LegioEncodingQuality.Medium = 50%
+// LegioEncodingQuality.High = 75%
+// LegioEncodingQuality.Maximum = 100%
+```
+
+### Decoding
+
+```csharp
+// Decode WebP to raw RGBA bytes
+byte[] rgbaData = processor.Decode(webP, out var format);
+
+// Get image metadata
+var info = processor.GetImageInfo(webP);
+Console.WriteLine($"Width: {info.Width}");
+Console.WriteLine($"Height: {info.Height}");
+Console.WriteLine($"Has Alpha: {info.HasAlpha}");
+Console.WriteLine($"Format: {info.Format}");
+Console.WriteLine($"Byte Size: {info.ByteSize}");
+```
+
+### Resizing
+
+```csharp
+// Resize WebP image
+byte[] resized = processor.Resize(
+    webP,
+    640,
+    480,
+    LegioScaleMode.Fit,
+    LegioResizeQuality.High
+);
+
+// Scale modes:
+// LegioScaleMode.Fit - Maintain aspect ratio, fit within bounds
+// LegioScaleMode.Fill - Maintain aspect ratio, fill bounds (may crop)
+// LegioScaleMode.Stretch - Stretch to exact bounds
+
+// Resize quality:
+// LegioResizeQuality.Low - Fastest
+// LegioResizeQuality.Medium - Balanced
+// LegioResizeQuality.High - High quality
+// LegioResizeQuality.Maximum - Best quality
+```
+
+### Cropping
+
+```csharp
+// Crop WebP image
+byte[] cropped = processor.Crop(
+    webP,
+    x: 100,
+    y: 100,
+    width: 400,
+    height: 400
+);
+```
+
+### Transformation
+
+```csharp
+// Rotate (90-degree increments: 90, 180, 270)
+byte[] rotated = processor.Rotate(webP, 90);
+
+// Flip (horizontal and/or vertical)
+byte[] flipped = processor.Flip(webP, horizontal: false, vertical: true);
+
+// Note: WebP supports vertical flip natively. Horizontal flip requires re-encoding.
+```
+
+## Static Convenience API Examples
 
 ### Encode
 
+**RGBA to WebP:**
 ```csharp
-using System.Drawing;
-
-// 1. Decode PNG to RGBA bytes
-var rgbaData = LoadPngToRGBA("image.png", out int width, out int height);
-
-// 2. Encode to WebP
-byte[] webP = WebPImage.Encode(rgbaData, width, height, 75.0f);
-File.WriteAllBytes("output.webp", webP);
-
-// 3. RGB encoding (smaller files, no alpha)
-byte[] rgbData = ConvertRGBAtoRGB(rgbaData);
-byte[] rgbWebP = WebPImage.EncodeRGB(rgbData, width, height, 75.0f);
+byte[] rgbaData = new byte[width * height * 4];  // 4 bytes per pixel
+byte[] webP = WebPImage.Encode(rgbaData, width, height, quality: 85);
 ```
 
-### Advanced Encoding
+**RGB to WebP:**
+```csharp
+byte[] rgbData = new byte[width * height * 3];  // 3 bytes per pixel
+byte[] webP = WebPImage.EncodeRGB(rgbData, width, height, quality: 85);
+```
 
+**Lossless:**
+```csharp
+byte[] webP = WebPImage.EncodeLossless(rgbaData, width, height);
+```
+
+**Advanced Options:**
 ```csharp
 var options = new WebPEncodeOptions
 {
-    Quality = 80.0f,
+    Preset = WebPPreset.PHOTO,
+    Quality = 85.0f,
     Method = 6,
-    Lossless = false,
-    Pass = 6
+    SnsStrength = 75,
+    FilterStrength = 80,
+    AlphaCompression = 1
 };
-
-var encoded = WebPImage.EncodeAdvanced(rgbaData, width, height, options);
+byte[] webP = WebPImage.EncodeAdvanced(rgbaData, width, height, options);
 ```
 
 **Encoding Options:**
@@ -104,19 +227,28 @@ var encoded = WebPImage.EncodeAdvanced(rgbaData, width, height, options);
 - **Method**: 0-6 (encoding complexity, higher = slower + better compression)
 - **Pass**: 1-10 (analysis passes, higher = better compression)
 - **Lossless**: true/false
+- **Preset**: DEFAULT, PICTURE, PHOTO, DRAWING, ICON, TEXT
 
 ### Decode
 
+**Basic (RGBA):**
 ```csharp
-var webPData = File.ReadAllBytes("image.webp");
+byte[] webP = File.ReadAllBytes("input.webp");
+byte[] rgba = WebPImage.Decode(webP);
+```
 
-// Decode to RGBA (default)
-var rgba = WebPImage.Decode(webPData);
+**With Colorspace:**
+```csharp
+byte[] rgb = WebPImage.Decode(webP, WEBP_CSP_MODE.MODE_RGB);
+byte[] bgra = WebPImage.Decode(webP, WEBP_CSP_MODE.MODE_BGRA);
+byte[] argb = WebPImage.Decode(webP, WEBP_CSP_MODE.MODE_ARGB);
+```
 
-// Decode to specific color space
-var rgb = WebPImage.Decode(webPData, WEBP_CSP_MODE.MODE_RGB);
-var bgr = WebPImage.Decode(webPData, WEBP_CSP_MODE.MODE_BGR);
-var argb = WebPImage.Decode(webPData, WEBP_CSP_MODE.MODE_ARGB);
+**From File/Stream:**
+```csharp
+byte[] data = WebPImage.Decode("input.webp");
+using var stream = File.OpenRead("input.webp");
+byte[] data = WebPImage.Decode(stream);
 ```
 
 **Color Spaces:**
@@ -196,43 +328,77 @@ var version = WebPImage.GetVersion();
 Console.WriteLine($"libwebp version: {version}");
 ```
 
-## Why Use WebP Package?
+## Alternative Decoding Libraries
 
-**Advantages:**
-- ~500KB package size vs ~5MB for SkiaSharp
-- Native libwebp performance
-- Decode + scale in one operation (very fast)
-- Lower memory footprint
-- Cross-platform: Windows, Linux (x64, ARM64)
+You can use any image library to decode to RGBA bytes:
 
-**When to use Skia package instead:**
-- Multiple image formats (PNG, JPEG, BMP, GIF)
-- Image transformations on non-WebP images
-- Filters and effects
-- More complete image processing API
+**Using SkiaSharp:**
+```csharp
+using SkiaSharp;
+
+using var bitmap = SKBitmap.Decode("image.png");
+var rgbaData = new byte[bitmap.Width * bitmap.Height * 4];
+bitmap.GetPixels().CopyTo(rgbaData);
+```
+
+**Using SixLabors.ImageSharp:**
+```csharp
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+
+using var image = Image.Load<Rgba32>("image.png");
+var rgbaData = new byte[image.Width * image.Height * 4];
+image.CopyPixelDataTo(rgbaData);
+```
 
 ## Common Patterns
 
 ### Thumbnail Generation
 
+**Core Interface API:**
+```csharp
+var processor = new LegioImageWebPProcessor();
+var webPData = File.ReadAllBytes("large.webp");
+
+var sizes = new[] { 64, 128, 256, 512 };
+foreach (var size in sizes)
+{
+    var thumbnail = processor.Resize(webPData, size, size, LegioScaleMode.Fit);
+    File.WriteAllBytes($"thumb-{size}.webp", thumbnail);
+}
+```
+
+**Static API:**
 ```csharp
 var webPData = File.ReadAllBytes("large.webp");
 
-// Generate multiple thumbnails efficiently
 var sizes = new[] { 64, 128, 256, 512 };
 foreach (var size in sizes)
 {
     var thumbnail = WebPImage.Scale(webPData, size, size);
-    File.WriteAllBytes($"thumb-{size}.rgba", thumbnail);
+    File.WriteAllBytes($"thumb-{size}.webp", thumbnail);
 }
 ```
 
 ### Multi-Quality Encoding
 
+**Core Interface API:**
+```csharp
+var processor = new LegioImageWebPProcessor();
+var imageData = LoadPngToRGBA("image.png", out int width, out int height);
+
+var qualities = new[] { LegioEncodingQuality.Low, LegioEncodingQuality.Medium, LegioEncodingQuality.High };
+foreach (var quality in qualities)
+{
+    var webP = processor.Encode(imageData, LegioImageFormat.WebP, quality);
+    File.WriteAllBytes($"output-{quality}.webp", webP);
+}
+```
+
+**Static API:**
 ```csharp
 var imageData = LoadPngToRGBA("image.png", out int width, out int height);
 
-// Generate WebP at different quality levels
 var qualities = new[] { 30, 50, 70, 90 };
 foreach (var q in qualities)
 {
@@ -243,7 +409,9 @@ foreach (var q in qualities)
 
 ### Batch Processing
 
+**Core Interface API:**
 ```csharp
+var processor = new LegioImageWebPProcessor();
 var files = Directory.GetFiles("input", "*.webp");
 
 foreach (var file in files)
@@ -251,9 +419,8 @@ foreach (var file in files)
     var filename = Path.GetFileNameWithoutExtension(file);
     var data = File.ReadAllBytes(file);
 
-    // Decode with native scaling
-    var scaled = WebPImage.Scale(data, 800, 600);
-    File.WriteAllBytes(Path.Combine("output", $"{filename}_scaled.rgba"), scaled);
+    var resized = processor.Resize(data, 800, 600, LegioScaleMode.Fit);
+    File.WriteAllBytes(Path.Combine("output", $"{filename}_resized.webp"), resized);
 }
 ```
 
@@ -339,7 +506,8 @@ See [BUILD_WEBP.md](../../docs/BUILD_WEBP.md) for building instructions.
 ```csharp
 try
 {
-    var webP = WebPImage.Encode(imageData, width, height, 75.0f);
+    var processor = new LegioImageWebPProcessor();
+    var webP = processor.Encode(imageData, LegioImageFormat.WebP, LegioEncodingQuality.High);
 }
 catch (ArgumentException ex)
 {
@@ -349,13 +517,33 @@ catch (InvalidOperationException ex)
 {
     Console.WriteLine($"Encoding failed: {ex.Message}");
 }
+catch (NotSupportedException ex)
+{
+    Console.WriteLine($"Operation not supported: {ex.Message}");
+}
 catch (FileNotFoundException ex)
 {
     Console.WriteLine($"File not found: {ex.Message}");
 }
 ```
 
+## Which API Should You Use?
+
+### Use Core Interface API (LegioImageWebPProcessor) when:
+- Building frameworks or libraries that work with multiple image formats
+- Need consistent API across different format packages
+- Want to use Core enums (LegioEncodingQuality, LegioScaleMode, LegioResizeQuality)
+- Implementing dependency injection or abstraction layers
+- Working with existing Core-based code
+
+### Use Static API (WebPImage) when:
+- Need quick, simple operations
+- Only working with WebP format
+- Want direct access to WebP-specific features (like advanced options)
+- Performance-critical code paths (slightly less overhead)
+
 ## See Also
 
 - [BUILD_WEBP.md](../../docs/BUILD_WEBP.md) - Building native libwebp libraries
-- [src/LegioSoft.Imaging.WebP/README.md](../../src/LegioSoft.Imaging.WebP/README.md) - Complete API documentation
+- [WEBP_MANUAL.md](../../docs/WEBP_MANUAL.md) - Complete API documentation
+- [src/LegioSoft.Imaging.WebP/README.md](../../src/LegioSoft.Imaging.WebP/README.md) - Package documentation
