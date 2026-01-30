@@ -2,6 +2,8 @@ using LegioSoft.Imaging.Core;
 using LegioSoft.Imaging.Skia;
 using System;
 using LegioSoft.Imaging.Core.Enums;
+using LegioSoft.Imaging.Skia.SVG;
+using SkiaSharp;
 
 namespace SkiaExample;
 
@@ -12,6 +14,11 @@ class Program
         Console.WriteLine("=== LegioSoft.Imaging.Skia Examples ===\n");
 
         var exampleImage = "example.png";
+        var exampleSVG = "logo.svg";
+
+        var ren = new SvgRenderer();
+        
+        ren.RenderToFile(exampleSVG, "test.png", 10000, 2000, SKEncodedImageFormat.Png, 100);
 
         if (!File.Exists(exampleImage))
         {
