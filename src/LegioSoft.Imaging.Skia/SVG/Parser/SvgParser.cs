@@ -15,6 +15,7 @@ public class SvgParser
     private readonly SvgParseOptions _options;
     private int _elementCount;
     private int _currentDepth;
+    private readonly Dictionary<string, (SvgStyle? Fill, SvgStyle? Stroke)> _cssClasses = new();
 
     public SvgParser() : this(new SvgParseOptions())
     {
@@ -29,6 +30,7 @@ public class SvgParser
     {
         _elementCount = 0;
         _currentDepth = 0;
+        _cssClasses.Clear();
 
         var settings = new XmlReaderSettings
         {
@@ -42,6 +44,8 @@ public class SvgParser
         using var reader = XmlReader.Create(svgFilePath, settings);
         var doc = XDocument.Load(reader);
         var root = doc.Root!;
+
+        ParseCssStyles(root);
 
         var document = new SvgDocument
         {
@@ -92,15 +96,65 @@ public class SvgParser
             {
                 element.Id = child.Attribute("id")?.Value ?? string.Empty;
                 element.Transform = ParseTransform(child.Attribute("transform")?.Value);
-                element.FillStyle = ParseStyle(child, true);
-                element.StrokeStyle = ParseStyle(child, false);
-                
+                var classAttr = child.Attribute("class")?.Value;
+
+                element.FillStyle = ParseStyle(child, classAttr, true);
+                element.StrokeStyle = ParseStyle(child, classAttr, false);
+
                 group.Children ??= new List<SvgElement>();
                 group.Children.Add(element);
             }
         }
 
         _currentDepth--;
+    }
+
+    private void ParseCssStyles(XElement root)
+    {
+        foreach (var styleElement in root.Descendants(root.Name.Namespace + "style"))
+        {
+            var cssText = styleElement.Value;
+            var classRegex = new Regex(@"\.([a-zA-Z0-9_-]+)\s*\{([^}]+)\}");
+            var matches = classRegex.Matches(cssText);
+
+            foreach (Match match in matches)
+            {
+                string className = match.Groups[1].Value;
+                string classContent = match.Groups[2].Value;
+
+                var fillMatch = FillStyleRegex.Match(classContent);
+                var strokeMatch = StrokeStyleRegex.Match(classContent);
+
+                SvgStyle? fillStyle = null;
+                SvgStyle? strokeStyle = null;
+
+                if (fillMatch.Success)
+                {
+                    string colorVal = fillMatch.Groups[1].Value.Trim();
+                    if (!string.IsNullOrEmpty(colorVal) && !colorVal.Equals("none", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (SKColor.TryParse(colorVal, out SKColor color))
+                        {
+                            fillStyle = new SvgStyle { Color = color };
+                        }
+                    }
+                }
+
+                if (strokeMatch.Success)
+                {
+                    string colorVal = strokeMatch.Groups[1].Value.Trim();
+                    if (!string.IsNullOrEmpty(colorVal) && !colorVal.Equals("none", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (SKColor.TryParse(colorVal, out SKColor color))
+                        {
+                            strokeStyle = new SvgStyle { Color = color };
+                        }
+                    }
+                }
+
+                _cssClasses[className] = (fillStyle: fillStyle, strokeStyle: strokeStyle);
+            }
+        }
     }
 
     private SvgGroup ParseGroup(XElement element, XNamespace ns)
@@ -239,7 +293,7 @@ public class SvgParser
         return matrix;
     }
 
-    private SvgStyle? ParseStyle(XElement element, bool isFill)
+    private SvgStyle? ParseStyle(XElement element, string? classAttr, bool isFill)
     {
         string? val = element.Attribute(isFill ? "fill" : "stroke")?.Value;
 
@@ -253,7 +307,24 @@ public class SvgParser
             }
         }
 
-        if (string.IsNullOrEmpty(val) || val.Equals("none", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(val))
+        {
+            if (!string.IsNullOrEmpty(classAttr))
+            {
+                var classes = classAttr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var className in classes)
+                {
+                    if (_cssClasses.TryGetValue(className, out var classStyles))
+                    {
+                        var style = isFill ? classStyles.Fill : classStyles.Stroke;
+                        if (style != null) return style;
+                    }
+                }
+            }
+            return null;
+        }
+
+        if (val.Equals("none", StringComparison.OrdinalIgnoreCase))
             return null;
 
         if (!SKColor.TryParse(val, out SKColor color))
