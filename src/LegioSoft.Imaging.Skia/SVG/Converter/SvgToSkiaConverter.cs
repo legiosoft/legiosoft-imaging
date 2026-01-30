@@ -4,35 +4,79 @@ using SkiaSharp;
 
 namespace LegioSoft.Imaging.Skia.SVG.Converter;
 
+/// <summary>
+/// Converts SVG documents to SKBitmap using the Visitor pattern.
+/// </summary>
+/// <remarks>
+/// <b>Thread Safety Warning:</b> This class is stateful and not thread-safe.
+/// Do not share instances across threads. Always create a new SvgToSkiaConverter for each conversion:
+/// <code>
+/// var converter = new SvgToSkiaConverter();
+/// var bitmap = converter.Convert(document, width, height);
+/// </code>
+/// 
+/// State maintained during conversion:
+/// - <see cref="_fillStack"/> and <see cref="_strokeStack"/> for cascading style inheritance
+/// - <see cref="_sharedPaint"/> for efficient drawing operations
+/// </remarks>
 public class SvgToSkiaConverter : ISvgElementVisitor
 {
     private readonly Stack<SvgStyle> _fillStack = new Stack<SvgStyle>();
     private readonly Stack<SvgStyle> _strokeStack = new Stack<SvgStyle>();
     private readonly SKPaint _sharedPaint = new SKPaint { IsAntialias = true };
+    private SvgStyle? _defaultFillStyle;
 
     public SKBitmap Convert(SvgDocument document, int width, int height)
     {
+        if (document.RootElement == null)
+            throw new InvalidOperationException("SVG document has no root element");
+        if (document.ViewBox.Width <= 0 || document.ViewBox.Height <= 0)
+            throw new InvalidOperationException($"Invalid ViewBox: {document.ViewBox}");
+
         var bitmap = new SKBitmap(width, height);
         using var canvas = new SKCanvas(bitmap);
 
         canvas.Clear(SKColors.Transparent);
 
-        float scaleX = width / document.ViewBox.Width;
-        float scaleY = height / document.ViewBox.Height;
+        float scaleX = (float)width / document.ViewBox.Width;
+        float scaleY = (float)height / document.ViewBox.Height;
         SKMatrix initialMatrix = SKMatrix.CreateScale(scaleX, scaleY);
         initialMatrix = initialMatrix.PostConcat(SKMatrix.CreateTranslation(
             -document.ViewBox.Left * scaleX,
             -document.ViewBox.Top * scaleY
         ));
 
+        DebugPrint(document.RootElement);
+
         document.RootElement?.Accept(this, canvas, initialMatrix);
 
         return bitmap;
+
+        void DebugPrint(SvgElement? element, int depth = 0)
+        {
+            if (element == null) return;
+
+            string indent = new string(' ', depth * 2);
+            System.Diagnostics.Debug.WriteLine($"{indent}{element.GetType().Name}: fill={element.FillStyle?.Color.ToString() ?? "null"}, stroke={element.StrokeStyle?.Color.ToString() ?? "null"}");
+
+            if (element is SvgGroup group)
+            {
+                foreach (var child in group.Children ?? Enumerable.Empty<SvgElement>())
+                {
+                    DebugPrint(child, depth + 1);
+                }
+            }
+        }
     }
 
     private SvgStyle? GetEffectiveFillStyle(SvgStyle? elementFillStyle)
     {
         return elementFillStyle ?? (_fillStack.Count > 0 ? _fillStack.Peek() : null);
+    }
+
+    private SvgStyle GetDefaultFillStyle()
+    {
+        return _defaultFillStyle ??= new SvgStyle { Color = SKColors.Black };
     }
 
     private SvgStyle? GetEffectiveStrokeStyle(SvgStyle? elementStrokeStyle)
@@ -68,6 +112,11 @@ public class SvgToSkiaConverter : ISvgElementVisitor
                 ConfigurePaint(effectiveFillStyle, true);
                 canvas.DrawRect(rect, _sharedPaint);
             }
+            else
+            {
+                ConfigurePaint(GetDefaultFillStyle(), true);
+                canvas.DrawRect(rect, _sharedPaint);
+            }
 
             var effectiveStrokeStyle = GetEffectiveStrokeStyle(element.StrokeStyle);
             if (effectiveStrokeStyle != null)
@@ -89,6 +138,11 @@ public class SvgToSkiaConverter : ISvgElementVisitor
         if (effectiveFillStyle != null)
         {
             ConfigurePaint(effectiveFillStyle, true);
+            canvas.DrawCircle(element.Cx, element.Cy, element.Radius, _sharedPaint);
+        }
+        else
+        {
+            ConfigurePaint(GetDefaultFillStyle(), true);
             canvas.DrawCircle(element.Cx, element.Cy, element.Radius, _sharedPaint);
         }
 
@@ -118,6 +172,11 @@ public class SvgToSkiaConverter : ISvgElementVisitor
         if (effectiveFillStyle != null)
         {
             ConfigurePaint(effectiveFillStyle, true);
+            canvas.DrawOval(rect, _sharedPaint);
+        }
+        else
+        {
+            ConfigurePaint(GetDefaultFillStyle(), true);
             canvas.DrawOval(rect, _sharedPaint);
         }
 
@@ -222,6 +281,11 @@ public class SvgToSkiaConverter : ISvgElementVisitor
         if (effectiveFillStyle != null)
         {
             ConfigurePaint(effectiveFillStyle, true);
+            canvas.DrawPath(path, _sharedPaint);
+        }
+        else
+        {
+            ConfigurePaint(GetDefaultFillStyle(), true);
             canvas.DrawPath(path, _sharedPaint);
         }
 
