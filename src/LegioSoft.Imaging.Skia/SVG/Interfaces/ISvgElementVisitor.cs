@@ -73,4 +73,14 @@ public interface ISvgElementVisitor
     void Visit(SvgCursor element, SKCanvas canvas, SKMatrix transform);
     void Visit(SvgSolidColor element, SKCanvas canvas, SKMatrix transform);
     void Visit(SvgFont element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgFontFace element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgGlyph element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgMissingGlyph element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgHKern element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgVKern element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgFontFaceSrc element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgFontFaceUri element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgFontFaceFormat element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgFontFaceName element, SKCanvas canvas, SKMatrix transform);
+    void Visit(SvgColorProfile element, SKCanvas canvas, SKMatrix transform);
 }
