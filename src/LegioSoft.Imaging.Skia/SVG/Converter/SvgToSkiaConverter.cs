@@ -899,6 +899,46 @@ public class SvgToSkiaConverter : ISvgElementVisitor
     {
     }
 
+    public void Visit(SvgFontFace element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgGlyph element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgMissingGlyph element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgHKern element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgVKern element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFontFaceSrc element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFontFaceUri element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFontFaceFormat element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFontFaceName element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgColorProfile element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
     private void RenderPath(SKPath path, SvgElement element, SKCanvas canvas, SKMatrix transform, bool shouldDisposePath = true)
     {
         int saveCount = canvas.Save();
