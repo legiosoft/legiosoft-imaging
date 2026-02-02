@@ -272,6 +272,637 @@ public class SvgToSkiaConverter : ISvgElementVisitor
         }
     }
 
+    public void Visit(SvgDefs element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgDesc element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgTitle element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgSymbol element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix symbolMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, symbolMatrix);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgUse element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgImage element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Bitmap == null) return;
+
+        SKRect dest = SKRect.Create(element.X, element.Y, element.Width, element.Height);
+
+        int saveCount = canvas.Save();
+        canvas.SetMatrix(transform);
+
+        canvas.DrawBitmap(element.Bitmap, dest);
+
+        canvas.RestoreToCount(saveCount);
+    }
+
+    public void Visit(SvgSwitch element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix switchMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, switchMatrix);
+            break;
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgStyleElement element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgForeignObject element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgText element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (string.IsNullOrEmpty(element.Text)) return;
+
+        int saveCount = canvas.Save();
+        canvas.SetMatrix(transform);
+
+        var effectiveFillStyle = GetEffectiveFillStyle(element.FillStyle);
+        var textStyle = effectiveFillStyle ?? GetDefaultFillStyle();
+
+        ConfigurePaint(textStyle, true);
+
+        SKTypeface typeface = SKTypeface.Default;
+        if (!string.IsNullOrEmpty(element.FontFamily))
+        {
+            typeface = SKTypeface.FromFamilyName(element.FontFamily);
+        }
+
+        SKFontStyle fontStyle = SKFontStyle.Normal;
+        if (!string.IsNullOrEmpty(element.FontWeight) && element.FontWeight.Equals("bold", StringComparison.OrdinalIgnoreCase))
+        {
+            fontStyle = SKFontStyle.Bold;
+        }
+        else if (!string.IsNullOrEmpty(element.FontStyle) && element.FontStyle.Equals("italic", StringComparison.OrdinalIgnoreCase))
+        {
+            fontStyle = SKFontStyle.Italic;
+        }
+
+        var font = new SKFont(typeface ?? SKTypeface.Default, element.FontSize)
+        {
+            Edging = SKFontEdging.Antialias
+        };
+
+        var paint = new SKPaint
+        {
+            Color = textStyle.Color,
+            IsAntialias = true
+        };
+
+        SKPoint position = new SKPoint(element.X, element.Y);
+        canvas.DrawText(element.Text, position.X, position.Y, font, paint);
+
+        if (element.Children != null)
+        {
+            foreach (var child in element.Children)
+            {
+                child.Accept(this, canvas, transform);
+            }
+        }
+
+        canvas.RestoreToCount(saveCount);
+
+        typeface?.Dispose();
+        font.Dispose();
+        paint.Dispose();
+    }
+
+    public void Visit(SvgTSpan element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (string.IsNullOrEmpty(element.Text)) return;
+
+        int saveCount = canvas.Save();
+        canvas.SetMatrix(transform);
+
+        var effectiveFillStyle = GetEffectiveFillStyle(element.FillStyle);
+        var textStyle = effectiveFillStyle ?? GetDefaultFillStyle();
+
+        ConfigurePaint(textStyle, true);
+
+        SKTypeface typeface = SKTypeface.Default;
+        if (!string.IsNullOrEmpty(element.FontFamily))
+        {
+            typeface = SKTypeface.FromFamilyName(element.FontFamily);
+        }
+
+        SKFontStyle fontStyle = SKFontStyle.Normal;
+        if (!string.IsNullOrEmpty(element.FontWeight) && element.FontWeight.Equals("bold", StringComparison.OrdinalIgnoreCase))
+        {
+            fontStyle = SKFontStyle.Bold;
+        }
+        else if (!string.IsNullOrEmpty(element.FontStyle) && element.FontStyle.Equals("italic", StringComparison.OrdinalIgnoreCase))
+        {
+            fontStyle = SKFontStyle.Italic;
+        }
+
+        var font = new SKFont(typeface ?? SKTypeface.Default, element.FontSize)
+        {
+            Edging = SKFontEdging.Antialias
+        };
+
+        var paint = new SKPaint
+        {
+            Color = textStyle.Color,
+            IsAntialias = true
+        };
+
+        SKPoint position = new SKPoint(element.X + element.Dx, element.Y + element.Dy);
+        canvas.DrawText(element.Text, position.X, position.Y, font, paint);
+
+        if (element.Children != null)
+        {
+            foreach (var child in element.Children)
+            {
+                child.Accept(this, canvas, transform);
+            }
+        }
+
+        canvas.RestoreToCount(saveCount);
+
+        typeface?.Dispose();
+        font.Dispose();
+        paint.Dispose();
+    }
+
+    public void Visit(SvgTextPath element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgAnchor element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix anchorMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, anchorMatrix);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgAltGlyph element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix altGlyphMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, altGlyphMatrix);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgAltGlyphDef element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix altGlyphDefMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, altGlyphDefMatrix);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgAltGlyphItem element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.GlyphRefs == null || element.GlyphRefs.Count == 0) return;
+
+        SKMatrix altGlyphItemMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var glyphRef in element.GlyphRefs)
+        {
+            glyphRef.Accept(this, canvas, altGlyphItemMatrix);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgGlyphRef element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgMarker element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix markerMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, markerMatrix);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgMask element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix maskMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, maskMatrix);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgClipPath element, SKCanvas canvas, SKMatrix transform)
+    {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix clipPathMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Push(element.FillStyle);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Push(element.StrokeStyle);
+        }
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, clipPathMatrix);
+        }
+
+        if (element.StrokeStyle != null)
+        {
+            _strokeStack.Pop();
+        }
+
+        if (element.FillStyle != null)
+        {
+            _fillStack.Pop();
+        }
+    }
+
+    public void Visit(SvgLinearGradient element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgRadialGradient element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgPattern element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFilter element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeBlend element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeColorMatrix element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeComponentTransfer element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeFuncR element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeFuncG element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeFuncB element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeFuncA element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeComposite element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeConvolveMatrix element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeDiffuseLighting element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeDisplacementMap element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeDistantLight element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeFlood element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeGaussianBlur element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeImage element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeMerge element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeMergeNode element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeMorphology element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeOffset element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFePointLight element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeSpecularLighting element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeSpotLight element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeTile element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeTurbulence element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFeDropShadow element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgAnimate element, SKCanvas canvas, SKMatrix transform)
+    {
+        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
+    }
+
+    public void Visit(SvgAnimateMotion element, SKCanvas canvas, SKMatrix transform)
+    {
+        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
+    }
+
+    public void Visit(SvgAnimateTransform element, SKCanvas canvas, SKMatrix transform)
+    {
+        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
+    }
+
+    public void Visit(SvgMPath element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgSet element, SKCanvas canvas, SKMatrix transform)
+    {
+        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
+    }
+
+    public void Visit(SvgView element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgScript element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgMetadata element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgCursor element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgSolidColor element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
+    public void Visit(SvgFont element, SKCanvas canvas, SKMatrix transform)
+    {
+    }
+
     private void RenderPath(SKPath path, SvgElement element, SKCanvas canvas, SKMatrix transform, bool shouldDisposePath = true)
     {
         int saveCount = canvas.Save();
