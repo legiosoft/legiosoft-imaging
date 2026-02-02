@@ -7,8 +7,8 @@ public class SvgMask : SvgElement
 {
     public float? X { get; set; }
     public float? Y { get; set; }
-    public? Width { get; set; }
-    public? Height { get; set; }
+    public float? Width { get; set; }
+    public float? Height { get; set; }
     public string? MaskUnits { get; set; }
     public string? MaskContentUnits { get; set; }
     public List<SvgElement>? Children { get; set; }

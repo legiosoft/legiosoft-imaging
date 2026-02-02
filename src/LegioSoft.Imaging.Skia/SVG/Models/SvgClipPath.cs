@@ -7,8 +7,8 @@ public class SvgClipPath : SvgElement
 {
     public float? X { get; set; }
     public float? Y { get; set; }
-    public? Width { get; set; }
-    public? Height { get; set; }
+    public float? Width { get; set; }
+    public float? Height { get; set; }
     public string? ClipPathUnits { get; set; }
     public List<SvgElement>? Children { get; set; }
 
