@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using LegioSoft.Imaging.Skia.SVG.Helpers;
 using LegioSoft.Imaging.Skia.SVG.Models;
 using SkiaSharp;
 
@@ -133,7 +134,7 @@ public class SvgParser
                     string colorVal = fillMatch.Groups[1].Value.Trim();
                     if (!string.IsNullOrEmpty(colorVal) && !colorVal.Equals("none", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (SKColor.TryParse(colorVal, out SKColor color))
+                        if (SvgColorHelper.TryParse(colorVal, out SKColor color))
                         {
                             fillStyle = new SvgStyle { Color = color };
                         }
@@ -145,7 +146,7 @@ public class SvgParser
                     string colorVal = strokeMatch.Groups[1].Value.Trim();
                     if (!string.IsNullOrEmpty(colorVal) && !colorVal.Equals("none", StringComparison.OrdinalIgnoreCase))
                     {
-                        if (SKColor.TryParse(colorVal, out SKColor color))
+                        if (SvgColorHelper.TryParse(colorVal, out SKColor color))
                         {
                             strokeStyle = new SvgStyle { Color = color };
                         }
@@ -327,7 +328,7 @@ public class SvgParser
         if (val.Equals("none", StringComparison.OrdinalIgnoreCase))
             return null;
 
-        if (!SKColor.TryParse(val, out SKColor color))
+        if (!SvgColorHelper.TryParse(val, out SKColor color))
             return null;
 
         var styleObj = new SvgStyle
