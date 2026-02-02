@@ -101,6 +101,16 @@ public class SvgParser
                 "cursor" => ParseCursor(child),
                 "solidcolor" => ParseSolidColor(child),
                 "font" => ParseFont(child),
+                "font-face" => ParseFontFace(child),
+                "glyph" => ParseGlyph(child),
+                "missing-glyph" => ParseMissingGlyph(child),
+                "hkern" => ParseHKern(child),
+                "vkern" => ParseVKern(child),
+                "font-face-src" => ParseFontFaceSrc(child),
+                "font-face-uri" => ParseFontFaceUri(child),
+                "font-face-format" => ParseFontFaceFormat(child),
+                "font-face-name" => ParseFontFaceName(child),
+                "color-profile" => ParseColorProfile(child),
                 _ => null
             };
 
