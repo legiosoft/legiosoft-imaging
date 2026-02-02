@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <!-- Test <animateMotion> -->
+    <animateMotion id="test-animateMotion" path="M10,10 L100,100" dur="2s" repeatCount="indefinite" />
+    
+    <!-- Test <animateTransform> -->
+    <animateTransform id="test-animateTransform" attributeName="transform" type="rotate" from="0 200 200" to="360 200 200" dur="3s" />
+    
+    <!-- Test <set> -->
+    <set id="test-set" attributeName="opacity" to="0.5" begin="1s" dur="1s" />
+    
+    <!-- Test <mpath> -->
+    <path id="motionPath" d="M50,50 Q150,150 250,50" />
+    <mpath id="test-mpath" href="#motionPath" />
+    
+    <!-- Test <solidColor> -->
+    <solidColor id="test-solidColor" solid-color="#ff0000" />
+    
+    <!-- Test <cursor> -->
+    <cursor id="test-cursor" x="0" y="0" href="cursor.png" />
+    
+    <!-- Test <font> -->
+    <font id="test-font" font-family="Arial" font-style="normal" font-weight="normal" horiz-adv-x="1000">
+      <font-face font-family="Arial" units-per-em="1000" />
+      <missing-glyph horiz-adv-x="1000" />
+    </font>
+  </defs>
+
+  <!-- Test <view> -->
+  <view id="test-view" viewBox="0 0 200 200" zoomAndPan="magnify" />
+
+  <!-- Test <script> -->
+  <script type="text/javascript">
+    console.log("This is a test script");
+  </script>
+
+  <!-- Test <metadata> -->
+  <metadata>
+    Test SVG - contains all 10 test tags
+  </metadata>
+
+  <!-- Basic shapes for visual verification -->
+  <rect x="50" y="50" width="100" height="100" fill="blue" />
+  <circle cx="300" cy="150" r="50" fill="green" />
+</svg>

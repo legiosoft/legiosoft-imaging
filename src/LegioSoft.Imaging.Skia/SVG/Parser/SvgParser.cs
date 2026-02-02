@@ -12,6 +12,7 @@ public class SvgParser
 {
     private static readonly Regex FillStyleRegex = new(@"fill\s*:\s*([^;]+)", RegexOptions.Compiled);
     private static readonly Regex StrokeStyleRegex = new(@"stroke\s*:\s*([^;]+)", RegexOptions.Compiled);
+    private static readonly XNamespace xlinkNamespace = "http://www.w3.org/1999/xlink";
 
     private readonly SvgParseOptions _options;
     private int _elementCount;
@@ -90,6 +91,16 @@ public class SvgParser
                 "polyline" => ParsePolyline(child),
                 "polygon" => ParsePolygon(child),
                 "path" => ParsePath(child),
+                "animatemotion" => ParseAnimateMotion(child),
+                "animatetransform" => ParseAnimateTransform(child),
+                "mpath" => ParseMPath(child),
+                "set" => ParseSet(child),
+                "view" => ParseView(child),
+                "script" => ParseScript(child),
+                "metadata" => ParseMetadata(child),
+                "cursor" => ParseCursor(child),
+                "solidcolor" => ParseSolidColor(child),
+                "font" => ParseFont(child),
                 _ => null
             };
 
@@ -234,6 +245,152 @@ public class SvgParser
         return new SvgPath
         {
             Path = path
+        };
+    }
+
+    private SvgAnimateMotion ParseAnimateMotion(XElement element)
+    {
+        return new SvgAnimateMotion
+        {
+            Path = element.Attribute("path")?.Value,
+            KeyPoints = element.Attribute("keyPoints")?.Value,
+            KeyTimes = element.Attribute("keyTimes")?.Value,
+            Rotate = element.Attribute("rotate")?.Value,
+            From = element.Attribute("from")?.Value,
+            To = element.Attribute("to")?.Value,
+            By = element.Attribute("by")?.Value,
+            Begin = element.Attribute("begin")?.Value,
+            Dur = element.Attribute("dur")?.Value,
+            RepeatCount = element.Attribute("repeatCount")?.Value,
+            CalcMode = element.Attribute("calcMode")?.Value
+        };
+    }
+
+    private SvgAnimateTransform ParseAnimateTransform(XElement element)
+    {
+        return new SvgAnimateTransform
+        {
+            Type = element.Attribute("type")?.Value,
+            From = element.Attribute("from")?.Value,
+            To = element.Attribute("to")?.Value,
+            By = element.Attribute("by")?.Value,
+            Begin = element.Attribute("begin")?.Value,
+            Dur = element.Attribute("dur")?.Value,
+            RepeatCount = element.Attribute("repeatCount")?.Value,
+            Additive = element.Attribute("additive")?.Value,
+            Accumulate = element.Attribute("accumulate")?.Value
+        };
+    }
+
+    private SvgMPath ParseMPath(XElement element)
+    {
+        return new SvgMPath
+        {
+            Path = element.Attribute("path")?.Value,
+            Href = element.Attribute("href")?.Value ?? element.Attribute(xlinkNamespace + "href")?.Value
+        };
+    }
+
+    private SvgSet ParseSet(XElement element)
+    {
+        return new SvgSet
+        {
+            AttributeName = element.Attribute("attributeName")?.Value,
+            To = element.Attribute("to")?.Value,
+            Begin = element.Attribute("begin")?.Value,
+            Dur = element.Attribute("dur")?.Value
+        };
+    }
+
+    private SvgView ParseView(XElement element)
+    {
+        return new SvgView
+        {
+            ViewBox = ParseViewBoxAttribute(element),
+            ZoomAndPan = GetFloat(element, "zoomAndPan"),
+            ViewTargetX = GetFloat(element, "viewTargetX"),
+            ViewTargetY = GetFloat(element, "viewTargetY")
+        };
+    }
+
+    private SKRect? ParseViewBoxAttribute(XElement element)
+    {
+        var vb = element.Attribute("viewBox");
+        if (vb != null)
+        {
+            var values = new float[4];
+            int valueIndex = 0;
+            int i = 0;
+            string vbValue = vb.Value;
+
+            while (i < vbValue.Length && valueIndex < 4)
+            {
+                while (i < vbValue.Length && (vbValue[i] == ' ' || vbValue[i] == ',')) i++;
+                if (i >= vbValue.Length) break;
+
+                int start = i;
+                while (i < vbValue.Length && (char.IsDigit(vbValue[i]) || vbValue[i] == '.' || vbValue[i] == '-' || vbValue[i] == '+' || vbValue[i] == 'e' || vbValue[i] == 'E')) i++;
+
+                if (float.TryParse(vbValue.AsSpan(start, i - start), NumberStyles.Float, CultureInfo.InvariantCulture, out float num))
+                {
+                    values[valueIndex++] = num;
+                }
+            }
+
+            if (valueIndex == 4)
+                return SKRect.Create(values[0], values[1], values[2], values[3]);
+        }
+
+        return null;
+    }
+
+    private SvgScript ParseScript(XElement element)
+    {
+        return new SvgScript
+        {
+            Type = element.Attribute("type")?.Value,
+            Content = element.Value
+        };
+    }
+
+    private SvgMetadata ParseMetadata(XElement element)
+    {
+        return new SvgMetadata
+        {
+            Content = element.Value
+        };
+    }
+
+    private SvgCursor ParseCursor(XElement element)
+    {
+        return new SvgCursor
+        {
+            X = GetFloat(element, "x"),
+            Y = GetFloat(element, "y"),
+            Href = element.Attribute("href")?.Value ?? element.Attribute(xlinkNamespace + "href")?.Value
+        };
+    }
+
+    private SvgSolidColor ParseSolidColor(XElement element)
+    {
+        return new SvgSolidColor
+        {
+            SolidColor = element.Attribute("solid-color")?.Value,
+            Opacity = GetFloat(element, "solid-opacity")
+        };
+    }
+
+    private SvgFont ParseFont(XElement element)
+    {
+        return new SvgFont
+        {
+            FontFamily = element.Attribute("font-family")?.Value,
+            FontStyle = element.Attribute("font-style")?.Value,
+            FontWeight = element.Attribute("font-weight")?.Value,
+            FontSize = GetFloat(element, "font-size"),
+            HorizAdvX = element.Attribute("horiz-adv-x")?.Value,
+            VertOriginY = element.Attribute("vert-origin-y")?.Value,
+            VertAdvY = element.Attribute("vert-adv-y")?.Value
         };
     }
 

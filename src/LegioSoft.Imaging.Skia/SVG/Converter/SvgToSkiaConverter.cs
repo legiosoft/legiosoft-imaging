@@ -857,17 +857,14 @@ public class SvgToSkiaConverter : ISvgElementVisitor
 
     public void Visit(SvgAnimate element, SKCanvas canvas, SKMatrix transform)
     {
-        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
     }
 
     public void Visit(SvgAnimateMotion element, SKCanvas canvas, SKMatrix transform)
     {
-        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
     }
 
     public void Visit(SvgAnimateTransform element, SKCanvas canvas, SKMatrix transform)
     {
-        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
     }
 
     public void Visit(SvgMPath element, SKCanvas canvas, SKMatrix transform)
@@ -876,50 +873,6 @@ public class SvgToSkiaConverter : ISvgElementVisitor
 
     public void Visit(SvgSet element, SKCanvas canvas, SKMatrix transform)
     {
-        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
-    }
-
-    public void Visit(SvgView element, SKCanvas canvas, SKMatrix transform)
-    {
-    }
-
-    public void Visit(SvgScript element, SKCanvas canvas, SKMatrix transform)
-    {
-    }
-
-    public void Visit(SvgMetadata element, SKCanvas canvas, SKMatrix transform)
-    {
-    }
-
-    public void Visit(SvgCursor element, SKCanvas canvas, SKMatrix transform)
-    {
-    }
-
-    public void Visit(SvgSolidColor element, SKCanvas canvas, SKMatrix transform)
-    {
-    }
-
-    public void Visit(SvgFont element, SKCanvas canvas, SKMatrix transform)
-    {
-    }
-
-    public void Visit(SvgAnimateMotion element, SKCanvas canvas, SKMatrix transform)
-    {
-        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
-    }
-
-    public void Visit(SvgAnimateTransform element, SKCanvas canvas, SKMatrix transform)
-    {
-        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
-    }
-
-    public void Visit(SvgMPath element, SKCanvas canvas, SKMatrix transform)
-    {
-    }
-
-    public void Visit(SvgSet element, SKCanvas canvas, SKMatrix transform)
-    {
-        throw new NotSupportedException("SVG animations are not supported by LegioSoft.Imaging.Skia. Static SVGs only.");
     }
 
     public void Visit(SvgView element, SKCanvas canvas, SKMatrix transform)
