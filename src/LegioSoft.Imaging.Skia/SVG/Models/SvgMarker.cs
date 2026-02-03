@@ -5,6 +5,8 @@ namespace LegioSoft.Imaging.Skia.SVG.Models;
 
 public class SvgMarker : SvgElement
 {
+    public SKRect? ViewBox { get; set; }
+    public string? PreserveAspectRatio { get; set; }
     public float? RefX { get; set; }
     public float? RefY { get; set; }
     public float? MarkerWidth { get; set; }
@@ -12,6 +14,11 @@ public class SvgMarker : SvgElement
     public string? MarkerUnits { get; set; }
     public float? Orient { get; set; }
     public string? OrientType { get; set; }
+    public float Opacity { get; set; } = 1.0f;
+    public string? Overflow { get; set; }
+    public string? Clip { get; set; }
+    public string Class { get; set; } = string.Empty;
+    public string Style { get; set; } = string.Empty;
     public List<SvgElement>? Children { get; set; }
 
     public override void Accept(ISvgElementVisitor visitor, SKCanvas canvas, SKMatrix transform)

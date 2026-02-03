@@ -5,11 +5,12 @@ namespace LegioSoft.Imaging.Skia.SVG.Models;
 
 public class SvgClipPath : SvgElement
 {
-    public float? X { get; set; }
-    public float? Y { get; set; }
-    public float? Width { get; set; }
-    public float? Height { get; set; }
     public string? ClipPathUnits { get; set; }
+    public string Class { get; set; } = string.Empty;
+    public string Style { get; set; } = string.Empty;
+    public string XmlSpace { get; set; } = string.Empty;
+    public string XmlLang { get; set; } = string.Empty;
+    public string XmlBase { get; set; } = string.Empty;
     public List<SvgElement>? Children { get; set; }
 
     public override void Accept(ISvgElementVisitor visitor, SKCanvas canvas, SKMatrix transform)

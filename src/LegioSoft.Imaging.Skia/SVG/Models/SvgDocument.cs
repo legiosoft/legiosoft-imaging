@@ -8,6 +8,7 @@ public class SvgDocument : IDisposable
     public float Width { get; set; }
     public float Height { get; set; }
     public SvgElement? RootElement { get; set; }
+    public Dictionary<string, SvgElement> ElementsById { get; set; } = new Dictionary<string, SvgElement>(StringComparer.OrdinalIgnoreCase);
     public string Xmlns { get; set; } = string.Empty;
     public string XmlnsXlink { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
