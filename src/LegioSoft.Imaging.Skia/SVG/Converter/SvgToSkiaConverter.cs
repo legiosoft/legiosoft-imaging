@@ -69,6 +69,84 @@ public class SvgToSkiaConverter : ISvgElementVisitor
         }
     }
 
+    private (SKMatrix matrix, SKRect viewBox) ComputeTransformAndViewport(SvgDocument document, int width, int height)
+    {
+        SKRect viewBox = document.ViewBox;
+        
+        float scaleX = (float)width / viewBox.Width;
+        float scaleY = (float)height / viewBox.Height;
+        
+        if (!string.IsNullOrEmpty(document.PreserveAspectRatio))
+        {
+            var parts = document.PreserveAspectRatio.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string alignment = parts.Length > 0 ? parts[0] : "xMidYMid";
+            string meetOrSlice = parts.Length > 1 ? parts[1] : "meet";
+
+            bool shouldPreserveAspectRatio = !string.Equals(alignment, "none", StringComparison.OrdinalIgnoreCase);
+            
+            if (shouldPreserveAspectRatio)
+            {
+                if (string.Equals(meetOrSlice, "slice", StringComparison.OrdinalIgnoreCase))
+                {
+                    scale = Math.Max(scaleX, scaleY);
+                }
+                else
+                {
+                    scale = Math.Min(scaleX, scaleY);
+                }
+                scaleX = scaleY = scale;
+            }
+        }
+
+        float translateX = -viewBox.Left * scaleX;
+        float translateY = -viewBox.Top * scaleY;
+        
+        if (!string.IsNullOrEmpty(document.PreserveAspectRatio) && !string.Equals(document.PreserveAspectRatio.Split(' ')[0], "none", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = document.PreserveAspectRatio.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            string alignment = parts.Length > 0 ? parts[0] : "xMidYMid";
+            
+            float contentWidth = viewBox.Width * scaleX;
+            float contentHeight = viewBox.Height * scaleY;
+            
+            if (alignment.StartsWith("xMin", StringComparison.OrdinalIgnoreCase))
+            {
+                translateX = -viewBox.Left * scaleX;
+            }
+            else if (alignment.StartsWith("xMid", StringComparison.OrdinalIgnoreCase))
+            {
+                translateX = -viewBox.Left * scaleX + (width - contentWidth) / 2;
+            }
+            else if (alignment.StartsWith("xMax", StringComparison.OrdinalIgnoreCase))
+            {
+                translateX = -viewBox.Left * scaleX + (width - contentWidth);
+            }
+            
+            if (alignment.Contains("YMin", StringComparison.OrdinalIgnoreCase))
+            {
+                translateY = -viewBox.Top * scaleY;
+            }
+            else if (alignment.Contains("YMid", StringComparison.OrdinalIgnoreCase))
+            {
+                translateY = -viewBox.Top * scaleY + (height - contentHeight) / 2;
+            }
+            else if (alignment.Contains("YMax", StringComparison.OrdinalIgnoreCase))
+            {
+                translateY = -viewBox.Top * scaleY + (height - contentHeight);
+            }
+        }
+        
+        translateX += document.X;
+        translateY += document.Y;
+
+        SKMatrix initialMatrix = SKMatrix.CreateScale(scaleX, scaleY);
+        initialMatrix = initialMatrix.PostConcat(SKMatrix.CreateTranslation(translateX, translateY));
+
+        return (initialMatrix, viewBox);
+    }
+
+    private float scale;
+
     private SvgStyle? GetEffectiveFillStyle(SvgStyle? elementFillStyle)
     {
         return elementFillStyle ?? (_fillStack.Count > 0 ? _fillStack.Peek() : null);
@@ -89,6 +167,26 @@ public class SvgToSkiaConverter : ISvgElementVisitor
         _sharedPaint.Color = style.Color;
         _sharedPaint.Style = isFill ? SKPaintStyle.Fill : SKPaintStyle.Stroke;
         _sharedPaint.StrokeWidth = isFill ? 1.0f : style.StrokeWidth;
+
+        if (!isFill)
+        {
+            _sharedPaint.StrokeCap = style.StrokeLineCap;
+            _sharedPaint.StrokeJoin = style.StrokeLineJoin;
+            _sharedPaint.StrokeMiter = style.StrokeMiterLimit;
+
+            if (style.StrokeDashArray.Length > 0)
+            {
+                _sharedPaint.PathEffect = SKPathEffect.CreateDash(style.StrokeDashArray, style.StrokeDashOffset);
+            }
+            else
+            {
+                _sharedPaint.PathEffect = null;
+            }
+        }
+        else
+        {
+            _sharedPaint.PathEffect = null;
+        }
     }
 
     public void Visit(SvgRect element, SKCanvas canvas, SKMatrix transform)
@@ -242,9 +340,28 @@ public class SvgToSkiaConverter : ISvgElementVisitor
     {
         if (element.Children == null || element.Children.Count == 0) return;
 
+        if (string.Equals(element.Display, "none", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        bool isVisible = string.IsNullOrEmpty(element.Visibility) || 
+                         !string.Equals(element.Visibility, "hidden", StringComparison.OrdinalIgnoreCase) ||
+                         !string.Equals(element.Visibility, "collapse", StringComparison.OrdinalIgnoreCase);
+
+        if (!isVisible)
+            return;
+
+        int saveCount = canvas.Save();
+
         SKMatrix groupMatrix = element.Transform == null || element.Transform.Value.IsIdentity
             ? transform
             : transform.PostConcat(element.Transform.Value);
+
+        if (element.Opacity < 1.0f)
+        {
+            _sharedPaint.Color = new SKColor(0, 0, 0, (byte)(255 * element.Opacity));
+            _sharedPaint.Style = SKPaintStyle.Fill;
+            canvas.SaveLayer(_sharedPaint);
+        }
 
         if (element.FillStyle != null)
         {
@@ -270,10 +387,27 @@ public class SvgToSkiaConverter : ISvgElementVisitor
         {
             _fillStack.Pop();
         }
+
+        if (element.Opacity < 1.0f)
+        {
+            canvas.Restore();
+        }
+
+        canvas.RestoreToCount(saveCount);
     }
 
     public void Visit(SvgDefs element, SKCanvas canvas, SKMatrix transform)
     {
+        if (element.Children == null || element.Children.Count == 0) return;
+
+        SKMatrix defsMatrix = element.Transform == null || element.Transform.Value.IsIdentity
+            ? transform
+            : transform.PostConcat(element.Transform.Value);
+
+        foreach (var child in element.Children)
+        {
+            child.Accept(this, canvas, defsMatrix);
+        }
     }
 
     public void Visit(SvgDesc element, SKCanvas canvas, SKMatrix transform)
@@ -947,11 +1081,13 @@ public class SvgToSkiaConverter : ISvgElementVisitor
         var effectiveFillStyle = GetEffectiveFillStyle(element.FillStyle);
         if (effectiveFillStyle != null)
         {
+            path.FillType = effectiveFillStyle.FillRule;
             ConfigurePaint(effectiveFillStyle, true);
             canvas.DrawPath(path, _sharedPaint);
         }
         else
         {
+            path.FillType = GetDefaultFillStyle().FillRule;
             ConfigurePaint(GetDefaultFillStyle(), true);
             canvas.DrawPath(path, _sharedPaint);
         }

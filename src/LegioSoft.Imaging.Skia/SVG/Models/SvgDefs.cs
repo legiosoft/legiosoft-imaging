@@ -6,6 +6,11 @@ namespace LegioSoft.Imaging.Skia.SVG.Models;
 public class SvgDefs : SvgElement
 {
     public List<SvgElement>? Children { get; set; }
+    public string Class { get; set; } = string.Empty;
+    public string Style { get; set; } = string.Empty;
+    public string XmlSpace { get; set; } = string.Empty;
+    public string XmlLang { get; set; } = string.Empty;
+    public string XmlBase { get; set; } = string.Empty;
 
     public override void Accept(ISvgElementVisitor visitor, SKCanvas canvas, SKMatrix transform)
     {

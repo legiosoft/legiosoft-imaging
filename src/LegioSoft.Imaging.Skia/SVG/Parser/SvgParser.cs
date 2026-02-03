@@ -53,7 +53,23 @@ public class SvgParser
         {
             ViewBox = ParseViewBox(root),
             Width = ParseDimension(root, "width", 512),
-            Height = ParseDimension(root, "height", 512)
+            Height = ParseDimension(root, "height", 512),
+            Xmlns = root.Attribute("xmlns")?.Value ?? string.Empty,
+            XmlnsXlink = root.GetNamespaceOfPrefix("xlink")?.NamespaceName ?? string.Empty,
+            Version = root.Attribute("version")?.Value ?? string.Empty,
+            BaseProfile = root.Attribute("baseProfile")?.Value ?? string.Empty,
+            X = GetFloat(root, "x"),
+            Y = GetFloat(root, "y"),
+            PreserveAspectRatio = root.Attribute("preserveAspectRatio")?.Value ?? string.Empty,
+            ContentScriptType = root.Attribute("contentScriptType")?.Value ?? string.Empty,
+            ContentStyleType = root.Attribute("contentStyleType")?.Value ?? string.Empty,
+            ZoomAndPan = root.Attribute("zoomAndPan")?.Value ?? string.Empty,
+            Class = root.Attribute("class")?.Value ?? string.Empty,
+            Style = root.Attribute("style")?.Value ?? string.Empty,
+            Id = root.Attribute("id")?.Value ?? string.Empty,
+            XmlSpace = root.Attribute(XNamespace.Xml + "space")?.Value ?? string.Empty,
+            XmlLang = root.Attribute(XNamespace.Xml + "lang")?.Value ?? string.Empty,
+            XmlBase = root.Attribute(XNamespace.Xml + "base")?.Value ?? string.Empty
         };
 
         var group = new SvgGroup();
@@ -79,11 +95,10 @@ public class SvgParser
 
             string tagName = child.Name.LocalName.ToLower();
 
-            if (tagName == "defs") continue;
-
             SvgElement? element = tagName switch
             {
                 "g" => ParseGroup(child, ns),
+                "defs" => ParseDefs(child, ns),
                 "rect" => ParseRect(child),
                 "circle" => ParseCircle(child),
                 "ellipse" => ParseEllipse(child),
@@ -96,6 +111,8 @@ public class SvgParser
                 "mpath" => ParseMPath(child),
                 "set" => ParseSet(child),
                 "view" => ParseView(child),
+                "title" => ParseTitle(child),
+                "desc" => ParseDesc(child),
                 "script" => ParseScript(child),
                 "metadata" => ParseMetadata(child),
                 "cursor" => ParseCursor(child),
@@ -181,9 +198,225 @@ public class SvgParser
 
     private SvgGroup ParseGroup(XElement element, XNamespace ns)
     {
-        var group = new SvgGroup();
+        var group = new SvgGroup
+        {
+            Opacity = GetFloat(element, "opacity", 1.0f),
+            Display = element.Attribute("display")?.Value ?? string.Empty,
+            Visibility = element.Attribute("visibility")?.Value ?? string.Empty,
+            ClipPath = element.Attribute("clip-path")?.Value ?? string.Empty,
+            Mask = element.Attribute("mask")?.Value ?? string.Empty,
+            Filter = element.Attribute("filter")?.Value ?? string.Empty,
+            XmlSpace = element.Attribute(XNamespace.Xml + "space")?.Value ?? string.Empty,
+            XmlLang = element.Attribute(XNamespace.Xml + "lang")?.Value ?? string.Empty,
+            XmlBase = element.Attribute(XNamespace.Xml + "base")?.Value ?? string.Empty
+        };
+
+        ParseStyleAttributes(group, element);
+
         ParseChildren(element, group, ns);
         return group;
+    }
+
+    private SvgDefs ParseDefs(XElement element, XNamespace ns)
+    {
+        var defs = new SvgDefs
+        {
+            Class = element.Attribute("class")?.Value ?? string.Empty,
+            Style = element.Attribute("style")?.Value ?? string.Empty,
+            XmlSpace = element.Attribute(XNamespace.Xml + "space")?.Value ?? string.Empty,
+            XmlLang = element.Attribute(XNamespace.Xml + "lang")?.Value ?? string.Empty,
+            XmlBase = element.Attribute(XNamespace.Xml + "base")?.Value ?? string.Empty
+        };
+
+        defs.Id = element.Attribute("id")?.Value ?? string.Empty;
+        defs.Transform = ParseTransform(element.Attribute("transform")?.Value);
+
+        ParseChildrenToDefs(element, defs, ns);
+        return defs;
+    }
+
+    private void ParseChildrenToDefs(XElement parent, SvgDefs defs, XNamespace ns)
+    {
+        if (++_currentDepth > _options.MaxNestingDepth)
+        {
+            throw new InvalidOperationException($"Maximum nesting depth of {_options.MaxNestingDepth} exceeded");
+        }
+
+        foreach (var child in parent.Elements())
+        {
+            if (++_elementCount > _options.MaxElements)
+            {
+                throw new InvalidOperationException($"Maximum element count of {_options.MaxElements} exceeded");
+            }
+
+            string tagName = child.Name.LocalName.ToLower();
+
+            SvgElement? element = tagName switch
+            {
+                "g" => ParseGroup(child, ns),
+                "rect" => ParseRect(child),
+                "circle" => ParseCircle(child),
+                "ellipse" => ParseEllipse(child),
+                "line" => ParseLine(child),
+                "polyline" => ParsePolyline(child),
+                "polygon" => ParsePolygon(child),
+                "path" => ParsePath(child),
+                "animatemotion" => ParseAnimateMotion(child),
+                "animatetransform" => ParseAnimateTransform(child),
+                "mpath" => ParseMPath(child),
+                "set" => ParseSet(child),
+                "view" => ParseView(child),
+                "title" => ParseTitle(child),
+                "desc" => ParseDesc(child),
+                "script" => ParseScript(child),
+                "metadata" => ParseMetadata(child),
+                "cursor" => ParseCursor(child),
+                "solidcolor" => ParseSolidColor(child),
+                "font" => ParseFont(child),
+                "font-face" => ParseFontFace(child),
+                "glyph" => ParseGlyph(child),
+                "missing-glyph" => ParseMissingGlyph(child),
+                "hkern" => ParseHKern(child),
+                "vkern" => ParseVKern(child),
+                "font-face-src" => ParseFontFaceSrc(child),
+                "font-face-uri" => ParseFontFaceUri(child),
+                "font-face-format" => ParseFontFaceFormat(child),
+                "font-face-name" => ParseFontFaceName(child),
+                "color-profile" => ParseColorProfile(child),
+                _ => null
+            };
+
+            if (element != null)
+            {
+                element.Id = child.Attribute("id")?.Value ?? string.Empty;
+                element.Transform = ParseTransform(child.Attribute("transform")?.Value);
+                var classAttr = child.Attribute("class")?.Value;
+
+                element.FillStyle = ParseStyle(child, classAttr, true);
+                element.StrokeStyle = ParseStyle(child, classAttr, false);
+
+                defs.Children ??= new List<SvgElement>();
+                defs.Children.Add(element);
+            }
+        }
+
+        _currentDepth--;
+    }
+
+    private void ParseStyleAttributes(SvgGroup group, XElement element)
+    {
+        var fillStyle = new SvgStyle();
+        var strokeStyle = new SvgStyle();
+
+        string? fill = element.Attribute("fill")?.Value;
+        if (!string.IsNullOrEmpty(fill) && !fill.Equals("none", StringComparison.OrdinalIgnoreCase))
+        {
+            if (SvgColorHelper.TryParse(fill, out SKColor fillColor))
+            {
+                fillStyle.Color = fillColor;
+            }
+        }
+
+        fillStyle.FillOpacity = GetFloat(element, "fill-opacity", 1.0f);
+        fillStyle.FillRule = ParseFillRule(element.Attribute("fill-rule")?.Value);
+
+        string? stroke = element.Attribute("stroke")?.Value;
+        if (!string.IsNullOrEmpty(stroke) && !stroke.Equals("none", StringComparison.OrdinalIgnoreCase))
+        {
+            if (SvgColorHelper.TryParse(stroke, out SKColor strokeColor))
+            {
+                strokeStyle.Color = strokeColor;
+            }
+        }
+
+        strokeStyle.StrokeWidth = GetFloat(element, "stroke-width", 1.0f);
+        strokeStyle.StrokeOpacity = GetFloat(element, "stroke-opacity", 1.0f);
+        strokeStyle.StrokeDashOffset = GetFloat(element, "stroke-dashoffset", 0);
+        strokeStyle.StrokeMiterLimit = GetFloat(element, "stroke-miterlimit", 4.0f);
+        strokeStyle.StrokeDashArray = ParseStrokeDashArray(element.Attribute("stroke-dasharray")?.Value);
+        strokeStyle.StrokeLineCap = ParseStrokeCap(element.Attribute("stroke-linecap")?.Value);
+        strokeStyle.StrokeLineJoin = ParseStrokeJoin(element.Attribute("stroke-linejoin")?.Value);
+
+        if (fillStyle.Color != SKColors.Black || fillStyle.FillOpacity != 1.0f || fillStyle.FillRule != SKPathFillType.Winding)
+        {
+            group.FillStyle = fillStyle;
+        }
+
+        if (strokeStyle.Color != SKColors.Black || strokeStyle.StrokeWidth != 1.0f || strokeStyle.StrokeOpacity != 1.0f ||
+            strokeStyle.StrokeDashArray.Length > 0 || strokeStyle.StrokeDashOffset != 0 || strokeStyle.StrokeMiterLimit != 4.0f ||
+            strokeStyle.StrokeLineCap != SKStrokeCap.Butt || strokeStyle.StrokeLineJoin != SKStrokeJoin.Miter)
+        {
+            group.StrokeStyle = strokeStyle;
+        }
+    }
+
+    private SKPathFillType ParseFillRule(string? fillRule)
+    {
+        if (string.IsNullOrEmpty(fillRule))
+            return SKPathFillType.Winding;
+
+        return fillRule.ToLowerInvariant() switch
+        {
+            "nonzero" => SKPathFillType.Winding,
+            "evenodd" => SKPathFillType.EvenOdd,
+            _ => SKPathFillType.Winding
+        };
+    }
+
+    private SKStrokeCap ParseStrokeCap(string? strokeCap)
+    {
+        if (string.IsNullOrEmpty(strokeCap))
+            return SKStrokeCap.Butt;
+
+        return strokeCap.ToLowerInvariant() switch
+        {
+            "butt" => SKStrokeCap.Butt,
+            "round" => SKStrokeCap.Round,
+            "square" => SKStrokeCap.Square,
+            _ => SKStrokeCap.Butt
+        };
+    }
+
+    private SKStrokeJoin ParseStrokeJoin(string? strokeJoin)
+    {
+        if (string.IsNullOrEmpty(strokeJoin))
+            return SKStrokeJoin.Miter;
+
+        return strokeJoin.ToLowerInvariant() switch
+        {
+            "miter" => SKStrokeJoin.Miter,
+            "round" => SKStrokeJoin.Round,
+            "bevel" => SKStrokeJoin.Bevel,
+            _ => SKStrokeJoin.Miter
+        };
+    }
+
+    private float[] ParseStrokeDashArray(string? dashArray)
+    {
+        if (string.IsNullOrEmpty(dashArray))
+            return Array.Empty<float>();
+
+        var values = dashArray.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
+        var result = new List<float>();
+
+        foreach (var val in values)
+        {
+            if (float.TryParse(val, NumberStyles.Float, CultureInfo.InvariantCulture, out float num))
+            {
+                result.Add(num);
+            }
+        }
+
+        return result.ToArray();
+    }
+
+    private float GetFloat(XElement element, string attrName, float defaultValue)
+    {
+        string? val = element.Attribute(attrName)?.Value;
+        if (string.IsNullOrEmpty(val)) return defaultValue;
+
+        float.TryParse(val.Replace("px", ""), NumberStyles.Any, CultureInfo.InvariantCulture, out float result);
+        return result;
     }
 
     private SvgRect ParseRect(XElement element)
@@ -371,6 +604,32 @@ public class SvgParser
         };
     }
 
+    private SvgDesc ParseDesc(XElement element)
+    {
+        return new SvgDesc
+        {
+            Class = element.Attribute("class")?.Value ?? string.Empty,
+            Style = element.Attribute("style")?.Value ?? string.Empty,
+            XmlSpace = element.Attribute(XNamespace.Xml + "space")?.Value ?? string.Empty,
+            XmlLang = element.Attribute(XNamespace.Xml + "lang")?.Value ?? string.Empty,
+            XmlBase = element.Attribute(XNamespace.Xml + "base")?.Value ?? string.Empty,
+            Text = element.Value
+        };
+    }
+
+    private SvgTitle ParseTitle(XElement element)
+    {
+        return new SvgTitle
+        {
+            Class = element.Attribute("class")?.Value ?? string.Empty,
+            Style = element.Attribute("style")?.Value ?? string.Empty,
+            XmlSpace = element.Attribute(XNamespace.Xml + "space")?.Value ?? string.Empty,
+            XmlLang = element.Attribute(XNamespace.Xml + "lang")?.Value ?? string.Empty,
+            XmlBase = element.Attribute(XNamespace.Xml + "base")?.Value ?? string.Empty,
+            Text = element.Value
+        };
+    }
+
     private SvgCursor ParseCursor(XElement element)
     {
         return new SvgCursor
@@ -401,6 +660,129 @@ public class SvgParser
             HorizAdvX = element.Attribute("horiz-adv-x")?.Value,
             VertOriginY = element.Attribute("vert-origin-y")?.Value,
             VertAdvY = element.Attribute("vert-adv-y")?.Value
+        };
+    }
+
+    private SvgFontFace ParseFontFace(XElement element)
+    {
+        return new SvgFontFace
+        {
+            FontFamily = element.Attribute("font-family")?.Value,
+            UnitsPerEm = element.Attribute("units-per-em")?.Value,
+            Panose1 = element.Attribute("panose-1")?.Value,
+            Ascent = element.Attribute("ascent")?.Value,
+            Descent = element.Attribute("descent")?.Value,
+            CapHeight = element.Attribute("cap-height")?.Value,
+            XHeight = element.Attribute("x-height")?.Value,
+            AccentHeight = element.Attribute("accent-height")?.Value,
+            StemH = element.Attribute("stemh")?.Value,
+            StemV = element.Attribute("stemv")?.Value,
+            Slope = element.Attribute("slope")?.Value,
+            FontStretch = element.Attribute("font-stretch")?.Value,
+            FontWeight = element.Attribute("font-weight")?.Value,
+            UnderlinePosition = element.Attribute("underline-position")?.Value,
+            UnderlineThickness = element.Attribute("underline-thickness")?.Value,
+            StrikethroughPosition = element.Attribute("strikethrough-position")?.Value,
+            StrikethroughThickness = element.Attribute("strikethrough-thickness")?.Value,
+            OverlinePosition = element.Attribute("overline-position")?.Value,
+            OverlineThickness = element.Attribute("overline-thickness")?.Value,
+            FontStyle = element.Attribute("font-style")?.Value,
+            FontVariant = element.Attribute("font-variant")?.Value
+        };
+    }
+
+    private SvgGlyph ParseGlyph(XElement element)
+    {
+        var pathData = element.Attribute("d")?.Value ?? string.Empty;
+        var path = SKPath.ParseSvgPathData(pathData);
+
+        return new SvgGlyph
+        {
+            Unicode = element.Attribute("unicode")?.Value,
+            GlyphName = element.Attribute("glyph-name")?.Value,
+            HorizAdvX = element.Attribute("horiz-adv-x")?.Value,
+            VertAdvY = element.Attribute("vert-adv-y")?.Value,
+            VertOriginX = element.Attribute("vert-origin-x")?.Value,
+            VertOriginY = element.Attribute("vert-origin-y")?.Value,
+            D = pathData,
+            Path = path
+        };
+    }
+
+    private SvgMissingGlyph ParseMissingGlyph(XElement element)
+    {
+        var pathData = element.Attribute("d")?.Value ?? string.Empty;
+        var path = SKPath.ParseSvgPathData(pathData);
+
+        return new SvgMissingGlyph
+        {
+            HorizAdvX = element.Attribute("horiz-adv-x")?.Value,
+            D = pathData,
+            Path = path
+        };
+    }
+
+    private SvgHKern ParseHKern(XElement element)
+    {
+        return new SvgHKern
+        {
+            G1 = element.Attribute("g1")?.Value,
+            G2 = element.Attribute("g2")?.Value,
+            K = element.Attribute("k")?.Value,
+            U1 = element.Attribute("u1")?.Value,
+            U2 = element.Attribute("u2")?.Value
+        };
+    }
+
+    private SvgVKern ParseVKern(XElement element)
+    {
+        return new SvgVKern
+        {
+            G1 = element.Attribute("g1")?.Value,
+            G2 = element.Attribute("g2")?.Value,
+            K = element.Attribute("k")?.Value,
+            U1 = element.Attribute("u1")?.Value,
+            U2 = element.Attribute("u2")?.Value
+        };
+    }
+
+    private SvgFontFaceSrc ParseFontFaceSrc(XElement element)
+    {
+        return new SvgFontFaceSrc();
+    }
+
+    private SvgFontFaceUri ParseFontFaceUri(XElement element)
+    {
+        return new SvgFontFaceUri
+        {
+            Href = element.Attribute("href")?.Value ?? element.Attribute(xlinkNamespace + "href")?.Value
+        };
+    }
+
+    private SvgFontFaceFormat ParseFontFaceFormat(XElement element)
+    {
+        return new SvgFontFaceFormat
+        {
+            String = element.Attribute("string")?.Value
+        };
+    }
+
+    private SvgFontFaceName ParseFontFaceName(XElement element)
+    {
+        return new SvgFontFaceName
+        {
+            Name = element.Attribute("name")?.Value
+        };
+    }
+
+    private SvgColorProfile ParseColorProfile(XElement element)
+    {
+        return new SvgColorProfile
+        {
+            Name = element.Attribute("name")?.Value,
+            Local = element.Attribute("local")?.Value,
+            RenderingIntent = element.Attribute("rendering-intent")?.Value,
+            Href = element.Attribute("href")?.Value ?? element.Attribute(xlinkNamespace + "href")?.Value
         };
     }
 
