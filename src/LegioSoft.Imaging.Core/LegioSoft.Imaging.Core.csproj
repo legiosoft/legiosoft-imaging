@@ -20,7 +20,7 @@
       - ILegioImageCropper for crop operations
       - ILegioImageTransformer for rotate/flip operations
       - ILegioImageFilter for filter operations (grayscale, sepia, blur, sharpen)
-      - LegioImageFormat enum (PNG, JPEG, WebP, BMP, GIF, SVG)
+      - LegioImageFormat enum (PNG, JPEG, WebP, BMP, GIF)
       - LegioScaleMode enum (Fit, Fill, Stretch)
       - LegioResizeQuality enum (Low, Medium, High, Maximum)
       - LegioEncodingQuality enum (0-100 quality levels)

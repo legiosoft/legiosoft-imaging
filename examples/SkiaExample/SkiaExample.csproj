@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\LegioSoft.Imaging.Skia\LegioSoft.Imaging.Skia.csproj" />
+    <ProjectReference Include="..\..\src\LegioSoft.Imaging.SVG\LegioSoft.Imaging.SVG.csproj" />
   </ItemGroup>
 
   <ItemGroup>

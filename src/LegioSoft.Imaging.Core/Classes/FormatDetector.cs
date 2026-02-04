@@ -74,14 +74,11 @@ public static class FormatDetector
         if (IsPng(imageData))
             return LegioImageFormat.Png;
 
-        if (IsSvg(imageData))
-            return LegioImageFormat.Svg;
-
         if (IsBmp(imageData))
             return LegioImageFormat.Bmp;
 
         throw new NotSupportedException(
-            "Unsupported or unrecognized image format. Supported formats: PNG, JPEG, WebP, BMP, GIF, SVG");
+            "Unsupported or unrecognized image format. Supported formats: PNG, JPEG, WebP, BMP, GIF");
     }
 
     private static bool IsWebP(ReadOnlySpan<byte> imageData)
@@ -129,103 +126,5 @@ public static class FormatDetector
 
         return imageData[0] == 0x89 && imageData[1] == 0x50 && imageData[2] == 0x4E && imageData[3] == 0x47 &&
                imageData[4] == 0x0D && imageData[5] == 0x0A && imageData[6] == 0x1A && imageData[7] == 0x0A;
-    }
-
-    private static bool IsSvg(ReadOnlySpan<byte> imageData)
-    {
-        if (imageData.Length < 5) return false;
-
-        var dataSpan = imageData.Slice(0, Math.Min(imageData.Length, 512));
-        var offset = 0;
-
-        if (HasUtf8Bom(dataSpan))
-        {
-            offset = 3;
-        }
-
-        if (offset + 4 > dataSpan.Length) return false;
-
-        var textSpan = Encoding.ASCII.GetString(dataSpan.Slice(offset)).AsSpan();
-
-        var trimmed = textSpan.TrimStart();
-
-        if (trimmed.StartsWith("<?xml", StringComparison.OrdinalIgnoreCase))
-        {
-            var xmlEndIndex = trimmed.IndexOf("?>", StringComparison.Ordinal);
-            if (xmlEndIndex >= 0)
-            {
-                var afterXml = trimmed.Slice(xmlEndIndex + 2).TrimStart();
-
-                var firstElementIndex = FindFirstElement(afterXml);
-                if (firstElementIndex >= 0)
-                {
-                    var firstElement = afterXml.Slice(firstElementIndex);
-                    return firstElement.StartsWith("<svg", StringComparison.OrdinalIgnoreCase);
-                }
-            }
-            return false;
-        }
-
-        var rootElementIndex = FindFirstElement(trimmed);
-        if (rootElementIndex >= 0)
-        {
-            var rootElement = trimmed.Slice(rootElementIndex);
-            return rootElement.StartsWith("<svg", StringComparison.OrdinalIgnoreCase);
-        }
-
-        return false;
-    }
-
-    private static int FindFirstElement(ReadOnlySpan<char> text)
-    {
-        var i = 0;
-        while (i < text.Length)
-        {
-            if (char.IsWhiteSpace(text[i]))
-            {
-                i++;
-                continue;
-            }
-
-            if (text[i] != '<')
-            {
-                return -1;
-            }
-
-            if (i + 4 <= text.Length &&
-                text[i + 1] == '!' &&
-                text[i + 2] == '-' &&
-                text[i + 3] == '-')
-            {
-                var commentEnd = text.Slice(i).IndexOf("-->", StringComparison.Ordinal);
-                if (commentEnd < 0) return -1;
-                i += commentEnd + 3;
-                continue;
-            }
-
-            if (i + 9 <= text.Length &&
-                text[i + 1] == '!' &&
-                (text[i + 2] == 'D' || text[i + 2] == 'd') &&
-                (text[i + 3] == 'O' || text[i + 3] == 'o') &&
-                (text[i + 4] == 'C' || text[i + 4] == 'c') &&
-                (text[i + 5] == 'T' || text[i + 5] == 't') &&
-                (text[i + 6] == 'Y' || text[i + 6] == 'y') &&
-                (text[i + 7] == 'P' || text[i + 7] == 'p') &&
-                (text[i + 8] == 'E' || text[i + 8] == 'e'))
-            {
-                var doctypeEnd = text.Slice(i).IndexOf('>');
-                if (doctypeEnd < 0) return -1;
-                i += doctypeEnd + 1;
-                continue;
-            }
-
-            return i;
-        }
-        return -1;
-    }
-
-    private static bool HasUtf8Bom(ReadOnlySpan<byte> data)
-    {
-        return data.Length >= 3 && data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF;
     }
 }

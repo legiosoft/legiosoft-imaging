@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>LegioSoft.Imaging.SVG</RootNamespace>
+    <AssemblyName>LegioSoft.Imaging.SVG</AssemblyName>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <OutputType>Library</OutputType>
+    <PackageId>LegioSoft.Imaging.SVG</PackageId>
+    <Description>
+      SVG rendering and processing library for LegioSoft.Imaging. Provides full SVG parser, converter, and renderer built on SkiaSharp. Supports SVG elements including shapes (rect, circle, ellipse, line, path, polygon, polyline), text (text, tspan, textPath), groups, transforms, gradients, patterns, filters, masks, clip paths, and more. Renders SVG to SKBitmap for use with SkiaSharp. Cross-platform support for Windows, macOS, and Linux. Supports .NET 6.0, 7.0, 8.0, 9.0, and 10.0.
+    </Description>
+    <PackageTags>image;processing;SVG;SkiaSharp;parser;renderer;vector-graphics;scalable-vector-graphics;converter;cross-platform;XML</PackageTags>
+    <PackageReleaseNotes>
+      Initial release of LegioSoft.Imaging.SVG.
+
+      Features:
+      - Full SVG parser supporting most SVG 1.1 elements
+      - SkiaSharp-based SVG renderer
+      - Element support: shapes (rect, circle, ellipse, line, path, polygon, polyline)
+      - Text support: text, tspan, textPath
+      - Styling: fill, stroke, gradients (linear, radial), patterns
+      - Advanced features: filters, masks, clip paths, transforms
+      - Renders to SKBitmap for further processing
+      - Cross-platform (Windows, macOS, Linux)
+      - Support for .NET 6.0, 7.0, 8.0, 9.0, and 10.0
+    </PackageReleaseNotes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="2.88.6" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
