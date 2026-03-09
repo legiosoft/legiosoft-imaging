@@ -3,7 +3,7 @@
 ```bash
 cd src/LegioSoft.Imaging.Core
 dotnet pack -c Release
-dotnet nuget push bin/Release/LegioSoft.Imaging.Core.1.0.0.nupkg --api-key YOUR_API_KEY --source https://api.nuget.org/v3/index.json
+dotnet nuget push bin/Release/LegioSoft.Imaging.Core.1.0.1.nupkg --api-key YOUR_API_KEY --source https://api.nuget.org/v3/index.json
 ```
 
 ## Bump Version
@@ -17,5 +17,5 @@ dotnet pack -c Release
 
 Or temporary override:
 ```bash
-dotnet pack -c Release /p:Version=1.0.0
+dotnet pack -c Release /p:Version=1.0.1
 ```
