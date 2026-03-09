@@ -1,9 +1,5 @@
-using LegioSoft.Imaging.Core;
 using LegioSoft.Imaging.Skia;
-using System;
 using LegioSoft.Imaging.Core.Enums;
-using LegioSoft.Imaging.Skia.SVG;
-using SkiaSharp;
 
 namespace SkiaExample;
 
@@ -14,11 +10,6 @@ class Program
         Console.WriteLine("=== LegioSoft.Imaging.Skia Examples ===\n");
 
         var exampleImage = "example.png";
-        var exampleSVG = "logo.svg";
-
-        var ren = new SvgRenderer();
-        
-        ren.RenderToFile(exampleSVG, "test.png", 10000, 2000, SKEncodedImageFormat.Png, 100);
 
         if (!File.Exists(exampleImage))
         {
@@ -98,7 +89,7 @@ class Program
         Console.WriteLine(new string('-', 50));
 
         LegioImageBuilder.Load(imagePath)
-            .Crop(10, 10, 2000, 2000)
+            .Crop(10, 10, 200, 200)
             .Save("output-cropped.jpg", LegioImageFormat.Jpeg, 85);
 
         Console.WriteLine($"  Created: output-cropped.jpg ({File.ReadAllBytes("output-cropped.jpg").Length} bytes)");
