@@ -1,9 +1,5 @@
 using LegioSoft.Imaging.Core.Enums;
 
-using System;
-using System.IO;
-using System.Text;
-
 namespace LegioSoft.Imaging.Core.Classes;
 
 public static class FormatDetector
@@ -99,7 +95,7 @@ public static class FormatDetector
                         ((uint)imageData[12] << 16) |
                         ((uint)imageData[13] << 24);
 
-        return dataOffset >= 14 && dataOffset <= 0x0FFFFFFF;
+        return dataOffset is >= 14 and <= 0x0FFFFFFF;
     }
 
     private static bool IsGif(ReadOnlySpan<byte> imageData)
