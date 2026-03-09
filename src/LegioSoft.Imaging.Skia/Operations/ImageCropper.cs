@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using LegioSoft.Imaging.Core.Classes;
 using LegioSoft.Imaging.Skia.Core;
 using SkiaSharp;
