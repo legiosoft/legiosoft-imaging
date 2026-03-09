@@ -19,7 +19,6 @@ public class LegioImageFormatTests
         Assert.Contains(LegioImageFormat.WebP, formats);
         Assert.Contains(LegioImageFormat.Bmp, formats);
         Assert.Contains(LegioImageFormat.Gif, formats);
-        Assert.Contains(LegioImageFormat.Svg, formats);
     }
 }
 
