@@ -1,6 +1,7 @@
 using LegioSoft.Imaging.Core.Enums;
 
 using System;
+using System.IO;
 using System.Text;
 
 namespace LegioSoft.Imaging.Core.Classes;
@@ -13,10 +14,6 @@ public static class FormatDetector
 
         if (imageData.Length == 0)
             throw new ArgumentException("Image data cannot be empty", nameof(imageData));
-
-        if (imageData.Length < 3)
-            throw new ArgumentException("Image data is too short to determine format (minimum 3 bytes required)",
-                nameof(imageData));
 
         return IdentifyFormatBySignature(imageData);
     }
@@ -33,7 +30,6 @@ public static class FormatDetector
                 "Stream must be seekable. Use DetectFormat(byte[]) by converting stream to bytes first if needed.");
 
         long originalPosition = stream.Position;
-        stream.Seek(0, SeekOrigin.Begin);
 
         try
         {
@@ -47,10 +43,6 @@ public static class FormatDetector
                     break;
                 totalRead += bytesRead;
             }
-
-            if (totalRead < 3)
-                throw new ArgumentException("Stream is too short to determine format (minimum 3 bytes required)",
-                    nameof(stream));
 
             return IdentifyFormatBySignature(buffer.Slice(0, totalRead));
         }
@@ -86,7 +78,7 @@ public static class FormatDetector
         if (imageData.Length < 12) return false;
 
         return imageData[0] == 0x52 && imageData[1] == 0x49 && imageData[2] == 0x46 && imageData[3] == 0x46 &&
-               imageData[8] == 0x57 && imageData[9] == 0x45 && imageData[10] == 0x66 && imageData[11] == 0x50;
+               imageData[8] == 0x57 && imageData[9] == 0x45 && imageData[10] == 0x42 && imageData[11] == 0x50;
     }
 
     private static bool IsJpeg(ReadOnlySpan<byte> imageData)
