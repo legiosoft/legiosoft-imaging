@@ -3,78 +3,81 @@ using LegioSoft.Imaging.Core.Interfaces;
 
 namespace LegioSoft.Imaging.WebP.Tests;
 
-public class LegioImageWebPEncoderTests
+public class LegioImageWebPProcessorTests
 {
     [Fact]
-    public void LegioImageWebPEncoder_ShouldImplementILegioImageEncoder()
+    public void Processor_ShouldImplementILegioImageEncoder()
     {
-        var encoder = new LegioImageWebPEncoder();
+        var processor = new LegioImageWebPProcessor();
         
-        Assert.IsAssignableFrom<ILegioImageEncoder>(encoder);
+        Assert.IsAssignableFrom<ILegioImageEncoder>(processor);
     }
 
     [Fact]
-    public void LegioImageWebPEncoder_ShouldImplementILegioImageDecoder()
+    public void Processor_ShouldImplementILegioImageDecoder()
     {
-        var encoder = new LegioImageWebPEncoder();
+        var processor = new LegioImageWebPProcessor();
         
-        Assert.IsAssignableFrom<ILegioImageDecoder>(encoder);
+        Assert.IsAssignableFrom<ILegioImageDecoder>(processor);
     }
 
     [Fact]
-    public void Encode_ShouldThrowOnWebPFormat()
+    public void Encode_ShouldThrowForUnsupportedTargetFormat()
     {
-        var encoder = new LegioImageWebPEncoder();
-        var testPngData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var processor = new LegioImageWebPProcessor();
+        var testImageData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
         
-        Assert.Throws<NotImplementedException>(() => encoder.Encode(testPngData, LegioImageFormat.WebP, LegioEncodingQuality.High));
+        Assert.Throws<NotSupportedException>(() => { _ = processor.Encode(testImageData, LegioImageFormat.Jpeg, LegioEncodingQuality.High); });
+        Assert.Throws<NotSupportedException>(() => { _ = processor.Encode(testImageData, LegioImageFormat.Png, LegioEncodingQuality.High); });
     }
 
     [Fact]
-    public void Encode_ShouldThrowOnNonWebPFormat()
+    public void Encode_ShouldThrowForNullOrEmptyImageData()
     {
-        var encoder = new LegioImageWebPEncoder();
-        var testPngData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+        var processor = new LegioImageWebPProcessor();
         
-        Assert.Throws<NotSupportedException>(() => encoder.Encode(testPngData, LegioImageFormat.Jpeg, LegioEncodingQuality.High));
-        Assert.Throws<NotSupportedException>(() => encoder.Encode(testPngData, LegioImageFormat.Png, LegioEncodingQuality.High));
+        Assert.Throws<ArgumentException>(() => { _ = processor.Encode(null!, LegioImageFormat.WebP, LegioEncodingQuality.High); });
+        Assert.Throws<ArgumentException>(() => { _ = processor.Encode(Array.Empty<byte>(), LegioImageFormat.WebP, LegioEncodingQuality.High); });
     }
 
     [Fact]
-    public void Encode_WithStream_ShouldThrowOnWebPFormat()
+    public void Encode_Stream_ShouldThrowForUnreadableStream()
     {
-        var encoder = new LegioImageWebPEncoder();
-        var testPngData = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-        using var stream = new MemoryStream(testPngData);
+        var processor = new LegioImageWebPProcessor();
+        using var stream = new NonReadableMemoryStream();
         
-        Assert.Throws<NotImplementedException>(() => encoder.Encode(stream, LegioImageFormat.WebP, LegioEncodingQuality.High));
+        Assert.Throws<ArgumentException>(() => { _ = processor.Encode(stream, LegioImageFormat.WebP, LegioEncodingQuality.High); });
     }
 
     [Fact]
-    public void Decode_ShouldThrowNotImplemented()
+    public void Decode_ShouldThrowForNullOrEmptyImageData()
     {
-        var encoder = new LegioImageWebPEncoder();
-        var webpData = new byte[] { 0x52, 0x49, 0x46, 0x46, 0x10, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50 };
+        var processor = new LegioImageWebPProcessor();
         
-        Assert.Throws<NotImplementedException>(() => encoder.Decode(webpData, out var format));
+        Assert.Throws<ArgumentException>(() => { _ = processor.Decode(null!, out _); });
+        Assert.Throws<ArgumentException>(() => { _ = processor.Decode(Array.Empty<byte>(), out _); });
     }
 
     [Fact]
-    public void GetImageInfo_ShouldThrowNotImplemented()
+    public void GetImageInfo_ShouldThrowForNullOrEmptyImageData()
     {
-        var encoder = new LegioImageWebPEncoder();
-        var webpData = new byte[] { 0x52, 0x49, 0x46, 0x46, 0x10, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50 };
+        var processor = new LegioImageWebPProcessor();
         
-        Assert.Throws<NotImplementedException>(() => encoder.GetImageInfo(webpData));
+        Assert.Throws<ArgumentException>(() => { _ = processor.GetImageInfo((byte[])null!); });
+        Assert.Throws<ArgumentException>(() => { _ = processor.GetImageInfo(Array.Empty<byte>()); });
     }
 
     [Fact]
-    public void GetImageInfo_WithStream_ShouldThrowNotImplemented()
+    public void GetImageInfo_Stream_ShouldThrowForUnreadableStream()
     {
-        var encoder = new LegioImageWebPEncoder();
-        var webpData = new byte[] { 0x52, 0x49, 0x46, 0x46, 0x10, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50 };
-        using var stream = new MemoryStream(webpData);
+        var processor = new LegioImageWebPProcessor();
+        using var stream = new NonReadableMemoryStream();
         
-        Assert.Throws<NotImplementedException>(() => encoder.GetImageInfo(stream));
+        Assert.Throws<ArgumentException>(() => { _ = processor.GetImageInfo(stream); });
+    }
+
+    private sealed class NonReadableMemoryStream : MemoryStream
+    {
+        public override bool CanRead => false;
     }
 }
