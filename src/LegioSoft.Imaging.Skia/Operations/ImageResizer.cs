@@ -104,6 +104,7 @@ internal static class ImageResizer
         if (width <= 0 || height <= 0)
             throw new ArgumentException("Width and height must be positive", nameof(width));
 
+#pragma warning disable CS0618
         var filterQuality = quality switch
         {
             LegioResizeQuality.Low => SKFilterQuality.Low,
@@ -120,6 +121,7 @@ internal static class ImageResizer
             throw new InvalidOperationException("Failed to allocate bitmap memory");
 
         source.ScalePixels(scaledBitmap, filterQuality);
+#pragma warning restore CS0618
 
         return scaledBitmap;
     }

@@ -124,7 +124,7 @@ public class ImageLoaderTests
     [Fact]
     public void LoadBitmap_FromFilePath_ValidatesAndLoads()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
+        var tempDir = Path.Combine(AppContext.BaseDirectory, "images", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
         var imagePath = Path.Combine(tempDir, "test.png");
         File.WriteAllBytes(imagePath, CreateTestPng(100, 100));
@@ -139,14 +139,14 @@ public class ImageLoaderTests
         finally
         {
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void LoadBitmap_FromFilePath_InvalidExtension_ThrowsArgumentException()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
+        var tempDir = Path.Combine(AppContext.BaseDirectory, "images", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
         var imagePath = Path.Combine(tempDir, "test.bmp");
         File.WriteAllBytes(imagePath, new byte[] { 0x42, 0x4D });
@@ -158,7 +158,7 @@ public class ImageLoaderTests
         finally
         {
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
@@ -268,7 +268,7 @@ public class ImageLoaderTests
     [Fact]
     public void LoadBitmap_FilePathTraversal_ThrowsUnauthorizedAccessException()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
+        var tempDir = Path.Combine(AppContext.BaseDirectory, "images", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
         var maliciousPath = Path.Combine(tempDir, "..", "..", "test.png");
         File.WriteAllBytes(Path.Combine(AppContext.BaseDirectory, "test.png"), CreateTestPng(100, 100));
@@ -301,7 +301,7 @@ public class ImageLoaderTests
         finally
         {
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 

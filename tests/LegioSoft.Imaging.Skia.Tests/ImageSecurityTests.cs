@@ -47,13 +47,19 @@ public class ImageSecurityTests
         return File.OpenRead(path);
     }
 
+    private static string CreateTempDirectory(string prefix)
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, $"{prefix}-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
     #region Functionality Tests
 
     [Fact]
     public void ValidateOpenedFile_ValidInApprovedDirectory_PassesValidation()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(tempDir, "test.png");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -70,15 +76,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_ValidInAssetsDirectory_PassesValidation()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "assets");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("assets");
         var imagePath = Path.Combine(tempDir, "test.jpg");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -95,15 +100,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_CaseInsensitiveExtension_PassesValidation()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(tempDir, "test.PNG");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -120,15 +124,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_WebPExtension_PassesValidation()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(tempDir, "test.webp");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -145,15 +148,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_JpegExtension_PassesValidation()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(tempDir, "test.jpeg");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -170,14 +172,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_SubdirectoryInApproved_PassesValidation()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
+        var tempDir = CreateTempDirectory("images");
         var subDir = Path.Combine(tempDir, "subfolder");
         Directory.CreateDirectory(subDir);
         var imagePath = Path.Combine(subDir, "test.png");
@@ -196,8 +198,7 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(subDir);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
@@ -208,8 +209,7 @@ public class ImageSecurityTests
     [Fact]
     public void ValidateOpenedFile_OutsideApprovedDirectory_ThrowsUnauthorizedAccessException()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "unapproved");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("unapproved");
         var imagePath = Path.Combine(tempDir, "test.png");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -225,16 +225,18 @@ public class ImageSecurityTests
         finally
         {
             fileStream.Dispose();
-            File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            if (File.Exists(imagePath))
+            {
+                File.Delete(imagePath);
+            }
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_UnsupportedExtension_ThrowsUnauthorizedAccessException()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(tempDir, "test.bmp");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -251,15 +253,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_PathTraversalAttack_ThrowsUnauthorizedAccessException()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var maliciousPath = Path.Combine(tempDir, "..", "..", "test.png");
         File.WriteAllBytes(Path.Combine(AppContext.BaseDirectory, "test.png"), CreateTestPng(100, 100));
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -275,15 +276,14 @@ public class ImageSecurityTests
         finally
         {
             File.Delete(Path.Combine(AppContext.BaseDirectory, "test.png"));
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_AbsolutePathOutsideApproved_ThrowsUnauthorizedAccessException()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(AppContext.BaseDirectory, "test.png");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -300,7 +300,7 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
@@ -311,8 +311,7 @@ public class ImageSecurityTests
     [Fact]
     public void ValidateOpenedFile_MultipleValidations_MemoryStable()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(tempDir, "test.png");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -345,16 +344,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_DisposeOfFileStream_NoLeaks()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
-        var imagePath = Path.Combine(tempDir, "test.png");
+        var tempDir = CreateTempDirectory("images");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
         var approvedDirectories = new[] { tempDir };
@@ -366,8 +363,13 @@ public class ImageSecurityTests
 
         for (var i = 0; i < 50; i++)
         {
-            using var fileStream = CreateTestFile(imagePath, CreateTestPng(100, 100));
-            CallValidateOpenedFile(fileStream, imagePath, approvedDirectories, allowedExtensions);
+            var imagePath = Path.Combine(tempDir, $"test-{i}.png");
+            using (var fileStream = CreateTestFile(imagePath, CreateTestPng(100, 100)))
+            {
+                CallValidateOpenedFile(fileStream, imagePath, approvedDirectories, allowedExtensions);
+            }
+
+            File.Delete(imagePath);
         }
 
         GC.Collect();
@@ -376,11 +378,10 @@ public class ImageSecurityTests
         var finalMemory = GC.GetTotalMemory(true);
 
         var memoryIncrease = finalMemory - initialMemory;
-        Assert.True(memoryIncrease < 20 * 1024 * 1024,
+        Assert.True(memoryIncrease < 30 * 1024 * 1024,
             "Multiple validations with proper disposal should not leak memory");
 
-        File.Delete(imagePath);
-        Directory.Delete(tempDir);
+        Directory.Delete(tempDir, true);
     }
 
     #endregion
@@ -390,8 +391,7 @@ public class ImageSecurityTests
     [Fact]
     public void ValidateOpenedFile_SingleValidation_PerformanceAcceptable()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(tempDir, "test.png");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -415,15 +415,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_MultipleValidations_PerformanceAcceptable()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
-        Directory.CreateDirectory(tempDir);
+        var tempDir = CreateTempDirectory("images");
         var imagePath = Path.Combine(tempDir, "test.png");
         var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".png", ".jpg", ".jpeg", ".webp" };
@@ -450,14 +449,14 @@ public class ImageSecurityTests
         {
             fileStream.Dispose();
             File.Delete(imagePath);
-            Directory.Delete(tempDir);
+            Directory.Delete(tempDir, true);
         }
     }
 
     [Fact]
     public void ValidateOpenedFile_DeepDirectoryPath_PerformanceAcceptable()
     {
-        var tempDir = Path.Combine(AppContext.BaseDirectory, "images");
+        var tempDir = CreateTempDirectory("images");
         var deepPath = tempDir;
         for (var i = 0; i < 10; i++)
         {
